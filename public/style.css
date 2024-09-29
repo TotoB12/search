@@ -22,7 +22,7 @@
 body {
     font-family: "Poly Sans", Arial, sans-serif;
     background-color: #ffffff;
-    transition: padding-top 2.5s ease;
+    transition: padding-top 0.5s ease;
 }
 
 .inputContainer {
@@ -34,7 +34,7 @@ body {
     width: 100%;
     padding: 2rem;
     text-align: center;
-    transition: all 2.5s ease;
+    transition: all 0.5s ease;
 }
 
 header {
@@ -46,7 +46,7 @@ header {
     font-size: 4rem;
     color: #333;
     margin-bottom: 1rem;
-    transition: all 2.5s ease;
+    transition: all 0.5s ease;
 }
 
 .search-container {
@@ -55,7 +55,7 @@ header {
     border-radius: 50px;
     padding: 0.5rem;
     margin: 0 auto;
-    transition: all 2.5s ease;
+    transition: all 0.5s ease;
 }
 
 ::placeholder {
@@ -97,6 +97,7 @@ header {
     margin-top: 2rem;
     font-size: 1.5rem;
     color: #333;
+    transition: display 0.5s ease;
 }
 
 #answer {
@@ -128,7 +129,7 @@ body.search-active .inputContainer {
 body.search-active #logo {
     font-size: 2rem;
     position: absolute;
-    top: 10px;
+    top: 15px;
     left: 20px;
     margin: 0;
 }
