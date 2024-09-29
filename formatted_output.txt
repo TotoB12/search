@@ -144,7 +144,7 @@ public\style.css
 body {
     font-family: "Poly Sans", Arial, sans-serif;
     background-color: #ffffff;
-    transition: padding-top 2.5s ease;
+    transition: padding-top 0.5s ease;
 }
 
 .inputContainer {
@@ -156,7 +156,7 @@ body {
     width: 100%;
     padding: 2rem;
     text-align: center;
-    transition: all 2.5s ease;
+    transition: all 0.5s ease;
 }
 
 header {
@@ -168,7 +168,7 @@ header {
     font-size: 4rem;
     color: #333;
     margin-bottom: 1rem;
-    transition: all 2.5s ease;
+    transition: all 0.5s ease;
 }
 
 .search-container {
@@ -177,7 +177,7 @@ header {
     border-radius: 50px;
     padding: 0.5rem;
     margin: 0 auto;
-    transition: all 2.5s ease;
+    transition: all 0.5s ease;
 }
 
 ::placeholder {
@@ -219,6 +219,7 @@ header {
     margin-top: 2rem;
     font-size: 1.5rem;
     color: #333;
+    transition: display 0.5s ease;
 }
 
 #answer {
@@ -250,7 +251,7 @@ body.search-active .inputContainer {
 body.search-active #logo {
     font-size: 2rem;
     position: absolute;
-    top: 10px;
+    top: 15px;
     left: 20px;
     margin: 0;
 }
@@ -276,4 +277,4 @@ body.search-active .search-container {
 
 ```
 
-This all works well, but I am trying to get the transition to the "search mode" to be as smooth as possible. The only issue right now it the way that the logo and search container move to their new positions in the top bar. I want this to be smooth, and have them simply glide from their old position to their new ones. But the current implementation isn't perfect, as they have to initianlly snap to be next to each other first before gliding to the top. I want you to change this, develop it and implement fully the wanted smooth transition.
+This all works well, but I want to make a few changes to the transition from the main screen to an active search. I like the way that the seach box glides to it's new position, but I do not want that for the logo. That logo should fade out whilst flying out downwards, and then it (another element, but the same text content) should appear in the toolbar up above on the left. This tool bar should be real, as I plan on adding things to it later. I want you to fully develop and implement this.

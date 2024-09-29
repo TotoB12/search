@@ -4,6 +4,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 require('dotenv').config();
 const GoogleGenerativeAI = require("@google/generative-ai").GoogleGenerativeAI;
+const { HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
 const pLimit = require('p-limit');
 
 const app = express();
@@ -44,14 +45,32 @@ app.get('/api/result/:jobId', (req, res) => {
     }
 });
 
-// Initialize genAI and model outside the function
 const genAI = new GoogleGenerativeAI(process.env.AI_STUDIO_KEY);
+const safetySettings = [
+    {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+];
 const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",
     generationConfig: {
-        temperature: 0
+        temperature: 0.0
     },
-    systemInstruction: ""
+    safetySettings: safetySettings,
+    // systemInstruction: ""
 });
 
 async function processJob(jobId) {
@@ -202,5 +221,5 @@ async function aiResponse(prompt) {
 }
 
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is running`);
+    console.log(`Server is running on port ${PORT}`);
 });
