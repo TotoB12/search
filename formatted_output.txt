@@ -1,0 +1,282 @@
+I am working on web app that will act like a simply search engine, where users can enter a search term or question, and get an AI generated answer in seconds. Here is the full project:
+
+public\index.html
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple AI Search</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="search-container">
+        <h1>Welcome to Simple AI Search</h1>
+        <form action="result.html" method="get">
+            <input type="text" name="q" placeholder="Enter your search term or question..." required>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</body>
+</html>
+
+```
+
+public\result.html
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Result</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loading">Loading...</div>
+    <div id="answer" style="display: none;"></div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+```
+
+public\script.js
+```javascript
+document.addEventListener('DOMContentLoaded', function() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const query = urlParams.get('q');
+
+    if (!query) {
+        document.getElementById('loading').innerText = 'No query provided.';
+        return;
+    }
+
+    fetch(`/api/ask?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('answer').style.display = 'block';
+                document.getElementById('answer').innerText = `Error: ${data.error}`;
+            } else {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('answer').style.display = 'block';
+                document.getElementById('answer').innerText = data.answer;
+            }
+        })
+        .catch(error => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('answer').style.display = 'block';
+            document.getElementById('answer').innerText = `Error: ${error}`;
+        });
+});
+
+```
+
+public\style.css
+```css
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.search-container {
+    margin-top: 20%;
+}
+
+input[type="text"] {
+    width: 50%;
+    padding: 10px;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+#loading {
+    font-size: 24px;
+    margin-top: 20%;
+}
+
+#answer {
+    font-size: 18px;
+    margin: 20px;
+    text-align: left;
+    display: inline-block;
+    max-width: 80%;
+}
+
+```
+
+server.js
+```javascript
+const express = require('express');
+const path = require('path');
+const axios = require('axios');
+const cheerio = require('cheerio');
+require('dotenv').config();
+const GoogleGenerativeAI = require("@google/generative-ai").GoogleGenerativeAI;
+
+const app = express();
+const PORT = process.env.PORT || 8000;
+
+app.use(express.static('public'));
+
+app.get('/api/ask', async (req, res) => {
+    try {
+        const query = req.query.q;
+        if (!query) {
+            res.status(400).json({ error: 'No query provided' });
+            return;
+        }
+
+        const searchResults = await searchInternet(query);
+
+        const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries of the user's query.
+The user's query is:
+
+\`\`\`
+${query}
+\`\`\`
+
+You have the following online results to assist you in your answer.
+If you use any of the content from these results, please provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}. For example, to cite the first result, use {{{0}}}.
+
+Web results:
+
+\`\`\`
+${JSON.stringify(searchResults, null, 2)}
+\`\`\`
+`;
+
+        const aiResult = await aiResponse(prompt);
+
+        res.status(200).json({ answer: aiResult });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+async function searchInternet(query) {
+    try {
+        console.log(`Debug: Searching DuckDuckGo for '${query}'`);
+
+        const headers = {
+            'User-Agent':
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+                '(KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        };
+
+        const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+        const response = await axios.get(url, { headers });
+
+        if (response.status !== 200) {
+            console.log(`Error: HTTP error ${response.status}`);
+            return { error: `HTTP error ${response.status}` };
+        }
+
+        const $ = cheerio.load(response.data);
+        let results = [];
+        $('a.result__a').each((i, elem) => {
+            const href = $(elem).attr('href');
+            if (href) {
+                results.push(href);
+            }
+        });
+
+        results = results.slice(0, 7);
+        console.log(`Found ${results.length} results:`, results);
+
+        let outputResults = [];
+        let totalContentLength = 0;
+        const maxCharacters = 125000;
+        let index = 0;
+
+        for (let resultUrl of results) {
+            if (totalContentLength >= maxCharacters) {
+                break;
+            }
+
+            console.log(`Fetching result page: ${resultUrl}`);
+            try {
+                const pageResponse = await axios.get(resultUrl, {
+                    headers,
+                    maxRedirects: 5,
+                    validateStatus: function (status) {
+                        return status >= 200 && status < 400;
+                    },
+                });
+
+                const $page = cheerio.load(pageResponse.data);
+
+                $page('script, style').remove();
+
+                const pageText = $page('body').text()
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                let contentToAdd;
+                if (totalContentLength + pageText.length > maxCharacters) {
+                    contentToAdd = pageText.slice(0, maxCharacters - totalContentLength);
+                } else {
+                    contentToAdd = pageText;
+                }
+
+                totalContentLength += contentToAdd.length;
+                outputResults.push({
+                    index: index,
+                    resultUrl: resultUrl,
+                    content: contentToAdd,
+                });
+                index++;
+
+                if (totalContentLength >= maxCharacters) {
+                    break;
+                }
+            } catch (error) {
+                console.log(`Error: Failed to fetch page ${resultUrl}, ${error.message}`);
+                continue;
+            }
+        }
+
+        return outputResults;
+    } catch (error) {
+        console.error(`Error: ${error.message}`);
+        return { error: error.message };
+    }
+}
+
+async function aiResponse(prompt) {
+    try {
+        const genAI = new GoogleGenerativeAI(process.env.AI_STUDIO_KEY);
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            generationConfig: {
+                temperature: 0
+            },
+            systemInstruction: ""
+        });
+
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+    } catch (error) {
+        console.log(error);
+        return { error: error };
+    }
+}
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running`);
+});
+
+```
+
+This all works, but I need to have a couple changes made. Since this is running on Vercel, I can't just have the client script make a request and wait for the server's response: this will take up way too much compute time. Also, I dont like that the result page is able to be used without even using the main page: anyone can abuse it by just adding their query to it. I need you to redesign the way that querys and answers are handled and served. Make sure to also use Javascript on the home page, either having it share the main client script file, or make a new one. I want you to fully develop and implement this.

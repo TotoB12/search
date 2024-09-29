@@ -1,5 +1,50 @@
+const express = require('express');
+const path = require('path');
 const axios = require('axios');
 const cheerio = require('cheerio');
+require('dotenv').config();
+const GoogleGenerativeAI = require("@google/generative-ai").GoogleGenerativeAI;
+
+const app = express();
+const PORT = process.env.PORT || 8000;
+
+app.use(express.static('public'));
+
+app.get('/api/ask', async (req, res) => {
+    try {
+        const query = req.query.q;
+        if (!query) {
+            res.status(400).json({ error: 'No query provided' });
+            return;
+        }
+
+        const searchResults = await searchInternet(query);
+
+        const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries of the user's query.
+The user's query is:
+
+\`\`\`
+${query}
+\`\`\`
+
+You have the following online results to assist you in your answer.
+If you use any of the content from these results, please provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}. For example, to cite the first result, use {{{0}}}.
+
+Web results:
+
+\`\`\`
+${JSON.stringify(searchResults, null, 2)}
+\`\`\`
+`;
+
+        const aiResult = await aiResponse(prompt);
+
+        res.status(200).json({ answer: aiResult });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 async function searchInternet(query) {
     try {
@@ -36,6 +81,7 @@ async function searchInternet(query) {
         let outputResults = [];
         let totalContentLength = 0;
         const maxCharacters = 125000;
+        let index = 0;
 
         for (let resultUrl of results) {
             if (totalContentLength >= maxCharacters) {
@@ -69,9 +115,11 @@ async function searchInternet(query) {
 
                 totalContentLength += contentToAdd.length;
                 outputResults.push({
+                    index: index,
                     resultUrl: resultUrl,
                     content: contentToAdd,
                 });
+                index++;
 
                 if (totalContentLength >= maxCharacters) {
                     break;
@@ -89,8 +137,25 @@ async function searchInternet(query) {
     }
 }
 
-searchInternet('OpenAI').then((results) => {
-    console.log(JSON.stringify(results, null, 2));
-}).catch((error) => {
-    console.error(error);
+async function aiResponse(prompt) {
+    try {
+        const genAI = new GoogleGenerativeAI(process.env.AI_STUDIO_KEY);
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            generationConfig: {
+                temperature: 0
+            },
+            systemInstruction: ""
+        });
+
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+    } catch (error) {
+        console.log(error);
+        return { error: error };
+    }
+}
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is running`);
 });
