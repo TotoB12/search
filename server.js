@@ -67,7 +67,7 @@ ${job.query}
 \`\`\`
 
 
-Your answer should be easy to read and understand, and be presented in a helpful and informative manner. Make sure to provide accurate and relevant information.
+Your answer should be easy to read and understand, and be presented in a helpful and informative manner. Keep in mind that it should be relatively short. Make sure to provide accurate and relevant information.
 You should format it to be aerated and stuctured, and not be an ugly paragraph. You may use Markdown to format your answer.
 You have online results to assist you in your answer. If you use any of the content from these results, provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}. For example, to cite the first result, use {{{0}}}; to cite the second and fourth results, use {{{1,3}}}.
 
