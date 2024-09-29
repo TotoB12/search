@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', function () {
         answerDiv.style.display = 'none';
 
         try {
-            // const response = await fetch('https://api.totob12.com/search/search', {
-            const response = await fetch('http://localhost:3000/search/search', {
+            const response = await fetch('https://api.totob12.com/search/search', {
+            // const response = await fetch('http://localhost:3000/search/search', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -82,8 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function pollForResult(jobId) {
         try {
-            // const response = await fetch(`https://api.totob12.com/search/result/${jobId}`);
-            const response = await fetch(`http://localhost:3000/search/result/${jobId}`);
+            const response = await fetch(`https://api.totob12.com/search/result/${jobId}`);
+            // const response = await fetch(`http://localhost:3000/search/result/${jobId}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
