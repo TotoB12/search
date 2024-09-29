@@ -59,15 +59,17 @@ async function processJob(jobId) {
 
     try {
         const searchResults = await searchInternet(job.query);
-        const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries of the user's query.
+        const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries to answer the user's query.
 The user's query is:
 
 \`\`\`
 ${job.query}
 \`\`\`
 
-You have the following online results to assist you in your answer.
-If you use any of the content from these results, please provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}. For example, to cite the first result, use {{{0}}}.
+
+Your answer should be easy to read and understand, and be presented in a helpful and informative manner. Make sure to provide accurate and relevant information.
+You should format it to be aerated and stuctured, and not be an ugly paragraph. You may use Markdown to format your answer.
+You have online results to assist you in your answer. If you use any of the content from these results, provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}. For example, to cite the first result, use {{{0}}}; to cite the second and fourth results, use {{{1,3}}}.
 
 Web results:
 
