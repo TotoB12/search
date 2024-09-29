@@ -1,0 +1,1 @@
+I want to create a simple Node.js web app. It will act like a simply search engine, 
