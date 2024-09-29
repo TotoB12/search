@@ -469,4 +469,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to improve the UI and UX of the page. When first loaded, have the input container be centered in the middle of the page. But when a search has started, I want the logo to go to the top left corner, and the search bar to go to the top too, on the same level. This should all be smoothly animated. Also, I want to have the answer container be improved. I want you to fully develop and implement all this for me.
+This all works well, but I want to improve the UI and UX of the page. When first loaded, have the input container be centered in the middle of the page. But when a search has started, I want the logo to go to the top left corner, and the search bar to go to the top too, on the same level. Everything should all be smoothly animated (the moving, the change of size; it should all be smooth). Also, I want to have the answer container be improved. I want you to fully develop and implement all this for me.
