@@ -104,7 +104,13 @@ ${JSON.stringify(searchResults, null, 2)}
 `;
 
         const aiResult = await aiResponse(prompt);
-        jobQueue.set(jobId, { status: 'completed', answer: aiResult });
+
+        const usedUrls = searchResults.map(result => ({
+            index: result.index,
+            url: result.resultUrl,
+        }));
+
+        jobQueue.set(jobId, { status: 'completed', answer: aiResult, urls: usedUrls });
     } catch (error) {
         console.error(error);
         jobQueue.set(jobId, { status: 'error', error: 'Internal Server Error' });
@@ -149,7 +155,7 @@ async function searchInternet(query) {
 
         const limit = pLimit(4);
 
-        const fetchPagePromises = results.map((resultUrl, index) => limit(async () => {
+        const fetchPagePromises = results.map((resultUrl) => limit(async () => {
             console.log(`Fetching result page: ${resultUrl}`);
             try {
                 const pageResponse = await axios.get(resultUrl, {
@@ -170,7 +176,6 @@ async function searchInternet(query) {
                     .trim();
 
                 return {
-                    index: index,
                     resultUrl: resultUrl,
                     content: pageText,
                 };
@@ -184,6 +189,7 @@ async function searchInternet(query) {
 
         let outputResults = [];
         let totalContentLength = 0;
+        let currentIndex = 1;
 
         for (let result of fetchedResults) {
             if (result && totalContentLength < maxCharacters) {
@@ -197,10 +203,11 @@ async function searchInternet(query) {
                 }
 
                 outputResults.push({
-                    index: result.index,
+                    index: currentIndex,
                     resultUrl: result.resultUrl,
                     content: contentToAdd,
                 });
+                currentIndex++;
 
                 if (totalContentLength >= maxCharacters) {
                     break;

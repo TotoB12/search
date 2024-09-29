@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
 
             if (data.status === 'completed') {
-                console.log(data.answer);
+                console.log(data);
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
                 answerDiv.innerHTML = DOMPurify.sanitize(marked.parse(data.answer));
