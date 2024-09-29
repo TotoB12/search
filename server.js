@@ -102,7 +102,9 @@ async function searchInternet(query) {
             }
         });
 
-        results = results.slice(0, 7);
+        results = results
+            .filter(url => !url.startsWith("https://duckduckgo.com"))
+            .slice(0, 7);
         console.log(`Found ${results.length} results:`, results);
 
         let outputResults = [];
