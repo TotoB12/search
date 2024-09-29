@@ -10,7 +10,6 @@
     <h1 id="logo">SearchT</h1>
     <form id="search-form">
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="What are you looking for?" required>
             <button type="submit" id="search-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -18,12 +17,15 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
             </button>
+            <input type="text" id="search-input" placeholder="What are you looking for?" required>
         </div>
     </form>
     <div id="loading" style="display: none;">Loading...</div>
     <div class="answerContainer">
         <div id="answer" style="display: none;"></div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.8/dist/purify.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

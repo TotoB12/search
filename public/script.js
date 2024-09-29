@@ -49,13 +49,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-
+    
             const data = await response.json();
-
+    
             if (data.status === 'completed') {
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
-                answerDiv.innerText = data.answer;
+                answerDiv.innerHTML = DOMPurify.sanitize(marked.parse(data.answer));
             } else if (data.status === 'error') {
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
@@ -68,5 +68,5 @@ document.addEventListener('DOMContentLoaded', function() {
             answerDiv.style.display = 'block';
             answerDiv.innerText = `Error: ${error.message}`;
         }
-    }
+    }    
 });
