@@ -277,4 +277,4 @@ body.search-active .search-container {
 
 ```
 
-This all works well, but I want to make a few changes to the transition from the main screen to an active search. I like the way that the seach box glides to it's new position, but I do not want that for the logo. That logo should fade out whilst flying out downwards, and then it (another element, but the same text content) should appear in the toolbar up above on the left. This tool bar should be real, as I plan on adding things to it later. I want you to fully develop and implement this.
+This all works well, but I want to make a few changes to the transition from the main screen to an active search. I like the way that the seach box glides to it's new position, but I do not want that for the logo. That logo should fade out whilst flying out downwards, and then it (another element, but the same text content) should appear in the toolbar up above on the left. This tool bar should be real, as I plan on adding things to it later. I believe the best way to start is to seperate the logo and search form from a shared container. I want you to fully develop and implement this.
