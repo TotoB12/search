@@ -116,6 +116,7 @@ async function searchInternet(query) {
                 const pageResponse = await axios.get(resultUrl, {
                     headers,
                     maxRedirects: 5,
+                    timeout: 1000,
                     validateStatus: function (status) {
                         return status >= 200 && status < 400;
                     },

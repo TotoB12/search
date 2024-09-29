@@ -8,9 +8,14 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
+            activateSearchLayout();
             submitSearch(query);
         }
     });
+
+    function activateSearchLayout() {
+        document.body.classList.add('search-active');
+    }
 
     async function submitSearch(query) {
         loadingDiv.style.display = 'block';
