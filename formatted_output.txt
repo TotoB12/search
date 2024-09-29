@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
 
             if (data.status === 'completed') {
-                console.log(data.answer);
+                console.log(data);
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
                 answerDiv.innerHTML = DOMPurify.sanitize(marked.parse(data.answer));
@@ -455,7 +455,13 @@ ${JSON.stringify(searchResults, null, 2)}
 `;
 
         const aiResult = await aiResponse(prompt);
-        jobQueue.set(jobId, { status: 'completed', answer: aiResult });
+
+        const usedUrls = searchResults.map(result => ({
+            index: result.index,
+            url: result.resultUrl,
+        }));
+
+        jobQueue.set(jobId, { status: 'completed', answer: aiResult, urls: usedUrls });
     } catch (error) {
         console.error(error);
         jobQueue.set(jobId, { status: 'error', error: 'Internal Server Error' });
@@ -500,7 +506,7 @@ async function searchInternet(query) {
 
         const limit = pLimit(4);
 
-        const fetchPagePromises = results.map((resultUrl, index) => limit(async () => {
+        const fetchPagePromises = results.map((resultUrl) => limit(async () => {
             console.log(`Fetching result page: ${resultUrl}`);
             try {
                 const pageResponse = await axios.get(resultUrl, {
@@ -521,7 +527,6 @@ async function searchInternet(query) {
                     .trim();
 
                 return {
-                    index: index,
                     resultUrl: resultUrl,
                     content: pageText,
                 };
@@ -535,6 +540,7 @@ async function searchInternet(query) {
 
         let outputResults = [];
         let totalContentLength = 0;
+        let currentIndex = 1;
 
         for (let result of fetchedResults) {
             if (result && totalContentLength < maxCharacters) {
@@ -548,10 +554,11 @@ async function searchInternet(query) {
                 }
 
                 outputResults.push({
-                    index: result.index,
+                    index: currentIndex,
                     resultUrl: result.resultUrl,
                     content: contentToAdd,
                 });
+                currentIndex++;
 
                 if (totalContentLength >= maxCharacters) {
                     break;
@@ -583,4 +590,5 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works great, but I want to add new features. I want the server to return the response inside of a JSON object. This object should also have an element containing the used URLs, with their index. I want you to implement this. Make sure to modify the client script to use the response from the object.
+This all works well, but I want to add a new feature. I want the client script to detect any part of the `answer` that is in between 3 couples of brackets, like this: {{{number}}}. The inside of it is either one or multiple number, seperated by commas. For example: {{{1}}} or {{{1,3}}}.
+The script should replace those occurences by superscripts of those numbers, with a link to the URL with that number as an index in the response. I want you to fully develop and implement this.
