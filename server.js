@@ -4,7 +4,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 require('dotenv').config();
 const GoogleGenerativeAI = require("@google/generative-ai").GoogleGenerativeAI;
-const pLimit = require('p-limit'); // Add this line
+const pLimit = require('p-limit');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
