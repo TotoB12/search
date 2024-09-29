@@ -131,6 +131,7 @@ body {
 #answer pre {
     background-color: #f5f5f5;
     padding: 1rem;
+    margin-bottom: 1rem;
     border-radius: 4px;
     overflow-x: auto;
 }
@@ -149,6 +150,12 @@ body {
 
 #answer a:hover {
     text-decoration: underline;
+}
+
+.highlight {
+    background-color: #c4c4c4;
+    padding: 0.2em;
+    border-radius: 4px;
 }
 
 .answerContainer {

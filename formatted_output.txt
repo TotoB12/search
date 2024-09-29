@@ -14,7 +14,6 @@ public\index.html
     <h1 id="logo">SearchT</h1>
     <form id="search-form">
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="What are you looking for?" required>
             <button type="submit" id="search-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -22,12 +21,15 @@ public\index.html
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
             </button>
+            <input type="text" id="search-input" placeholder="What are you looking for?" required>
         </div>
     </form>
     <div id="loading" style="display: none;">Loading...</div>
     <div class="answerContainer">
         <div id="answer" style="display: none;"></div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.8/dist/purify.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
@@ -35,13 +37,36 @@ public\index.html
 
 public\script.js
 ```javascript
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    const highlightExtension = {
+        name: 'highlight',
+        level: 'inline',
+        start(src) { return src.indexOf('{{'); },
+        tokenizer(src, tokens) {
+            const rule = /^{{(?!{)([\s\S]+?[^}])}}(?!})/;
+            const match = rule.exec(src);
+            if (match) {
+                return {
+                    type: 'highlight',
+                    raw: match[0],
+                    text: match[1],
+                };
+            }
+        },
+        renderer(token) {
+            return '<span class="highlight">' + token.text + '</span>';
+        }
+    };
+
+    marked.use({ extensions: [highlightExtension] });
+
+
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
     const loadingDiv = document.getElementById('loading');
     const answerDiv = document.getElementById('answer');
 
-    searchForm.addEventListener('submit', function(e) {
+    searchForm.addEventListener('submit', function (e) {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
@@ -90,9 +115,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = await response.json();
 
             if (data.status === 'completed') {
+                console.log(data.answer);
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
-                answerDiv.innerText = data.answer;
+                answerDiv.innerHTML = DOMPurify.sanitize(marked.parse(data.answer));
             } else if (data.status === 'error') {
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
@@ -178,7 +204,7 @@ body {
     outline: none;
     font-family: "Poly Sans", Arial, sans-serif;
     font-size: 1.2rem;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem;
     background: transparent;
 }
 
@@ -211,12 +237,65 @@ body {
 }
 
 #answer {
-    margin-top: 2rem;
     text-align: left;
     padding: 1rem;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 1.1rem;
+}
+
+#answer h1,
+#answer h2,
+#answer h3 {
+    font-family: "Poly Sans Bulky", Arial, sans-serif;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+#answer p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+#answer ul,
+#answer ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+#answer code {
+    background-color: #f5f5f5;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: "Poly Sans Slim", monospace;
+}
+
+#answer pre {
+    background-color: #f5f5f5;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+#answer blockquote {
+    border-left: 4px solid #ccc;
+    padding-left: 1rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+#answer a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+#answer a:hover {
+    text-decoration: underline;
+}
+
+.highlight {
+    background-color: #c4c4c4;
+    padding: 0.2em;
+    border-radius: 4px;
 }
 
 .answerContainer {
@@ -249,7 +328,7 @@ body.search-active #search-form {
 
 body.search-active .search-container {
     max-width: 600px;
-    width: 60%;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -350,18 +429,23 @@ async function processJob(jobId) {
 
     try {
         const searchResults = await searchInternet(job.query);
-        const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries to answer the user's query.
+        const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries to answer/respond the user's query.
 The user's query is:
 
 \`\`\`
 ${job.query}
 \`\`\`
 
+Your response should be easy to read and understand, and be presented in a helpful and informative manner. Keep in mind that it should be relatively short. Make sure to provide accurate and relevant information.
 
-Your answer should be easy to read and understand, and be presented in a helpful and informative manner. Keep in mind that it should be relatively short. Make sure to provide accurate and relevant information.
-You should format it to be aerated and stuctured, and not be an ugly paragraph. You may use Markdown to format your answer.
-If your answer contains a sentence or a group of words that can be used as a direct answer to the user's query, have those words be contained inside two couple of cury brackets, like this: {{this is part of a sentence that will be highlighted}}.
-You have online results to assist you in your answer. If you use any of the content from these results, provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}. For example, to cite the first result, use {{{0}}}; to cite the second and fourth results, use {{{1,3}}}.
+You should format it to be aerated and stuctured, and not be an ugly paragraph. You may use Markdown to format your response.
+If your response contains a group of words that can be used as a direct answer to the user's query, have those words be contained inside two couple of cury brackets, like this: {{this is part of a sentence that will be highlighted}}.
+
+Nerver appologize for not being able to find an answer. Always answer something.
+
+You have online results to assist you in your response. If you use any of the content from these results, provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}
+For example, to cite the first result, use {{{0}}}
+To cite the second and fourth results, use {{{1,3}}}
 
 Web results:
 
@@ -422,7 +506,7 @@ async function searchInternet(query) {
                 const pageResponse = await axios.get(resultUrl, {
                     headers,
                     maxRedirects: 2,
-                    timeout: 1000,
+                    timeout: 1200,
                     validateStatus: function (status) {
                         return status >= 200 && status < 400;
                     },
@@ -499,24 +583,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I need to enhance the user's experience. When an answer is received, use `marked` to display it using Markdow. Here is a demo below:
-
-```html
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <title>Marked in the browser</title>
-</head>
-<body>
-  <div id="content"></div>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script>
-    document.getElementById('content').innerHTML =
-      marked.parse('# Marked in the browser\n\nRendered by **marked**.');
-  </script>
-</body>
-</html>
-```
-
-I want you to fully develop and implement this.
+This all works great, but I want to add new features. I want the server to return the response inside of a JSON object. This object should also have an element containing the used URLs, with their index. I want you to implement this. Make sure to modify the client script to use the response from the object.

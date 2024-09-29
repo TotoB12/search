@@ -1,10 +1,33 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    const highlightExtension = {
+        name: 'highlight',
+        level: 'inline',
+        start(src) { return src.indexOf('{{'); },
+        tokenizer(src, tokens) {
+            const rule = /^{{(?!{)([\s\S]+?[^}])}}(?!})/;
+            const match = rule.exec(src);
+            if (match) {
+                return {
+                    type: 'highlight',
+                    raw: match[0],
+                    text: match[1],
+                };
+            }
+        },
+        renderer(token) {
+            return '<span class="highlight">' + token.text + '</span>';
+        }
+    };
+
+    marked.use({ extensions: [highlightExtension] });
+
+
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
     const loadingDiv = document.getElementById('loading');
     const answerDiv = document.getElementById('answer');
 
-    searchForm.addEventListener('submit', function(e) {
+    searchForm.addEventListener('submit', function (e) {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
@@ -49,10 +72,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-    
+
             const data = await response.json();
-    
+
             if (data.status === 'completed') {
+                console.log(data.answer);
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
                 answerDiv.innerHTML = DOMPurify.sanitize(marked.parse(data.answer));
@@ -68,5 +92,5 @@ document.addEventListener('DOMContentLoaded', function() {
             answerDiv.style.display = 'block';
             answerDiv.innerText = `Error: ${error.message}`;
         }
-    }    
+    }
 });
