@@ -4,25 +4,41 @@ public\index.html
 ```html
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Simple AI Search</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SearchT</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <div class="container">
-        <h1>Welcome to Simple AI Search</h1>
-        <div id="search-container">
+    <div class="inputContainer">
+        <header>
+            <h1 id="logo">SearchT</h1>
+        </header>
+        <main>
             <form id="search-form">
-                <input type="text" id="search-input" placeholder="Enter your search term or question..." required>
-                <button type="submit">Search</button>
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="What are you looking for?" required>
+                    <button type="submit" id="search-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
             </form>
-        </div>
+        </main>
+    </div>
+    <div class="answerContainer">
         <div id="loading" style="display: none;">Loading...</div>
         <div id="answer" style="display: none;"></div>
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>
 ```
 
@@ -38,9 +54,14 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
+            activateSearchLayout();
             submitSearch(query);
         }
     });
+
+    function activateSearchLayout() {
+        document.body.classList.add('search-active');
+    }
 
     async function submitSearch(query) {
         loadingDiv.style.display = 'block';
@@ -99,76 +120,156 @@ document.addEventListener('DOMContentLoaded', function() {
 
 public\style.css
 ```css
-body {
-    font-family: Arial, sans-serif;
+@font-face {
+    font-family: "Poly Sans";
+    src: url('fonts/PolySansNeutral.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: "Poly Sans Bulky";
+    src: url('fonts/PolySansBulky.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: "Poly Sans Slim";
+    src: url('fonts/PolySansSlim.ttf') format('truetype');
+}
+
+* {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Poly Sans", Arial, sans-serif;
+    background-color: #f5f5f5;
     display: flex;
-    justify-content: center;
     align-items: center;
+    flex-direction: column;
     min-height: 100vh;
-    background-color: #f0f0f0;
+    transition: padding-top 0.5s ease;
 }
 
-.container {
-    text-align: center;
-    background-color: white;
+.inputContainer {
+    position: absolute;
+    max-width: 800px;
+    width: 50vw;
+    margin: 0 auto;
     padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
-    width: 100%;
+    text-align: center;
+    transition: transform 0.5s ease;
 }
 
-h1 {
-    margin-bottom: 1.5rem;
+header {
+    margin-bottom: 2rem;
+}
+
+#logo {
+    font-family: "Poly Sans Bulky", Arial, sans-serif;
+    font-size: 4rem;
     color: #333;
+    margin-bottom: 1rem;
+    transition: all 0.5s ease;
 }
 
-#search-container {
-    margin-bottom: 1.5rem;
-}
-
-#search-form {
+.search-container {
     display: flex;
-    gap: 0.5rem;
+    background-color: #fff;
+    border-radius: 50px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
 #search-input {
     flex-grow: 1;
-    padding: 0.5rem;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-button {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    background-color: #007bff;
-    color: white;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    outline: none;
+    font-family: "Poly Sans", Arial, sans-serif;
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
 }
 
-button:hover {
-    background-color: #0056b3;
+#search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#search-button svg {
+    width: 24px;
+    height: 24px;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+#search-button:hover svg {
+    color: #007bff;
 }
 
 #loading {
-    font-size: 1.2rem;
-    color: #666;
-    margin-top: 1rem;
+    position: absolute;
+    margin-top: 2rem;
+    font-size: 1.5rem;
+    color: #333;
 }
 
 #answer {
+    margin-top: 2rem;
     text-align: left;
-    margin-top: 1rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: #333;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.answerContainer{
+    height: 100%;
+    padding-top: 100px;
+    margin: 0 8rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.search-active body {
+    padding-top: 80px;
+}
+
+.search-active .inputContainer {
+    width: 100%;
+    max-width: 100%;
+}
+
+.search-active #logo {
+    font-size: 2rem;
+    position: absolute;
+    left: 2rem;
+}
+
+.search-active .search-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 600px;
+    z-index: 100;
+}
+
+@media (max-width: 600px) {
+    #logo {
+        font-size: 3rem;
+    }
+
+    .search-container {
+        width: 100%;
+    }
 }
 ```
 
@@ -184,10 +285,14 @@ const GoogleGenerativeAI = require("@google/generative-ai").GoogleGenerativeAI;
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 const jobQueue = new Map();
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.post('/api/search', (req, res) => {
     const query = req.body.query;
@@ -274,7 +379,9 @@ async function searchInternet(query) {
             }
         });
 
-        results = results.slice(0, 7);
+        results = results
+            .filter(url => !url.startsWith("https://duckduckgo.com"))
+            .slice(0, 7);
         console.log(`Found ${results.length} results:`, results);
 
         let outputResults = [];
@@ -292,6 +399,7 @@ async function searchInternet(query) {
                 const pageResponse = await axios.get(resultUrl, {
                     headers,
                     maxRedirects: 5,
+                    timeout: 1000,
                     validateStatus: function (status) {
                         return status >= 200 && status < 400;
                     },
@@ -361,26 +469,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to give it a fresh new look. I want to use these font everywhere:
-
-```css
-@font-face {
-  font-family: "Poly Sans";
-  src: url('fonts/PolySansNeutral.ttf');
-  format: ('truetype');
-}
-
-@font-face {
-  font-family: "Poly Sans Bulky";
-  src: url('fonts/PolySansBulky.ttf');
-  format: ('truetype');
-}
-
-@font-face {
-  font-family: "Poly Sans Slim";
-  src: url('fonts/PolySansSlim.ttf');
-  format: ('truetype');
-}
-```
-
-I also want to completely redesign the page. I want the page to initially show in large bulky font "SearchT", with a beautiful curved search box underneath. When a search is requested, I want the title and search box to animate and fly away upwards, but the search box should stay within the view, and position itself at the top of the page, like any other search engine's result page (Google, Bing, DuckDuckGo). I have attached an example image of what the home page should look like.
+This all works well, but I want to improve the UI and UX of the page. When first loaded, have the input container be centered in the middle of the page. But when a search has started, I want the logo to go to the top left corner, and the search bar to go to the top too, on the same level. This should all be smoothly animated. Also, I want to have the answer container be improved. I want you to fully develop and implement all this for me.
