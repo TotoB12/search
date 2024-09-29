@@ -22,30 +22,26 @@
 body {
     font-family: "Poly Sans", Arial, sans-serif;
     background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
     transition: padding-top 0.5s ease;
-}
-
-.inputContainer {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    max-width: 800px;
-    width: 100%;
-    padding: 2rem;
-    text-align: center;
-    transition: all 0.5s ease;
-}
-
-header {
-    margin-bottom: 2rem;
 }
 
 #logo {
     font-family: "Poly Sans Bulky", Arial, sans-serif;
     font-size: 4rem;
     color: #333;
-    margin-bottom: 1rem;
+    /* transition: all 0.5s ease; */
+}
+
+#search-form {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+    text-align: center;
     transition: all 0.5s ease;
 }
 
@@ -59,8 +55,8 @@ header {
 }
 
 ::placeholder {
-    color:    #8b8b8b;
- }
+    color: #8b8b8b;
+}
 
 #search-input {
     flex-grow: 1;
@@ -110,37 +106,37 @@ header {
 }
 
 .answerContainer {
-    padding-top: 100px;
-    margin: 0 8rem;
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
     display: flex;
     flex-direction: column;
 }
 
-body.search-active .inputContainer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    transform: none;
-    padding: 0;
-    text-align: left;
+body.search-active {
+    padding-top: 100px;
+    justify-content: flex-start;
 }
 
 body.search-active #logo {
     font-size: 2rem;
-    position: absolute;
+    position: fixed;
     top: 15px;
     left: 20px;
     margin: 0;
 }
 
+body.search-active #search-form {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 10px 0;
+}
+
 body.search-active .search-container {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
     max-width: 600px;
+    width: 60%;
+    margin: 0 auto;
 }
 
 @media (max-width: 600px) {
@@ -150,5 +146,9 @@ body.search-active .search-container {
 
     .search-container {
         width: 100%;
+    }
+
+    body.search-active .search-container {
+        width: 90%;
     }
 }

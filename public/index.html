@@ -1,34 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- (head content remains the same) -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SearchT</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="inputContainer">
-        <header>
-            <h1 id="logo">SearchT</h1>
-        </header>
-        <main>
-            <form id="search-form">
-                <div class="search-container">
-                    <input type="text" id="search-input" placeholder="What are you looking for?" required>
-                    <button type="submit" id="search-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </button>
-                </div>
-            </form>
-        </main>
-    </div>
+    <h1 id="logo">SearchT</h1>
+    <form id="search-form">
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="What are you looking for?" required>
+            <button type="submit" id="search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+        </div>
+    </form>
+    <div id="loading" style="display: none;">Loading...</div>
     <div class="answerContainer">
-        <div id="loading" style="display: none;">Loading...</div>
         <div id="answer" style="display: none;"></div>
     </div>
     <script src="script.js"></script>
