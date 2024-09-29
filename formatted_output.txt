@@ -540,7 +540,7 @@ async function searchInternet(query) {
 
         let outputResults = [];
         let totalContentLength = 0;
-        let currentIndex = 1;
+        let currentIndex = 0;
 
         for (let result of fetchedResults) {
             if (result && totalContentLength < maxCharacters) {

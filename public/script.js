@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     marked.use({ extensions: [highlightExtension] });
 
-
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
     const loadingDiv = document.getElementById('loading');
@@ -79,7 +78,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(data);
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
-                answerDiv.innerHTML = DOMPurify.sanitize(marked.parse(data.answer));
+                const processedAnswer = processCitations(data.answer, data.urls);
+                answerDiv.innerHTML = DOMPurify.sanitize(marked.parse(processedAnswer));
             } else if (data.status === 'error') {
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
@@ -92,5 +92,19 @@ document.addEventListener('DOMContentLoaded', function () {
             answerDiv.style.display = 'block';
             answerDiv.innerText = `Error: ${error.message}`;
         }
+    }
+
+    function processCitations(text, urls) {
+        return text.replace(/\{\{\{(\d+(?:,\d+)*)\}\}\}/g, (match, p1) => {
+            const indices = p1.split(',').map(Number);
+            const links = indices.map(index => {
+                const url = urls.find(u => u.index === index);
+                if (url) {
+                    return `<a href="${url.url}" target="_blank" rel="noopener noreferrer">${index + 1}</a>`;
+                }
+                return index + 1;
+            });
+            return `<sup>[${links.join(',')}]</sup>`;
+        });
     }
 });
