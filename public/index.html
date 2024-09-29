@@ -6,12 +6,17 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="search-container">
+    <div class="container">
         <h1>Welcome to Simple AI Search</h1>
-        <form action="result.html" method="get">
-            <input type="text" name="q" placeholder="Enter your search term or question..." required>
-            <button type="submit">Search</button>
-        </form>
+        <div id="search-container">
+            <form id="search-form">
+                <input type="text" id="search-input" placeholder="Enter your search term or question..." required>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+        <div id="loading" style="display: none;">Loading...</div>
+        <div id="answer" style="display: none;"></div>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>

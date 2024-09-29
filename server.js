@@ -9,22 +9,46 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(express.static('public'));
+app.use(express.json());
 
-app.get('/api/ask', async (req, res) => {
+const jobQueue = new Map();
+
+app.post('/api/search', (req, res) => {
+    const query = req.body.query;
+    if (!query) {
+        res.status(400).json({ error: 'No query provided' });
+        return;
+    }
+
+    const jobId = Date.now().toString();
+    jobQueue.set(jobId, { status: 'pending', query });
+
+    processJob(jobId);
+
+    res.json({ jobId });
+});
+
+app.get('/api/result/:jobId', (req, res) => {
+    const jobId = req.params.jobId;
+    const job = jobQueue.get(jobId);
+
+    if (!job) {
+        res.status(404).json({ error: 'Job not found' });
+    } else {
+        res.json(job);
+    }
+});
+
+async function processJob(jobId) {
+    const job = jobQueue.get(jobId);
+    
     try {
-        const query = req.query.q;
-        if (!query) {
-            res.status(400).json({ error: 'No query provided' });
-            return;
-        }
-
-        const searchResults = await searchInternet(query);
-
+        const searchResults = await searchInternet(job.query);
         const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries of the user's query.
 The user's query is:
 
 \`\`\`
-${query}
+${job.query}
 \`\`\`
 
 You have the following online results to assist you in your answer.
@@ -38,13 +62,12 @@ ${JSON.stringify(searchResults, null, 2)}
 `;
 
         const aiResult = await aiResponse(prompt);
-
-        res.status(200).json({ answer: aiResult });
+        jobQueue.set(jobId, { status: 'completed', answer: aiResult });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        jobQueue.set(jobId, { status: 'error', error: 'Internal Server Error' });
     }
-});
+}
 
 async function searchInternet(query) {
     try {

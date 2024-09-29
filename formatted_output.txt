@@ -10,107 +10,166 @@ public\index.html
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="search-container">
+    <div class="container">
         <h1>Welcome to Simple AI Search</h1>
-        <form action="result.html" method="get">
-            <input type="text" name="q" placeholder="Enter your search term or question..." required>
-            <button type="submit">Search</button>
-        </form>
+        <div id="search-container">
+            <form id="search-form">
+                <input type="text" id="search-input" placeholder="Enter your search term or question..." required>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+        <div id="loading" style="display: none;">Loading...</div>
+        <div id="answer" style="display: none;"></div>
     </div>
-</body>
-</html>
-
-```
-
-public\result.html
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Search Result</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="loading">Loading...</div>
-    <div id="answer" style="display: none;"></div>
     <script src="script.js"></script>
 </body>
 </html>
-
 ```
 
 public\script.js
 ```javascript
 document.addEventListener('DOMContentLoaded', function() {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const query = urlParams.get('q');
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const loadingDiv = document.getElementById('loading');
+    const answerDiv = document.getElementById('answer');
 
-    if (!query) {
-        document.getElementById('loading').innerText = 'No query provided.';
-        return;
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query) {
+            submitSearch(query);
+        }
+    });
+
+    async function submitSearch(query) {
+        loadingDiv.style.display = 'block';
+        answerDiv.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            pollForResult(data.jobId);
+        } catch (error) {
+            loadingDiv.style.display = 'none';
+            answerDiv.style.display = 'block';
+            answerDiv.innerText = `Error: ${error.message}`;
+        }
     }
 
-    fetch(`/api/ask?q=${encodeURIComponent(query)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('answer').style.display = 'block';
-                document.getElementById('answer').innerText = `Error: ${data.error}`;
-            } else {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('answer').style.display = 'block';
-                document.getElementById('answer').innerText = data.answer;
+    async function pollForResult(jobId) {
+        try {
+            const response = await fetch(`/api/result/${jobId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        })
-        .catch(error => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('answer').style.display = 'block';
-            document.getElementById('answer').innerText = `Error: ${error}`;
-        });
-});
 
+            const data = await response.json();
+
+            if (data.status === 'completed') {
+                loadingDiv.style.display = 'none';
+                answerDiv.style.display = 'block';
+                answerDiv.innerText = data.answer;
+            } else if (data.status === 'error') {
+                loadingDiv.style.display = 'none';
+                answerDiv.style.display = 'block';
+                answerDiv.innerText = `Error: ${data.error}`;
+            } else {
+                setTimeout(() => pollForResult(jobId), 100);
+            }
+        } catch (error) {
+            loadingDiv.style.display = 'none';
+            answerDiv.style.display = 'block';
+            answerDiv.innerText = `Error: ${error.message}`;
+        }
+    }
+});
 ```
 
 public\style.css
 ```css
 body {
     font-family: Arial, sans-serif;
-    text-align: center;
     margin: 0;
     padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
 }
 
-.search-container {
-    margin-top: 20%;
+.container {
+    text-align: center;
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
 }
 
-input[type="text"] {
-    width: 50%;
-    padding: 10px;
-    font-size: 16px;
+h1 {
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+#search-container {
+    margin-bottom: 1.5rem;
+}
+
+#search-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#search-input {
+    flex-grow: 1;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
 button {
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #0056b3;
 }
 
 #loading {
-    font-size: 24px;
-    margin-top: 20%;
+    font-size: 1.2rem;
+    color: #666;
+    margin-top: 1rem;
 }
 
 #answer {
-    font-size: 18px;
-    margin: 20px;
     text-align: left;
-    display: inline-block;
-    max-width: 80%;
+    margin-top: 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #333;
 }
-
 ```
 
 server.js
@@ -126,22 +185,46 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(express.static('public'));
+app.use(express.json());
 
-app.get('/api/ask', async (req, res) => {
+const jobQueue = new Map();
+
+app.post('/api/search', (req, res) => {
+    const query = req.body.query;
+    if (!query) {
+        res.status(400).json({ error: 'No query provided' });
+        return;
+    }
+
+    const jobId = Date.now().toString();
+    jobQueue.set(jobId, { status: 'pending', query });
+
+    processJob(jobId);
+
+    res.json({ jobId });
+});
+
+app.get('/api/result/:jobId', (req, res) => {
+    const jobId = req.params.jobId;
+    const job = jobQueue.get(jobId);
+
+    if (!job) {
+        res.status(404).json({ error: 'Job not found' });
+    } else {
+        res.json(job);
+    }
+});
+
+async function processJob(jobId) {
+    const job = jobQueue.get(jobId);
+    
     try {
-        const query = req.query.q;
-        if (!query) {
-            res.status(400).json({ error: 'No query provided' });
-            return;
-        }
-
-        const searchResults = await searchInternet(query);
-
+        const searchResults = await searchInternet(job.query);
         const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries of the user's query.
 The user's query is:
 
 \`\`\`
-${query}
+${job.query}
 \`\`\`
 
 You have the following online results to assist you in your answer.
@@ -155,13 +238,12 @@ ${JSON.stringify(searchResults, null, 2)}
 `;
 
         const aiResult = await aiResponse(prompt);
-
-        res.status(200).json({ answer: aiResult });
+        jobQueue.set(jobId, { status: 'completed', answer: aiResult });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        jobQueue.set(jobId, { status: 'error', error: 'Internal Server Error' });
     }
-});
+}
 
 async function searchInternet(query) {
     try {
@@ -279,4 +361,26 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works, but I need to have a couple changes made. Since this is running on Vercel, I can't just have the client script make a request and wait for the server's response: this will take up way too much compute time. Also, I dont like that the result page is able to be used without even using the main page: anyone can abuse it by just adding their query to it. I need you to redesign the way that querys and answers are handled and served. Make sure to also use Javascript on the home page, either having it share the main client script file, or make a new one. I want you to fully develop and implement this.
+This all works well, but I want to give it a fresh new look. I want to use these font everywhere:
+
+```css
+@font-face {
+  font-family: "Poly Sans";
+  src: url('fonts/PolySansNeutral.ttf');
+  format: ('truetype');
+}
+
+@font-face {
+  font-family: "Poly Sans Bulky";
+  src: url('fonts/PolySansBulky.ttf');
+  format: ('truetype');
+}
+
+@font-face {
+  font-family: "Poly Sans Slim";
+  src: url('fonts/PolySansSlim.ttf');
+  format: ('truetype');
+}
+```
+
+I also want to completely redesign the page. I want the page to initially show in large bulky font "SearchT", with a beautiful curved search box underneath. When a search is requested, I want the title and search box to animate and fly away upwards, but the search box should stay within the view, and position itself at the top of the page, like any other search engine's result page (Google, Bing, DuckDuckGo). I have attached an example image of what the home page should look like.

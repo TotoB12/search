@@ -1,29 +1,67 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const query = urlParams.get('q');
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const loadingDiv = document.getElementById('loading');
+    const answerDiv = document.getElementById('answer');
 
-    if (!query) {
-        document.getElementById('loading').innerText = 'No query provided.';
-        return;
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query) {
+            submitSearch(query);
+        }
+    });
+
+    async function submitSearch(query) {
+        loadingDiv.style.display = 'block';
+        answerDiv.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            pollForResult(data.jobId);
+        } catch (error) {
+            loadingDiv.style.display = 'none';
+            answerDiv.style.display = 'block';
+            answerDiv.innerText = `Error: ${error.message}`;
+        }
     }
 
-    fetch(`/api/ask?q=${encodeURIComponent(query)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('answer').style.display = 'block';
-                document.getElementById('answer').innerText = `Error: ${data.error}`;
-            } else {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('answer').style.display = 'block';
-                document.getElementById('answer').innerText = data.answer;
+    async function pollForResult(jobId) {
+        try {
+            const response = await fetch(`/api/result/${jobId}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
-        })
-        .catch(error => {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('answer').style.display = 'block';
-            document.getElementById('answer').innerText = `Error: ${error}`;
-        });
+
+            const data = await response.json();
+
+            if (data.status === 'completed') {
+                loadingDiv.style.display = 'none';
+                answerDiv.style.display = 'block';
+                answerDiv.innerText = data.answer;
+            } else if (data.status === 'error') {
+                loadingDiv.style.display = 'none';
+                answerDiv.style.display = 'block';
+                answerDiv.innerText = `Error: ${data.error}`;
+            } else {
+                setTimeout(() => pollForResult(jobId), 100);
+            }
+        } catch (error) {
+            loadingDiv.style.display = 'none';
+            answerDiv.style.display = 'block';
+            answerDiv.innerText = `Error: ${error.message}`;
+        }
+    }
 });
