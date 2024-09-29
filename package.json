@@ -4,13 +4,13 @@
     "description": "A simple Node.js web app that acts like a search engine with AI-generated answers.",
     "main": "server.js",
     "scripts": {
-      "start": "node server.js"
+        "start": "node server.js"
     },
     "dependencies": {
-      "@google/generative-ai": "^0.4.0",
-      "axios": "^1.4.0",
-      "cheerio": "^1.0.0-rc.12",
-      "dotenv": "^16.3.1"
+        "@google/generative-ai": "^0.4.0",
+        "axios": "^1.4.0",
+        "cheerio": "^1.0.0-rc.12",
+        "dotenv": "^16.3.1",
+        "express": "^4.21.0"
     }
-  }
-  
+}
