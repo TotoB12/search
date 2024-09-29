@@ -1,5 +1,5 @@
 {
-    "name": "simple-ai-search",
+    "name": "SearchT",
     "version": "1.0.0",
     "description": "A simple Node.js web app that acts like a search engine with AI-generated answers.",
     "main": "server.js",
