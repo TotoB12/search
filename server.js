@@ -4,6 +4,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 require('dotenv').config();
 const GoogleGenerativeAI = require("@google/generative-ai").GoogleGenerativeAI;
+const pLimit = require('p-limit'); // Add this line
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -43,9 +44,19 @@ app.get('/api/result/:jobId', (req, res) => {
     }
 });
 
+// Initialize genAI and model outside the function
+const genAI = new GoogleGenerativeAI(process.env.AI_STUDIO_KEY);
+const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    generationConfig: {
+        temperature: 0
+    },
+    systemInstruction: ""
+});
+
 async function processJob(jobId) {
     const job = jobQueue.get(jobId);
-    
+
     try {
         const searchResults = await searchInternet(job.query);
         const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries of the user's query.
@@ -104,24 +115,19 @@ async function searchInternet(query) {
 
         results = results
             .filter(url => !url.startsWith("https://duckduckgo.com"))
-            .slice(0, 7);
+            .slice(0, 4);
         console.log(`Found ${results.length} results:`, results);
 
-        let outputResults = [];
-        let totalContentLength = 0;
-        const maxCharacters = 125000;
-        let index = 0;
+        const maxCharacters = 2000000;
 
-        for (let resultUrl of results) {
-            if (totalContentLength >= maxCharacters) {
-                break;
-            }
+        const limit = pLimit(4);
 
+        const fetchPagePromises = results.map((resultUrl, index) => limit(async () => {
             console.log(`Fetching result page: ${resultUrl}`);
             try {
                 const pageResponse = await axios.get(resultUrl, {
                     headers,
-                    maxRedirects: 5,
+                    maxRedirects: 2,
                     timeout: 1000,
                     validateStatus: function (status) {
                         return status >= 200 && status < 400;
@@ -136,31 +142,47 @@ async function searchInternet(query) {
                     .replace(/\s+/g, ' ')
                     .trim();
 
-                let contentToAdd;
-                if (totalContentLength + pageText.length > maxCharacters) {
-                    contentToAdd = pageText.slice(0, maxCharacters - totalContentLength);
-                } else {
-                    contentToAdd = pageText;
-                }
-
-                totalContentLength += contentToAdd.length;
-                outputResults.push({
+                return {
                     index: index,
                     resultUrl: resultUrl,
+                    content: pageText,
+                };
+            } catch (error) {
+                console.log(`Error: Failed to fetch page ${resultUrl}, ${error.message}`);
+                return null;
+            }
+        }));
+
+        const fetchedResults = await Promise.all(fetchPagePromises);
+
+        let outputResults = [];
+        let totalContentLength = 0;
+
+        for (let result of fetchedResults) {
+            if (result && totalContentLength < maxCharacters) {
+                let contentToAdd;
+                if (totalContentLength + result.content.length > maxCharacters) {
+                    contentToAdd = result.content.slice(0, maxCharacters - totalContentLength);
+                    totalContentLength = maxCharacters;
+                } else {
+                    contentToAdd = result.content;
+                    totalContentLength += contentToAdd.length;
+                }
+
+                outputResults.push({
+                    index: result.index,
+                    resultUrl: result.resultUrl,
                     content: contentToAdd,
                 });
-                index++;
 
                 if (totalContentLength >= maxCharacters) {
                     break;
                 }
-            } catch (error) {
-                console.log(`Error: Failed to fetch page ${resultUrl}, ${error.message}`);
-                continue;
             }
         }
 
         return outputResults;
+
     } catch (error) {
         console.error(`Error: ${error.message}`);
         return { error: error.message };
@@ -169,15 +191,6 @@ async function searchInternet(query) {
 
 async function aiResponse(prompt) {
     try {
-        const genAI = new GoogleGenerativeAI(process.env.AI_STUDIO_KEY);
-        const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            generationConfig: {
-                temperature: 0
-            },
-            systemInstruction: ""
-        });
-
         const result = await model.generateContent(prompt);
         return result.response.text();
     } catch (error) {
