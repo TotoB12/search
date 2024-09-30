@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
         answerDiv.style.display = 'none';
 
         const socket = io('https://api.totob12.com', {
-        // const socket = io('http://localhost:3000', {
             transports: ['websocket'],
             withCredentials: true
         });
