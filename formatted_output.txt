@@ -522,9 +522,49 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to improve user experience. I want to reduce the amount of time it takes for the user to receive their result. Here is the backend script that runs the API:
+This all works well, but I want to improve user experience. I want to reduce the amount of time it takes for the user to receive their result. Here are the backend scripts that runs the API:
 
 server.js
+```javascript
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+
+const mainRouter = require('./main');
+const depotRouter = require('./depot');
+const searchRouter = require('./search');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json({ limit: '1gb' }));
+app.use(express.urlencoded({ limit: '1gb', extended: true }));
+app.use(cookieParser());
+
+app.use(cors({
+    origin: [
+        'https://totob12.com',
+        'https://depot.totob12.com',
+        'http://localhost:8000',
+        'https://search.totob12.com'
+    ],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+    credentials: true
+}));
+
+app.use('/depot', depotRouter);
+app.use('/search', searchRouter);
+app.use('/', mainRouter);
+
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`TotoB12 API server is running on port ${PORT}`);
+});
+```
+
+search.js
 ```javascript
 const express = require('express');
 const axios = require('axios');
@@ -570,7 +610,7 @@ async function processJob(jobId) {
 
     try {
         const searchResults = await searchInternet(job.query);
-        const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries to answer/respond the user's query.
+        const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries to answer/respond to the user's query.
 The user's query is:
 
 \`\`\`
@@ -580,9 +620,9 @@ ${job.query}
 Your response should be easy to read and understand, and be presented in a helpful and informative manner. Keep in mind that it should be relatively short. Make sure to provide accurate and relevant information.
 
 You should format it to be aerated and stuctured, and not be an ugly paragraph. You may use Markdown to format your response. You should always have a short title before your response using ##.
-If your response contains a group of words that should be highlighted, have those words be contained inside two couple of cury brackets, like this: {{this is part of a sentence that will be highlighted}}. Don't highlight any entire phrases, just a few words so that the user can quickly see the answer they are looking for.
+If your response contains a group of words that should be highlighted, have those words be contained inside two couples of curly brackets, like this: {{this is part of a sentence that will be highlighted}}. Don't highlight any entire phrases, just a few words so that the user can quickly see the answer they are looking for.
 
-Never appologize for not being able to find an answer. Always answer something.
+Never apologize for not being able to find an answer. Always answer something.
 
 You have online results to assist you in your response. If you use any of the content from these results, provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}
 For example, to cite the first result, use {{{0}}}
@@ -595,14 +635,15 @@ ${JSON.stringify(searchResults, null, 2)}
 \`\`\`
 `;
 
-        const aiResult = await aiResponse(prompt);
+        const aiResultPromise = aiResponse(prompt);
+        const imagesPromise = get_images(job.query);
+
+        const [aiResult, images] = await Promise.all([aiResultPromise, imagesPromise]);
 
         const usedUrls = searchResults.map(result => ({
             index: result.index,
             url: result.resultUrl
         }));
-
-        const images = await get_images(job.query);
 
         jobQueue.set(jobId, { status: 'completed', answer: aiResult, urls: usedUrls, images: images.images });
     } catch (error) {
@@ -773,4 +814,4 @@ router.get('/result/:jobId', (req, res) => {
 module.exports = router;
 ```
 
-I think the best way to start would be to have the retrieval of images to happen at the same time as the generation of the AI response (as the images are not needed for that). I want you to fully develop and implement this.
+I think the best way to start would be to use WebSockets to wait for the server response, using Socket.IO. I want you to fully develop and implement this. Have it be as optimized as possible (would it be best to simply connect to the server when the user sends a request, wait for the answer, and then disconnect?). The entire purpose it to have it be as fast and lightweight as possible.
