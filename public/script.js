@@ -53,44 +53,22 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.classList.add('search-active');
     }
 
-    async function submitSearch(query) {
+    function submitSearch(query) {
         loadingDiv.style.display = 'block';
         answerDiv.style.display = 'none';
 
-        try {
-            // const response = await fetch('https://api.totob12.com/search/search', {
-            const response = await fetch('http://localhost:3000/search/search', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ query }),
-            });
+        // const socket = io('https://api.totob12.com', {
+        const socket = io('http://localhost:3000', {
+            transports: ['websocket'],
+            withCredentials: true
+        });
 
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
+        socket.on('connect', () => {
+            socket.emit('search', query);
+        });
 
-            const data = await response.json();
-            pollForResult(data.jobId);
-        } catch (error) {
-            loadingDiv.style.display = 'none';
-            answerDiv.style.display = 'block';
-            answerDiv.innerText = `Error: ${error.message}`;
-        }
-    }
-
-    async function pollForResult(jobId) {
-        try {
-            // const response = await fetch(`https://api.totob12.com/search/result/${jobId}`);
-            const response = await fetch(`http://localhost:3000/search/result/${jobId}`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-
-            if (data.status === 'completed' && !data.answer.error) {
+        socket.on('searchResult', (data) => {
+            if (data.status === 'completed' && !data.error) {
                 console.log(data);
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
@@ -137,18 +115,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML);
                 answerDiv.innerHTML = finalHtml;
+
+                socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
                 console.log(data);
                 answerDiv.innerText = `Error: An error occurred while processing the search query`;
-            } else {
-                setTimeout(() => pollForResult(jobId), 500);
+                socket.disconnect();
             }
-        } catch (error) {
+        });
+
+        socket.on('connect_error', (err) => {
+            console.log('Connection error:', err.message);
             loadingDiv.style.display = 'none';
             answerDiv.style.display = 'block';
-            answerDiv.innerText = `Error: ${error.message}`;
-        }
+            answerDiv.innerText = `Error: ${err.message}`;
+        });
     }
 });
