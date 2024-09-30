@@ -59,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             const response = await fetch('https://api.totob12.com/search/search', {
-            // const response = await fetch('http://localhost:3000/search/search', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -83,7 +82,6 @@ document.addEventListener('DOMContentLoaded', function () {
     async function pollForResult(jobId) {
         try {
             const response = await fetch(`https://api.totob12.com/search/result/${jobId}`);
-            // const response = await fetch(`http://localhost:3000/search/result/${jobId}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -94,15 +92,55 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(data);
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
+
                 const processedAnswer = processCitations(data.answer, data.urls);
-                answerDiv.innerHTML = DOMPurify.sanitize(marked.parse(processedAnswer));
+                const parsedHtml = marked.parse(processedAnswer);
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = parsedHtml;
+
+                const firstElement = tempDiv.firstElementChild;
+                let insertPosition = 'start';
+
+                if (firstElement && firstElement.tagName === 'H2') {
+                    insertPosition = 'afterH2';
+                }
+
+                if (data.images && data.images.length > 0) {
+                    const imagesToShow = data.images.slice(0, 4);
+                    const imageGrid = document.createElement('div');
+                    imageGrid.className = 'image-grid';
+
+                    imagesToShow.forEach(imgUrl => {
+                        const gridItem = document.createElement('div');
+                        gridItem.className = 'image-grid-item';
+                        const img = document.createElement('img');
+                        img.src = imgUrl + '&p=300';
+                        img.alt = 'Related Image';
+                        gridItem.appendChild(img);
+                        imageGrid.appendChild(gridItem);
+                    });
+
+                    if (insertPosition === 'afterH2') {
+                        if (firstElement.nextSibling) {
+                            tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
+                        } else {
+                            tempDiv.appendChild(imageGrid);
+                        }
+                    } else {
+                        tempDiv.insertBefore(imageGrid, tempDiv.firstChild);
+                    }
+                }
+
+                const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML);
+                answerDiv.innerHTML = finalHtml;
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
                 console.log(data);
                 answerDiv.innerText = `Error: An error occurred while processing the search query`;
             } else {
-                setTimeout(() => pollForResult(jobId), 100);
+                setTimeout(() => pollForResult(jobId), 500);
             }
         } catch (error) {
             loadingDiv.style.display = 'none';
