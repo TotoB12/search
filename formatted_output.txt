@@ -154,7 +154,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         const gridItem = document.createElement('div');
                         gridItem.className = 'image-grid-item';
                         const img = document.createElement('img');
-                        img.src = imgUrl + '?p=300';
+                        // img.src = imgUrl + '?p=300';
+                        img.src = imgUrl + '&w=300&h=300';
                         img.alt = 'Related Image';
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
@@ -522,7 +523,7 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to improve user experience. I want to reduce the amount of time it takes for the user to receive their result. Here are the backend scripts that runs the API:
+Here are the backend scripts that runs the API:
 
 server.js
 ```javascript
@@ -562,6 +563,53 @@ app.use('/', mainRouter);
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`TotoB12 API server is running on port ${PORT}`);
 });
+```
+
+main.js
+```javascript
+const express = require('express');
+const axios = require('axios');
+const router = express.Router();
+const sharp = require('sharp');
+
+router.get("/image/*", async (req, res) => {
+    const imageUrl = decodeURIComponent(req.params[0]);
+    const { p } = req.query;
+
+    try {
+        const imageResponse = await axios.get(imageUrl, {
+            responseType: "stream",
+            headers: {
+                "User-Agent":
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+                    "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0",
+            },
+        });
+
+        const contentType = imageResponse.headers["content-type"];
+        res.set("Content-Type", contentType);
+
+        if (p) {
+            const pixels = parseInt(p, 10);
+
+            const transformer = sharp().resize(pixels, pixels, { fit: 'inside' });
+
+            imageResponse.data.pipe(transformer).pipe(res);
+        } else {
+            imageResponse.data.pipe(res);
+        }
+
+    } catch (error) {
+        console.error("Failed to retrieve the image:", error);
+        res.status(500).send("Failed to retrieve image");
+    }
+});
+
+router.get('/health', (req, res) => {
+    res.status(200).json({ status: 'Upload server is running.' });
+});
+
+module.exports = router;
 ```
 
 search.js
@@ -766,7 +814,8 @@ async function get_images(query, limit = 10) {
         });
         const images = results.slice(0, limit).map((result) => result.image);
         images.forEach((image, index) => {
-            images[index] = `https://api.totob12.com/image/${encodeURIComponent(image)}`;
+            // images[index] = `https://api.totob12.com/image/${encodeURIComponent(image)}`;
+            images[index] = `https://wsrv.nl/?url=${encodeURIComponent(image)}`;
         });
         return { images: images };
     } catch (error) {
@@ -814,4 +863,5 @@ router.get('/result/:jobId', (req, res) => {
 module.exports = router;
 ```
 
+This all works well, but I want to improve user experience. I want to reduce the amount of time it takes for the user to receive their result. 
 I think the best way to start would be to use WebSockets to wait for the server response, using Socket.IO. I want you to fully develop and implement this. Have it be as optimized as possible (would it be best to simply connect to the server when the user sends a request, wait for the answer, and then disconnect?). The entire purpose it to have it be as fast and lightweight as possible.

@@ -58,7 +58,8 @@ document.addEventListener('DOMContentLoaded', function () {
         answerDiv.style.display = 'none';
 
         try {
-            const response = await fetch('https://api.totob12.com/search/search', {
+            // const response = await fetch('https://api.totob12.com/search/search', {
+            const response = await fetch('http://localhost:3000/search/search', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -81,7 +82,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function pollForResult(jobId) {
         try {
-            const response = await fetch(`https://api.totob12.com/search/result/${jobId}`);
+            // const response = await fetch(`https://api.totob12.com/search/result/${jobId}`);
+            const response = await fetch(`http://localhost:3000/search/result/${jobId}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -115,7 +117,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         const gridItem = document.createElement('div');
                         gridItem.className = 'image-grid-item';
                         const img = document.createElement('img');
-                        img.src = imgUrl + '?p=300';
+                        // img.src = imgUrl + '?p=300';
+                        img.src = imgUrl + '&w=300&h=300';
                         img.alt = 'Related Image';
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
