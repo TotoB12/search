@@ -90,16 +90,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const data = await response.json();
 
-            if (data.status === 'completed') {
+            if (data.status === 'completed' && !data.answer.error) {
                 console.log(data);
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
                 const processedAnswer = processCitations(data.answer, data.urls);
                 answerDiv.innerHTML = DOMPurify.sanitize(marked.parse(processedAnswer));
-            } else if (data.status === 'error') {
+            } else if (data.status === 'error' || (data.answer && data.answer.error)) {
                 loadingDiv.style.display = 'none';
                 answerDiv.style.display = 'block';
-                answerDiv.innerText = `Error: ${data.error}`;
+                console.log(data);
+                answerDiv.innerText = `Error: An error occurred while processing the search query`;
             } else {
                 setTimeout(() => pollForResult(jobId), 100);
             }
