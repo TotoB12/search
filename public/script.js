@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         const gridItem = document.createElement('div');
                         gridItem.className = 'image-grid-item';
                         const img = document.createElement('img');
-                        img.src = imgUrl + '&p=300';
+                        img.src = imgUrl + '?p=300';
                         img.alt = 'Related Image';
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
