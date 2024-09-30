@@ -864,4 +864,4 @@ module.exports = router;
 ```
 
 This all works well, but I want to improve user experience. I want to reduce the amount of time it takes for the user to receive their result. 
-I think the best way to start would be to use WebSockets to wait for the server response, using Socket.IO. I want you to fully develop and implement this. Have it be as optimized as possible (would it be best to simply connect to the server when the user sends a request, wait for the answer, and then disconnect?). The entire purpose it to have it be as fast and lightweight as possible.
+I think the best way to start would be to use WebSockets to wait for the server response, using Socket.IO. I want you to fully develop and implement this. Have it be as optimized as possible (would it be best to simply connect to the server when the user sends a request, wait for the answer, and then disconnect?). The entire purpose it to have it be as fast and lightweight as possible. Give me the full script of any modified files.
