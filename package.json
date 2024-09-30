@@ -13,6 +13,7 @@
         "dotenv": "^16.3.1",
         "duckduckgo-images-api": "^1.0.5",
         "express": "^4.21.0",
-        "p-limit": "^3.1.0"
+        "p-limit": "^3.1.0",
+        "sharp": "^0.33.5"
     }
 }
