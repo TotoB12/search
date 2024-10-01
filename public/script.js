@@ -54,10 +54,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showSkeletonLoader() {
-        // Hide the answerDiv content
         answerDiv.style.display = 'none';
 
-        // Remove any existing skeleton loader
         hideSkeletonLoader();
 
         const skeletonLoader = document.createElement('div');
@@ -85,7 +83,6 @@ document.addEventListener('DOMContentLoaded', function () {
             skeletonLoader.appendChild(skeletonText);
         }
 
-        // Append the skeleton loader to the answerContainer
         answerContainer.appendChild(skeletonLoader);
     }
 
@@ -94,12 +91,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (skeletonLoader) {
             skeletonLoader.remove();
         }
-        // Show the answerDiv
         answerDiv.style.display = 'block';
     }
 
     function submitSearch(query) {
-        answerDiv.innerHTML = ''; // Clear previous answer
+        answerDiv.innerHTML = '';
         showSkeletonLoader();
 
         const socket = io('https://api.totob12.com', {
