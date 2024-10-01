@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
     marked.use({ extensions: [highlightExtension] });
 
     function processCitations(text, urls) {
-        return text.replace(/\{\{\{(\d+(?:,\d+)*)\}\}\}/g, (match, p1) => {
-            const indices = p1.split(',').map(Number);
+        return text.replace(/\{\{\{(\d+(?:\s*,\s*\d+)*)\}\}\}/g, (match, p1) => {
+            const indices = p1.split(',').map(index => Number(index.trim()));
             const links = indices.map(index => {
                 const url = urls.find(u => u.index === index);
                 if (url) {
