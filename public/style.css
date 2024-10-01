@@ -273,7 +273,7 @@ body {
     padding: 2rem;
     display: flex;
     flex-direction: column;
-    min-height: 200px; /* Ensure consistent height during transitions */
+    min-height: 200px;
 }
 
 body.search-active {
