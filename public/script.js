@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
-    const loadingDiv = document.getElementById('loading');
+    const answerContainer = document.querySelector('.answerContainer');
     const answerDiv = document.getElementById('answer');
 
     searchForm.addEventListener('submit', function (e) {
@@ -53,12 +53,56 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.classList.add('search-active');
     }
 
-    function submitSearch(query) {
-        loadingDiv.style.display = 'block';
+    function showSkeletonLoader() {
+        // Hide the answerDiv content
         answerDiv.style.display = 'none';
 
+        // Remove any existing skeleton loader
+        hideSkeletonLoader();
+
+        const skeletonLoader = document.createElement('div');
+        skeletonLoader.id = 'skeleton-loader';
+        skeletonLoader.className = 'skeleton-loader';
+
+        const skeletonTitle = document.createElement('div');
+        skeletonTitle.className = 'skeleton-title skeleton-element';
+        skeletonLoader.appendChild(skeletonTitle);
+
+        const skeletonImageGrid = document.createElement('div');
+        skeletonImageGrid.className = 'skeleton-image-grid';
+
+        for (let i = 0; i < 4; i++) {
+            const skeletonImage = document.createElement('div');
+            skeletonImage.className = 'skeleton-image skeleton-element';
+            skeletonImageGrid.appendChild(skeletonImage);
+        }
+
+        skeletonLoader.appendChild(skeletonImageGrid);
+
+        for (let i = 0; i < 5; i++) {
+            const skeletonText = document.createElement('div');
+            skeletonText.className = 'skeleton-text skeleton-element';
+            skeletonLoader.appendChild(skeletonText);
+        }
+
+        // Append the skeleton loader to the answerContainer
+        answerContainer.appendChild(skeletonLoader);
+    }
+
+    function hideSkeletonLoader() {
+        const skeletonLoader = document.getElementById('skeleton-loader');
+        if (skeletonLoader) {
+            skeletonLoader.remove();
+        }
+        // Show the answerDiv
+        answerDiv.style.display = 'block';
+    }
+
+    function submitSearch(query) {
+        answerDiv.innerHTML = ''; // Clear previous answer
+        showSkeletonLoader();
+
         const socket = io('https://api.totob12.com', {
-        // const socket = io('http://localhost:3000', {
             transports: ['websocket'],
             withCredentials: true
         });
@@ -70,8 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
         socket.on('searchResult', (data) => {
             if (data.status === 'completed' && !data.error) {
                 console.log(data);
-                loadingDiv.style.display = 'none';
-                answerDiv.style.display = 'block';
+                hideSkeletonLoader();
 
                 const processedAnswer = processCitations(data.answer, data.urls);
                 const parsedHtml = marked.parse(processedAnswer);
@@ -96,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         gridItem.className = 'image-grid-item';
                         const img = document.createElement('img');
                         img.src = imgUrl + '?p=300';
-                        // img.src = imgUrl + '&w=300&h=300';
                         img.alt = 'Related Image';
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
@@ -118,8 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
-                loadingDiv.style.display = 'none';
-                answerDiv.style.display = 'block';
+                hideSkeletonLoader();
                 console.log(data);
                 answerDiv.innerText = `Error: An error occurred while processing the search query`;
                 socket.disconnect();
@@ -128,8 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         socket.on('connect_error', (err) => {
             console.log('Connection error:', err.message);
-            loadingDiv.style.display = 'none';
-            answerDiv.style.display = 'block';
+            hideSkeletonLoader();
             answerDiv.innerText = `Error: ${err.message}`;
         });
     }
