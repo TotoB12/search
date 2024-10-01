@@ -24,7 +24,6 @@ public\index.html
             <input type="text" id="search-input" placeholder="What are you looking for?" required>
         </div>
     </form>
-    <div id="loading" style="display: none;">Loading...</div>
     <div class="answerContainer">
         <div id="answer" style="display: none;"></div>
     </div>
@@ -62,8 +61,8 @@ document.addEventListener('DOMContentLoaded', function () {
     marked.use({ extensions: [highlightExtension] });
 
     function processCitations(text, urls) {
-        return text.replace(/\{\{\{(\d+(?:,\d+)*)\}\}\}/g, (match, p1) => {
-            const indices = p1.split(',').map(Number);
+        return text.replace(/\{\{\{(\d+(?:\s*,\s*\d+)*)\}\}\}/g, (match, p1) => {
+            const indices = p1.split(',').map(index => Number(index.trim()));
             const links = indices.map(index => {
                 const url = urls.find(u => u.index === index);
                 if (url) {
@@ -77,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
-    const loadingDiv = document.getElementById('loading');
+    const answerContainer = document.querySelector('.answerContainer');
     const answerDiv = document.getElementById('answer');
 
     searchForm.addEventListener('submit', function (e) {
@@ -93,12 +92,52 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.classList.add('search-active');
     }
 
-    function submitSearch(query) {
-        loadingDiv.style.display = 'block';
+    function showSkeletonLoader() {
         answerDiv.style.display = 'none';
 
+        hideSkeletonLoader();
+
+        const skeletonLoader = document.createElement('div');
+        skeletonLoader.id = 'skeleton-loader';
+        skeletonLoader.className = 'skeleton-loader';
+
+        const skeletonTitle = document.createElement('div');
+        skeletonTitle.className = 'skeleton-title skeleton-element';
+        skeletonLoader.appendChild(skeletonTitle);
+
+        const skeletonImageGrid = document.createElement('div');
+        skeletonImageGrid.className = 'skeleton-image-grid';
+
+        for (let i = 0; i < 4; i++) {
+            const skeletonImage = document.createElement('div');
+            skeletonImage.className = 'skeleton-image skeleton-element';
+            skeletonImageGrid.appendChild(skeletonImage);
+        }
+
+        skeletonLoader.appendChild(skeletonImageGrid);
+
+        for (let i = 0; i < 5; i++) {
+            const skeletonText = document.createElement('div');
+            skeletonText.className = 'skeleton-text skeleton-element';
+            skeletonLoader.appendChild(skeletonText);
+        }
+
+        answerContainer.appendChild(skeletonLoader);
+    }
+
+    function hideSkeletonLoader() {
+        const skeletonLoader = document.getElementById('skeleton-loader');
+        if (skeletonLoader) {
+            skeletonLoader.remove();
+        }
+        answerDiv.style.display = 'block';
+    }
+
+    function submitSearch(query) {
+        answerDiv.innerHTML = '';
+        showSkeletonLoader();
+
         const socket = io('https://api.totob12.com', {
-        // const socket = io('http://localhost:3000', {
             transports: ['websocket'],
             withCredentials: true
         });
@@ -110,8 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
         socket.on('searchResult', (data) => {
             if (data.status === 'completed' && !data.error) {
                 console.log(data);
-                loadingDiv.style.display = 'none';
-                answerDiv.style.display = 'block';
+                hideSkeletonLoader();
 
                 const processedAnswer = processCitations(data.answer, data.urls);
                 const parsedHtml = marked.parse(processedAnswer);
@@ -136,7 +174,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         gridItem.className = 'image-grid-item';
                         const img = document.createElement('img');
                         img.src = imgUrl + '?p=300';
-                        // img.src = imgUrl + '&w=300&h=300';
                         img.alt = 'Related Image';
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
@@ -158,8 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
-                loadingDiv.style.display = 'none';
-                answerDiv.style.display = 'block';
+                hideSkeletonLoader();
                 console.log(data);
                 answerDiv.innerText = `Error: An error occurred while processing the search query`;
                 socket.disconnect();
@@ -168,8 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         socket.on('connect_error', (err) => {
             console.log('Connection error:', err.message);
-            loadingDiv.style.display = 'none';
-            answerDiv.style.display = 'block';
+            hideSkeletonLoader();
             answerDiv.innerText = `Error: ${err.message}`;
         });
     }
@@ -270,13 +305,6 @@ body {
     color: #007bff;
 }
 
-#loading {
-    margin-top: 2rem;
-    font-size: 1.5rem;
-    color: #333;
-    transition: display 0.5s ease;
-}
-
 #answer {
     text-align: left;
     padding: 1rem;
@@ -357,24 +385,24 @@ body {
     border-radius: 4px;
 }
 
-.image-grid {
+.image-grid,
+.skeleton-image-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     margin: 1.5rem 0;
 }
 
-/* Individual grid items to maintain a square aspect ratio */
-.image-grid-item {
+.image-grid-item,
+.skeleton-image {
     width: 100%;
-    padding-top: 100%; /* 1:1 Aspect Ratio */
+    padding-top: 100%;
     position: relative;
     overflow: hidden;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Images within the grid items */
 .image-grid-item img {
     position: absolute;
     top: 0;
@@ -385,9 +413,58 @@ body {
     transition: transform 0.3s ease;
 }
 
-/* Optional: Add a hover effect to images */
 .image-grid-item img:hover {
     transform: scale(1.05);
+}
+
+.skeleton-element {
+    background: #eee;
+    background: linear-gradient(270deg, #f1f1f1, #e1e1e1, #f1f1f1);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    animation: gradientMoves 800ms linear infinite;
+}
+
+@keyframes gradientMoves {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
+.skeleton-loader {
+    width: 100%;
+    padding: 1rem;
+}
+
+.skeleton-title {
+    width: 50%;
+    height: 32px;
+    margin-bottom: 1rem;
+}
+
+.skeleton-image::after {
+    content: '';
+    display: block;
+    background: inherit;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.skeleton-text {
+    width: 100%;
+    height: 20px;
+    margin-bottom: 8px;
 }
 
 .answerContainer {
@@ -508,61 +585,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to add a new feature. As soon as a search is made (and the title and search bar have finished their animations), I want a loading squeleton to appear in the answer container. I found this skeleton gradient animation online:
-
-```html
-<div class="card">
-  <div class="skeleton-text" style='width:100px;'></div>
-  <div class="skeleton-text" style='width:120px;'></div>
-  <div class="skeleton-text" style='width:80px;'></div>
-  <div class="skeleton-text" style='width:120px;'></div>
-  <div class="skeleton-text" style='width:110px;'></div>
-</div>
-```
-
-```css
-.card {
-   width: 600px;
-  height: 400px;
-  border: 1px solid #333;
-  padding: 40px;
-}
-.skeleton-text {
-  width: 100px;
-  height: 20px;
-  background: #eee;
-  margin-bottom: 1px;
-  background: linear-gradient(270deg, #f1f1f1, #e1e1e1, #f1f1f1);
-  background-size: 200% 100%;
-  border-radius: 4px;
-
-  -webkit-animation: gradientMoves 800ms linear infinite;
-  -moz-animation: gradientMoves 800ms linear infinite;
-  animation: gradientMoves 800ms linear infinite;
-
-}
-
-@-webkit-keyframes gradientMoves {
-    0%{background-position:0% 50%}
-    50%{background-position:100% 50%}
-    100%{background-position:200% 50%}
-}
-@-moz-keyframes gradientMoves {
-    0%{background-position:0% 50%}
-    50%{background-position:100% 50%}
-    100%{background-position:200% 50%}
-}
-@keyframes gradientMoves { 
-    0%{background-position:0% 50%}
-    50%{background-position:100% 50%}
-    100%{background-position:200% 50%}
-}
-```
-
-I want the a default shape of a response to be displayed using this. All responses look like this:
-
-- an h2 header/title
-- 4 square images in a row
-- about 5 lines of text
-
-I want it to look like that. I want you to fully develop and implement this for me.
+This all works well, but I want to enhance the user's experience. I want to have whatever change happens inside the answer container to fade in and fly in from a bit bellow. I just want the skeleton and the answer to appear with a smooth animation. I want you to fully develop and implement this.

@@ -54,9 +54,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showSkeletonLoader() {
-        answerDiv.style.display = 'none';
+        if (answerDiv.style.display !== 'none') {
+            answerDiv.style.opacity = '0';
+            answerDiv.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                answerDiv.style.display = 'none';
+                insertSkeletonLoader();
+            }, 300);
+        } else {
+            insertSkeletonLoader();
+        }
+    }
 
-        hideSkeletonLoader();
+    function insertSkeletonLoader() {
+        const existingLoader = document.getElementById('skeleton-loader');
+        if (existingLoader) {
+            existingLoader.remove();
+        }
 
         const skeletonLoader = document.createElement('div');
         skeletonLoader.id = 'skeleton-loader';
@@ -89,9 +103,20 @@ document.addEventListener('DOMContentLoaded', function () {
     function hideSkeletonLoader() {
         const skeletonLoader = document.getElementById('skeleton-loader');
         if (skeletonLoader) {
-            skeletonLoader.remove();
+            skeletonLoader.style.opacity = '0';
+            skeletonLoader.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                skeletonLoader.remove();
+                answerDiv.style.display = 'block';
+                answerDiv.style.opacity = '0';
+                answerDiv.style.transform = 'translateY(20px)';
+                answerDiv.offsetHeight;
+                answerDiv.style.opacity = '1';
+                answerDiv.style.transform = 'translateY(0)';
+            }, 300);
+        } else {
+            answerDiv.style.display = 'block';
         }
-        answerDiv.style.display = 'block';
     }
 
     function submitSearch(query) {
