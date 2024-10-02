@@ -36,6 +36,12 @@ body {
     color: #333;
 }
 
+#logo a {
+    text-decoration: none;
+    color: inherit;
+    pointer-events: none;
+}
+
 #search-form {
     width: 100%;
     max-width: 800px;
@@ -287,6 +293,15 @@ body.search-active #logo {
     top: 15px;
     left: 20px;
     margin: 0;
+}
+
+body.search-active #logo a {
+    pointer-events: auto;
+}
+
+body.search-active #logo a:hover {
+    text-decoration: underline;
+    text-decoration-color: black;
 }
 
 body.search-active #search-form {

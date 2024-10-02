@@ -181,7 +181,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         gridItem.className = 'image-grid-item';
                         const img = document.createElement('img');
                         img.src = imgUrl + '?p=300';
+                        img.dataset.fullSrc = imgUrl;
                         img.alt = 'Related Image';
+
+                        img.addEventListener('click', function() {
+                            console.log(this.dataset.fullSrc);
+                        });
+                        
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
                     });
@@ -197,8 +203,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
 
-                const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML);
-                answerDiv.innerHTML = finalHtml;
+                const config = {
+                    ADD_ATTR: ['target', 'rel']
+                };
+                const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
+                answerDiv.innerHTML = finalHtml;                
 
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
