@@ -4,7 +4,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const answerContainer = document.querySelector('.answerContainer');
     const answerDiv = document.getElementById('answer');
     const searchButton = document.getElementById('search-button');
-    
+    const lightbox = document.querySelector('.lightbox');
+    const lightboxImg = lightbox.querySelector('img');
+    const lightboxClose = lightbox.querySelector('.lightbox-close');
+
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
         const query = searchInput.value.trim();
@@ -13,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
             submitSearch(query);
         }
     });
-    searchInput.addEventListener('keydown', function(e) {
+    searchInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
             const query = searchInput.value.trim();
@@ -22,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 submitSearch(query);
             }
         }
-    });    
+    });
 
     searchForm.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -33,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    
     const highlightExtension = {
         name: 'highlight',
         level: 'inline',
@@ -140,6 +142,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function openLightbox(imgSrc) {
+        lightboxImg.src = imgSrc.split('?')[0];
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+
     function submitSearch(query) {
         answerDiv.innerHTML = '';
         showSkeletonLoader();
@@ -183,11 +203,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         img.src = imgUrl + '?p=300';
                         img.dataset.fullSrc = imgUrl;
                         img.alt = 'Related Image';
-
-                        img.addEventListener('click', function() {
-                            console.log(this.dataset.fullSrc);
-                        });
-                        
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
                     });
@@ -207,7 +222,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     ADD_ATTR: ['target', 'rel']
                 };
                 const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
-                answerDiv.innerHTML = finalHtml;                
+                answerDiv.innerHTML = finalHtml;
+
+                const images = answerDiv.querySelectorAll('.image-grid-item img');
+
+                images.forEach(img => {
+                    img.addEventListener('click', () => openLightbox(img.dataset.fullSrc));
+                });
 
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
