@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function openLightbox(imgSrc) {
-        lightboxImg.src = imgSrc.split('?')[0];
+        lightboxImg.src = imgSrc;
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
     }

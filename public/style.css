@@ -319,7 +319,7 @@ body {
     position: absolute;
     top: 20px;
     right: 20px;
-    background: white;
+    background: none;
     border: none;
     border-radius: 50%;
     width: 40px;
@@ -333,7 +333,7 @@ body {
 }
 
 .lightbox-close:hover {
-    background-color: #f1f1f1;
+    background-color: none;
 }
 
 body.search-active {
