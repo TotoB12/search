@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const lightbox = document.querySelector('.lightbox');
     const lightboxImg = lightbox.querySelector('img');
     const lightboxClose = lightbox.querySelector('.lightbox-close');
+    const spinner = lightbox.querySelector('.spinner');
 
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
@@ -143,15 +144,41 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function openLightbox(imgSrc) {
-        lightboxImg.src = imgSrc;
+        lightboxImg.src = '';
+        lightboxImg.style.display = 'none';
+        spinner.style.display = 'block';
+
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
+
+        const img = new Image();
+        img.src = imgSrc;
+        img.onload = function () {
+            lightboxImg.src = imgSrc;
+            spinner.style.display = 'none';
+            lightboxImg.style.display = 'block';
+        };
+
+        img.onerror = function () {
+            spinner.style.display = 'none';
+            lightboxImg.alt = 'Failed to load image';
+        };
     }
 
     function closeLightbox() {
         lightbox.classList.remove('active');
         document.body.style.overflow = '';
+        lightboxImg.src = '';
+        lightboxImg.style.display = 'none';
+        spinner.style.display = 'none';
     }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
 
     lightboxClose.addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', (e) => {

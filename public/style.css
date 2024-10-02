@@ -95,13 +95,15 @@ body {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-#answer, #skeleton-loader {
+#answer,
+#skeleton-loader {
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.5s ease forwards;
@@ -336,6 +338,30 @@ body {
     background-color: none;
 }
 
+.spinner {
+    display: none;
+    border: 8px solid rgba(255, 255, 255, 0.3);
+    border-top: 8px solid white;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
 body.search-active {
     padding-top: 100px;
     justify-content: flex-start;
@@ -391,6 +417,7 @@ body.search-active .answerContainer {
 }
 
 @media (max-width: 800px) {
+
     .image-grid,
     .skeleton-image-grid {
         grid-template-columns: repeat(2, 1fr);

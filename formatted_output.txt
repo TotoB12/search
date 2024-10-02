@@ -35,7 +35,8 @@ public\index.html
             </svg>
         </button>
         <div class="lightbox-content">
-            <img src="" alt="Lightbox Image">
+            <div class="spinner"></div>
+            <img src="" alt="Lightbox Image" style="display: none;">
         </div>
     </div>
     <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const lightbox = document.querySelector('.lightbox');
     const lightboxImg = lightbox.querySelector('img');
     const lightboxClose = lightbox.querySelector('.lightbox-close');
+    const spinner = lightbox.querySelector('.spinner');
 
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
@@ -193,15 +195,41 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function openLightbox(imgSrc) {
-        lightboxImg.src = imgSrc;
+        lightboxImg.src = '';
+        lightboxImg.style.display = 'none';
+        spinner.style.display = 'block';
+
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
+
+        const img = new Image();
+        img.src = imgSrc;
+        img.onload = function () {
+            lightboxImg.src = imgSrc;
+            spinner.style.display = 'none';
+            lightboxImg.style.display = 'block';
+        };
+
+        img.onerror = function () {
+            spinner.style.display = 'none';
+            lightboxImg.alt = 'Failed to load image';
+        };
     }
 
     function closeLightbox() {
         lightbox.classList.remove('active');
         document.body.style.overflow = '';
+        lightboxImg.src = '';
+        lightboxImg.style.display = 'none';
+        spinner.style.display = 'none';
     }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
 
     lightboxClose.addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', (e) => {
@@ -398,13 +426,15 @@ body {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-#answer, #skeleton-loader {
+#answer,
+#skeleton-loader {
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.5s ease forwards;
@@ -639,6 +669,30 @@ body {
     background-color: none;
 }
 
+.spinner {
+    display: none;
+    border: 8px solid rgba(255, 255, 255, 0.3);
+    border-top: 8px solid white;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
 body.search-active {
     padding-top: 100px;
     justify-content: flex-start;
@@ -694,12 +748,12 @@ body.search-active .answerContainer {
 }
 
 @media (max-width: 800px) {
+
     .image-grid,
     .skeleton-image-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
-
 ```
 
 server.js
@@ -759,4 +813,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works great, but I want to introduce new features. When the images in the lightbox is still loading, have a spinner be shown instead of the image. This will fix the current implementation which still shows the previously displayed image when waiting for the clicked one to load. I want you to fully develop and implement this.
+This all works great, but I want to improve the user experience. When the images are loading in the answer's image grid, I want the grid items to display the skeleton until the image has fully loaded. I want you to fully develop and implement this.
