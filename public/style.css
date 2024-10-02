@@ -277,10 +277,8 @@ body {
 .answerContainer {
     width: 100%;
     max-width: 800px;
-    padding: 2rem;
     display: flex;
     flex-direction: column;
-    min-height: 200px;
 }
 
 .lightbox {
@@ -371,6 +369,11 @@ body.search-active .search-container {
     max-width: 600px;
     width: 100%;
     margin: 0 auto;
+}
+
+body.search-active .answerContainer {
+    padding: 2rem;
+    min-height: 200px;
 }
 
 @media (max-width: 600px) {
