@@ -317,13 +317,8 @@ body.search-active .search-container {
 }
 
 @media (max-width: 800px) {
-    .image-grid {
+    .image-grid,
+    .skeleton-image-grid {
         grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 500px) {
-    .image-grid {
-        grid-template-columns: 1fr;
     }
 }

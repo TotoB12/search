@@ -627,4 +627,6 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
+I am having an issue with this web app. It works great on PC, but anytime I use it on mobile, I get the same unexpected behavior: when I enter and search for a query (either by pressing enter or by pressing on the button), the page simply refreshes, instead or processing my request. Why is this happenning.
+
 This all works well, but I want to add a new feature. Users should be able to click on any image in the grid inside of the answer container. Once an image is clicked, it should open up in a full screen view, in full resolution (this means without any size details after the URL: "?p=300"). This should darken the background, and present the full resolution image centered (within a padded area on the page). A little white cross should be present in the top left to close, but users should also be able to click anywhere off the image to close it. I want you to fully develop and implement this.

@@ -1,4 +1,39 @@
 document.addEventListener('DOMContentLoaded', function () {
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
+    const answerContainer = document.querySelector('.answerContainer');
+    const answerDiv = document.getElementById('answer');
+    const searchButton = document.getElementById('search-button');
+    
+    searchButton.addEventListener('click', function (e) {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query) {
+            activateSearchLayout();
+            submitSearch(query);
+        }
+    });
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (query) {
+                activateSearchLayout();
+                submitSearch(query);
+            }
+        }
+    });    
+
+    searchForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const query = searchInput.value.trim();
+        if (query) {
+            activateSearchLayout();
+            submitSearch(query);
+        }
+    });
+
+    
     const highlightExtension = {
         name: 'highlight',
         level: 'inline',
@@ -34,20 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return `<sup>[${links.join(',')}]</sup>`;
         });
     }
-
-    const searchForm = document.getElementById('search-form');
-    const searchInput = document.getElementById('search-input');
-    const answerContainer = document.querySelector('.answerContainer');
-    const answerDiv = document.getElementById('answer');
-
-    searchForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        const query = searchInput.value.trim();
-        if (query) {
-            activateSearchLayout();
-            submitSearch(query);
-        }
-    });
 
     function activateSearchLayout() {
         document.body.classList.add('search-active');
