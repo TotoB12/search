@@ -237,14 +237,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         img.alt = 'Related Image';
                         img.style.opacity = '0';
     
-                        img.addEventListener('load', () => {
-                            skeletonOverlay.remove();
-                            img.style.opacity = '1';
-                        });
-                        img.addEventListener('error', () => {
-                            skeletonOverlay.remove();
-                            img.alt = 'Failed to load image';
-                        });
+                        // img.addEventListener('load', () => {
+                        //     skeletonOverlay.remove();
+                        //     img.style.opacity = '1';
+                        // });
+                        // img.addEventListener('error', () => {
+                        //     skeletonOverlay.remove();
+                        //     img.alt = 'Failed to load image';
+                        // });
     
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
@@ -270,6 +270,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 const images = answerDiv.querySelectorAll('.image-grid-item img');
 
                 images.forEach(img => {
+                    img.addEventListener('load', () => {
+                        const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
+                        if (skeletonOverlay) {
+                            skeletonOverlay.remove();
+                        }
+                        img.style.opacity = '1';
+                    });
+                    img.addEventListener('error', () => {
+                        img.alt = 'Failed to load image';
+                    });
                     img.addEventListener('click', () => openLightbox(img.dataset.fullSrc));
                 });
 
