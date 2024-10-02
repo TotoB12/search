@@ -8,6 +8,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const lightboxImg = lightbox.querySelector('img');
     const lightboxClose = lightbox.querySelector('.lightbox-close');
     const spinner = lightbox.querySelector('.spinner');
+    const lightboxPrev = document.querySelector('.lightbox-prev');
+    const lightboxNext = document.querySelector('.lightbox-next');
+
+    let imageList = [];
+    let currentImageIndex = 0;
 
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
@@ -143,13 +148,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function openLightbox(imgSrc) {
+    function openLightbox(imgSrc, index) {
+        currentImageIndex = index;
+        loadImageInLightbox(imgSrc);
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        updateLightboxButtons();
+    }
+
+    function loadImageInLightbox(imgSrc) {
         lightboxImg.src = '';
         lightboxImg.style.display = 'none';
         spinner.style.display = 'block';
-
-        lightbox.classList.add('active');
-        document.body.style.overflow = 'hidden';
 
         const img = new Image();
         img.src = imgSrc;
@@ -164,6 +174,41 @@ document.addEventListener('DOMContentLoaded', function () {
             lightboxImg.alt = 'Failed to load image';
         };
     }
+
+    function updateLightboxButtons() {
+        if (currentImageIndex <= 0) {
+            lightboxPrev.style.display = 'none';
+        } else {
+            lightboxPrev.style.display = 'flex';
+        }
+
+        if (currentImageIndex >= imageList.length - 1) {
+            lightboxNext.style.display = 'none';
+        } else {
+            lightboxNext.style.display = 'flex';
+        }
+    }
+
+    function showPreviousImage() {
+        if (currentImageIndex > 0) {
+            currentImageIndex--;
+            const imgSrc = imageList[currentImageIndex];
+            loadImageInLightbox(imgSrc);
+            updateLightboxButtons();
+        }
+    }
+
+    function showNextImage() {
+        if (currentImageIndex < imageList.length - 1) {
+            currentImageIndex++;
+            const imgSrc = imageList[currentImageIndex];
+            loadImageInLightbox(imgSrc);
+            updateLightboxButtons();
+        }
+    }
+
+    lightboxPrev.addEventListener('click', showPreviousImage);
+    lightboxNext.addEventListener('click', showNextImage);
 
     function closeLightbox() {
         lightbox.classList.remove('active');
@@ -220,32 +265,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (data.images && data.images.length > 0) {
                     const imagesToShow = data.images.slice(0, 4);
+        
+                    imageList = imagesToShow;
+        
                     const imageGrid = document.createElement('div');
                     imageGrid.className = 'image-grid';
-    
-                    imagesToShow.forEach(imgUrl => {
+        
+                    imagesToShow.forEach((imgUrl, index) => {
                         const gridItem = document.createElement('div');
                         gridItem.className = 'image-grid-item';
-    
+        
                         const skeletonOverlay = document.createElement('div');
                         skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
                         gridItem.appendChild(skeletonOverlay);
-    
+        
                         const img = document.createElement('img');
                         img.src = imgUrl + '?p=300';
                         img.dataset.fullSrc = imgUrl;
+                        img.dataset.index = index;
                         img.alt = 'Related Image';
                         img.style.opacity = '0';
-    
-                        // img.addEventListener('load', () => {
-                        //     skeletonOverlay.remove();
-                        //     img.style.opacity = '1';
-                        // });
-                        // img.addEventListener('error', () => {
-                        //     skeletonOverlay.remove();
-                        //     img.alt = 'Failed to load image';
-                        // });
-    
+        
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
                     });
@@ -268,10 +308,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 answerDiv.innerHTML = finalHtml;
 
                 const images = answerDiv.querySelectorAll('.image-grid-item img');
-
+                
                 images.forEach(img => {
                     img.addEventListener('load', () => {
-                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc));
+                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
                         const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
                         if (skeletonOverlay) {
                             skeletonOverlay.remove();

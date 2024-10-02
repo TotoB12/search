@@ -31,10 +31,25 @@ public\index.html
     </div>
     <div class="lightbox">
         <button class="lightbox-close">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            <!-- Close SVG icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                 stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+        <button class="lightbox-prev">
+            <!-- Left Arrow SVG icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <button class="lightbox-next">
+            <!-- Right Arrow SVG icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
         </button>
         <div class="lightbox-content">
@@ -67,6 +82,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const lightboxImg = lightbox.querySelector('img');
     const lightboxClose = lightbox.querySelector('.lightbox-close');
     const spinner = lightbox.querySelector('.spinner');
+    const lightboxPrev = document.querySelector('.lightbox-prev');
+    const lightboxNext = document.querySelector('.lightbox-next');
+
+    let imageList = [];
+    let currentImageIndex = 0;
 
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
@@ -202,13 +222,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function openLightbox(imgSrc) {
+    function openLightbox(imgSrc, index) {
+        currentImageIndex = index;
+        loadImageInLightbox(imgSrc);
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        updateLightboxButtons();
+    }
+
+    function loadImageInLightbox(imgSrc) {
         lightboxImg.src = '';
         lightboxImg.style.display = 'none';
         spinner.style.display = 'block';
-
-        lightbox.classList.add('active');
-        document.body.style.overflow = 'hidden';
 
         const img = new Image();
         img.src = imgSrc;
@@ -223,6 +248,41 @@ document.addEventListener('DOMContentLoaded', function () {
             lightboxImg.alt = 'Failed to load image';
         };
     }
+
+    function updateLightboxButtons() {
+        if (currentImageIndex <= 0) {
+            lightboxPrev.style.display = 'none';
+        } else {
+            lightboxPrev.style.display = 'flex';
+        }
+
+        if (currentImageIndex >= imageList.length - 1) {
+            lightboxNext.style.display = 'none';
+        } else {
+            lightboxNext.style.display = 'flex';
+        }
+    }
+
+    function showPreviousImage() {
+        if (currentImageIndex > 0) {
+            currentImageIndex--;
+            const imgSrc = imageList[currentImageIndex];
+            loadImageInLightbox(imgSrc);
+            updateLightboxButtons();
+        }
+    }
+
+    function showNextImage() {
+        if (currentImageIndex < imageList.length - 1) {
+            currentImageIndex++;
+            const imgSrc = imageList[currentImageIndex];
+            loadImageInLightbox(imgSrc);
+            updateLightboxButtons();
+        }
+    }
+
+    lightboxPrev.addEventListener('click', showPreviousImage);
+    lightboxNext.addEventListener('click', showNextImage);
 
     function closeLightbox() {
         lightbox.classList.remove('active');
@@ -279,32 +339,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (data.images && data.images.length > 0) {
                     const imagesToShow = data.images.slice(0, 4);
+        
+                    // Store the images globally
+                    imageList = imagesToShow;
+        
                     const imageGrid = document.createElement('div');
                     imageGrid.className = 'image-grid';
-    
-                    imagesToShow.forEach(imgUrl => {
+        
+                    imagesToShow.forEach((imgUrl, index) => {
                         const gridItem = document.createElement('div');
                         gridItem.className = 'image-grid-item';
-    
+        
                         const skeletonOverlay = document.createElement('div');
                         skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
                         gridItem.appendChild(skeletonOverlay);
-    
+        
                         const img = document.createElement('img');
                         img.src = imgUrl + '?p=300';
                         img.dataset.fullSrc = imgUrl;
+                        img.dataset.index = index; // Store the index
                         img.alt = 'Related Image';
                         img.style.opacity = '0';
-    
-                        // img.addEventListener('load', () => {
-                        //     skeletonOverlay.remove();
-                        //     img.style.opacity = '1';
-                        // });
-                        // img.addEventListener('error', () => {
-                        //     skeletonOverlay.remove();
-                        //     img.alt = 'Failed to load image';
-                        // });
-    
+        
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
                     });
@@ -327,10 +383,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 answerDiv.innerHTML = finalHtml;
 
                 const images = answerDiv.querySelectorAll('.image-grid-item img');
-
+                
                 images.forEach(img => {
                     img.addEventListener('load', () => {
-                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc));
+                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
                         const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
                         if (skeletonOverlay) {
                             skeletonOverlay.remove();
@@ -714,6 +770,44 @@ body {
     background-color: none;
 }
 
+.lightbox-prev,
+.lightbox-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    z-index: 1001;
+}
+
+.lightbox-prev:hover,
+.lightbox-next:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.lightbox-prev {
+    left: 20px;
+}
+
+.lightbox-next {
+    right: 20px;
+}
+
+.lightbox-prev:disabled,
+.lightbox-next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .spinner {
     display: none;
     border: 8px solid rgba(255, 255, 255, 0.3);
@@ -858,4 +952,3 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to add new features. When an image is open in the lightbox, I want left and right buttons to also be shown on the screen. These buttons should allow switching to the next or previous image in the list. Of course, only show the image if it is available. I want you to fully develop and implement this.
