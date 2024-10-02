@@ -271,6 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 images.forEach(img => {
                     img.addEventListener('load', () => {
+                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc));
                         const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
                         if (skeletonOverlay) {
                             skeletonOverlay.remove();
@@ -280,7 +281,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     img.addEventListener('error', () => {
                         img.alt = 'Failed to load image';
                     });
-                    img.addEventListener('click', () => openLightbox(img.dataset.fullSrc));
                 });
 
                 socket.disconnect();

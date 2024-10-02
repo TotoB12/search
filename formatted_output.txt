@@ -4,12 +4,14 @@ public\index.html
 ```html
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SearchT</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <h1 id="logo"><a href="/">SearchT</a></h1>
     <form id="search-form">
@@ -29,7 +31,8 @@ public\index.html
     </div>
     <div class="lightbox">
         <button class="lightbox-close">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -43,7 +46,12 @@ public\index.html
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.8/dist/purify.min.js"></script>
     <script src="script.js"></script>
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </body>
+
 </html>
 ```
 
@@ -273,18 +281,34 @@ document.addEventListener('DOMContentLoaded', function () {
                     const imagesToShow = data.images.slice(0, 4);
                     const imageGrid = document.createElement('div');
                     imageGrid.className = 'image-grid';
-
+    
                     imagesToShow.forEach(imgUrl => {
                         const gridItem = document.createElement('div');
                         gridItem.className = 'image-grid-item';
+    
+                        const skeletonOverlay = document.createElement('div');
+                        skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
+                        gridItem.appendChild(skeletonOverlay);
+    
                         const img = document.createElement('img');
                         img.src = imgUrl + '?p=300';
                         img.dataset.fullSrc = imgUrl;
                         img.alt = 'Related Image';
+                        img.style.opacity = '0';
+    
+                        // img.addEventListener('load', () => {
+                        //     skeletonOverlay.remove();
+                        //     img.style.opacity = '1';
+                        // });
+                        // img.addEventListener('error', () => {
+                        //     skeletonOverlay.remove();
+                        //     img.alt = 'Failed to load image';
+                        // });
+    
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
                     });
-
+    
                     if (insertPosition === 'afterH2') {
                         if (firstElement.nextSibling) {
                             tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
@@ -305,7 +329,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 const images = answerDiv.querySelectorAll('.image-grid-item img');
 
                 images.forEach(img => {
-                    img.addEventListener('click', () => openLightbox(img.dataset.fullSrc));
+                    img.addEventListener('load', () => {
+                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc));
+                        const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
+                        if (skeletonOverlay) {
+                            skeletonOverlay.remove();
+                        }
+                        img.style.opacity = '1';
+                    });
+                    img.addEventListener('error', () => {
+                        img.alt = 'Failed to load image';
+                    });
                 });
 
                 socket.disconnect();
@@ -542,6 +576,15 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.image-skeleton-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
 .image-grid-item img {
     position: absolute;
     top: 0;
@@ -549,8 +592,10 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     cursor: pointer;
+    z-index: 1;
+    opacity: 0;
 }
 
 .image-grid-item img:hover {
@@ -813,4 +858,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works great, but I want to improve the user experience. When the images are loading in the answer's image grid, I want the grid items to display the skeleton until the image has fully loaded. I want you to fully develop and implement this.
+This all works well, but I want to add new features. When an image is open in the lightbox, I want left and right buttons to also be shown on the screen. These buttons should allow switching to the next or previous image in the list. Of course, only show the image if it is available. I want you to fully develop and implement this.
