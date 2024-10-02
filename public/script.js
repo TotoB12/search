@@ -222,18 +222,34 @@ document.addEventListener('DOMContentLoaded', function () {
                     const imagesToShow = data.images.slice(0, 4);
                     const imageGrid = document.createElement('div');
                     imageGrid.className = 'image-grid';
-
+    
                     imagesToShow.forEach(imgUrl => {
                         const gridItem = document.createElement('div');
                         gridItem.className = 'image-grid-item';
+    
+                        const skeletonOverlay = document.createElement('div');
+                        skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
+                        gridItem.appendChild(skeletonOverlay);
+    
                         const img = document.createElement('img');
                         img.src = imgUrl + '?p=300';
                         img.dataset.fullSrc = imgUrl;
                         img.alt = 'Related Image';
+                        img.style.opacity = '0';
+    
+                        img.addEventListener('load', () => {
+                            skeletonOverlay.remove();
+                            img.style.opacity = '1';
+                        });
+                        img.addEventListener('error', () => {
+                            skeletonOverlay.remove();
+                            img.alt = 'Failed to load image';
+                        });
+    
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
                     });
-
+    
                     if (insertPosition === 'afterH2') {
                         if (firstElement.nextSibling) {
                             tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
