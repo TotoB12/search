@@ -115,7 +115,6 @@ body {
 
 #answer {
     text-align: left;
-    padding: 1rem;
     font-size: 1.1rem;
     line-height: 1.6;
 }
@@ -287,6 +286,48 @@ body {
     margin-bottom: 8px;
 }
 
+.toolbar {
+    display: none;
+    align-items: center;
+}
+
+.toolbar-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    transition: background-color 0.3s ease;
+    padding: 0;
+    border-radius: 7px;
+}
+
+.toolbar-button:hover {
+    background-color: #f6f6f6;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.tts-button {
+    display: none;
+}
+
+.icon-md-heavy {
+    width: 20px;
+    height: 20px;
+}
+
 .answerContainer {
     width: 100%;
     max-width: 800px;
@@ -316,7 +357,7 @@ body {
 }
 
 .lightbox-content {
-    max-width: 90%;
+    max-width: 84%;
     max-height: 90%;
     position: relative;
 }
@@ -456,6 +497,10 @@ body.search-active .answerContainer {
         font-size: 3rem;
     }
 
+    .tts-button {
+        margin-top: 15px;
+    }
+
     .search-container {
         width: 100%;
     }
@@ -466,7 +511,6 @@ body.search-active .answerContainer {
 }
 
 @media (max-width: 800px) {
-
     .image-grid,
     .skeleton-image-grid {
         grid-template-columns: repeat(2, 1fr);

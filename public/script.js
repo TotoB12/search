@@ -10,9 +10,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const spinner = lightbox.querySelector('.spinner');
     const lightboxPrev = document.querySelector('.lightbox-prev');
     const lightboxNext = document.querySelector('.lightbox-next');
+    const toolbar = document.querySelector('.toolbar');
+    const ttsButton = document.getElementById('tts-button');
+    const ttsIcon = ttsButton.querySelector('.tts-icon');
+    const ttsSpinner = ttsButton.querySelector('.tts-spinner');
+    const ttsStop = ttsButton.querySelector('.tts-stop');
 
     let imageList = [];
     let currentImageIndex = 0;
+    let audioContext;
+let audioSource;
+let isPlaying = false;
 
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
@@ -148,6 +156,78 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    async function handleTTS() {
+        if (isPlaying) {
+            stopTTS();
+            return;
+        }
+
+        const answerElement = document.getElementById('answer');
+        const clonedAnswerElement = answerElement.cloneNode(true);
+        const supElements = clonedAnswerElement.querySelectorAll('sup');
+        supElements.forEach(sup => sup.remove());
+        const h2Elements = clonedAnswerElement.querySelectorAll('h2');
+        h2Elements.forEach(h2 => h2.remove());
+        const answerText = clonedAnswerElement.innerText;
+        console.log('TTS text:', answerText);
+
+        ttsIcon.style.display = 'none';
+        ttsSpinner.style.display = 'block';
+
+        try {
+            const response = await fetch('https://api.totob12.com/tts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: answerText }),
+            });
+
+            if (!response.ok) throw new Error('TTS request failed');
+
+            const arrayBuffer = await response.arrayBuffer();
+
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+            if (audioSource) {
+                audioSource.stop();
+            }
+
+            audioSource = audioContext.createBufferSource();
+            audioSource.buffer = audioBuffer;
+            audioSource.connect(audioContext.destination);
+
+            audioSource.onended = stopTTS;
+
+            audioSource.start(0);
+            isPlaying = true;
+
+            ttsSpinner.style.display = 'none';
+            ttsStop.style.display = 'block';
+        } catch (error) {
+            console.error('TTS error:', error);
+            stopTTS();
+        }
+    }
+
+    function stopTTS() {
+        if (audioSource) {
+            audioSource.stop();
+            audioSource = null;
+        }
+        isPlaying = false;
+        ttsSpinner.style.display = 'none';
+        ttsStop.style.display = 'none';
+        ttsIcon.style.display = 'block';
+    }
+
+    // Event listener for TTS button
+    ttsButton.addEventListener('click', handleTTS);
+
     function openLightbox(imgSrc, index) {
         currentImageIndex = index;
         loadImageInLightbox(imgSrc);
@@ -234,6 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function submitSearch(query) {
         answerDiv.innerHTML = '';
+        toolbar.style.display = 'none';
         showSkeletonLoader();
 
         const socket = io('https://api.totob12.com', {
@@ -323,11 +404,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 });
 
+                toolbar.style.display = 'flex';
+            
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
                 hideSkeletonLoader();
                 console.log(data);
                 answerDiv.innerText = `Error: An error occurred while processing the search query`;
+                toolbar.style.display = 'none';
                 socket.disconnect();
             }
         });

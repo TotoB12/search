@@ -28,6 +28,29 @@ public\index.html
     </form>
     <div class="answerContainer">
         <div id="answer" style="display: none;"></div>
+        <button id="tts-button" class="tts-button" style="display: none;">
+            <svg class="tts-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+            <svg class="tts-spinner" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <line x1="12" y1="2" x2="12" y2="6"></line>
+                <line x1="12" y1="18" x2="12" y2="22"></line>
+                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                <line x1="2" y1="12" x2="6" y2="12"></line>
+                <line x1="18" y1="12" x2="22" y2="12"></line>
+                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+            </svg>
+            <svg class="tts-stop" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            </svg>
+        </button>
     </div>
     <div class="lightbox">
         <button class="lightbox-close">
@@ -81,9 +104,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const spinner = lightbox.querySelector('.spinner');
     const lightboxPrev = document.querySelector('.lightbox-prev');
     const lightboxNext = document.querySelector('.lightbox-next');
+    const ttsButton = document.getElementById('tts-button');
+const ttsIcon = ttsButton.querySelector('.tts-icon');
+const ttsSpinner = ttsButton.querySelector('.tts-spinner');
+const ttsStop = ttsButton.querySelector('.tts-stop');
 
     let imageList = [];
     let currentImageIndex = 0;
+    let audioContext;
+let audioSource;
+let isPlaying = false;
 
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
@@ -219,6 +249,78 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    async function handleTTS() {
+        if (isPlaying) {
+            stopTTS();
+            return;
+        }
+    
+        const answerElement = document.getElementById('answer');
+        const clonedAnswerElement = answerElement.cloneNode(true);
+        const supElements = clonedAnswerElement.querySelectorAll('sup');
+        supElements.forEach(sup => sup.remove());
+        const h2Elements = clonedAnswerElement.querySelectorAll('h2');
+        h2Elements.forEach(h2 => h2.remove());
+        const answerText = clonedAnswerElement.innerText;
+        console.log('TTS text:', answerText);
+        
+        ttsIcon.style.display = 'none';
+        ttsSpinner.style.display = 'block';
+        
+        try {
+            const response = await fetch('https://api.totob12.com/tts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: answerText }),
+            });
+    
+            if (!response.ok) throw new Error('TTS request failed');
+    
+            const arrayBuffer = await response.arrayBuffer();
+            
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+    
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            
+            if (audioSource) {
+                audioSource.stop();
+            }
+            
+            audioSource = audioContext.createBufferSource();
+            audioSource.buffer = audioBuffer;
+            audioSource.connect(audioContext.destination);
+            
+            audioSource.onended = stopTTS;
+            
+            audioSource.start(0);
+            isPlaying = true;
+            
+            ttsSpinner.style.display = 'none';
+            ttsStop.style.display = 'block';
+        } catch (error) {
+            console.error('TTS error:', error);
+            stopTTS();
+        }
+    }
+    
+    function stopTTS() {
+        if (audioSource) {
+            audioSource.stop();
+            audioSource = null;
+        }
+        isPlaying = false;
+        ttsSpinner.style.display = 'none';
+        ttsStop.style.display = 'none';
+        ttsIcon.style.display = 'block';
+    }
+    
+    // Add this event listener
+    ttsButton.addEventListener('click', handleTTS);
+
     function openLightbox(imgSrc, index) {
         currentImageIndex = index;
         loadImageInLightbox(imgSrc);
@@ -305,6 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function submitSearch(query) {
         answerDiv.innerHTML = '';
+        ttsButton.style.display = 'none';
         showSkeletonLoader();
 
         const socket = io('https://api.totob12.com', {
@@ -394,11 +497,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 });
 
+                ttsButton.style.display = 'flex';
+            
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
                 hideSkeletonLoader();
                 console.log(data);
                 answerDiv.innerText = `Error: An error occurred while processing the search query`;
+                ttsButton.style.display = 'none';
                 socket.disconnect();
             }
         });
@@ -704,6 +810,38 @@ body {
     margin-bottom: 8px;
 }
 
+.tts-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.tts-button:hover {
+    background-color: #f0f0f0;
+}
+
+.tts-button svg {
+    width: 24px;
+    height: 24px;
+    color: #333;
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.tts-button .tts-spinner {
+    animation: rotate 1s linear infinite;
+}
+
 .answerContainer {
     width: 100%;
     max-width: 800px;
@@ -733,7 +871,7 @@ body {
 }
 
 .lightbox-content {
-    max-width: 90%;
+    max-width: 84%;
     max-height: 90%;
     position: relative;
 }
@@ -873,6 +1011,10 @@ body.search-active .answerContainer {
         font-size: 3rem;
     }
 
+    .tts-button {
+        margin-top: 15px;
+    }
+
     .search-container {
         width: 100%;
     }
@@ -883,7 +1025,6 @@ body.search-active .answerContainer {
 }
 
 @media (max-width: 800px) {
-
     .image-grid,
     .skeleton-image-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -895,8 +1036,6 @@ server.js
 ```javascript
 const express = require('express');
 const path = require('path');
-const { MsEdgeTTS, OUTPUT_FORMAT } = require('msedge-tts');
-const xmlEscape = require('xml-escape');
 require('dotenv').config();
 
 const app = express();
@@ -915,100 +1054,21 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works great, but I want to add a new feature. When the answer is displayed, I want a little speaker icon to be show underneath the text. When clicked, it should read out the text of the answer. To do this, I want to create a new `/tts/` endpoint on the server, using `MsEdgeTTS`. Here is their documentation:
+This all works well, but I want to improve the look of the TTS button. I want it to be a part of a tool bar, that I will later use to contain multiple buttons. The button should be on the left side, and square shaped. On hover, the button's background color should turn into #f6f6f6. Also, I want to use new SVGs. I found these ones online:
 
+speaker icon
 ```
-# MsEdgeTTS
-[![npm version](https://badge.fury.io/js/msedge-tts.svg)](https://badge.fury.io/js/msedge-tts)
-
-An simple Azure Speech Service module that uses the Microsoft Edge Read Aloud API.
-
-~~Full support for SSML~~ Only supports `speak`, `voice`, and `prosody` element types. The following is the default SSML object:
-
-```xml
-<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts"
-       xml:lang="${this._voiceLang}">
-    <voice name="${voiceName}">
-        <prosody rate="${rate}" pitch="${pitch}" volume="${volume}">
-            ${input}
-        </prosody>
-    </voice>
-</speak>
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md-heavy"><path fill-rule="evenodd" clip-rule="evenodd" d="M11 4.9099C11 4.47485 10.4828 4.24734 10.1621 4.54132L6.67572 7.7372C6.49129 7.90626 6.25019 8.00005 6 8.00005H4C3.44772 8.00005 3 8.44776 3 9.00005V15C3 15.5523 3.44772 16 4 16H6C6.25019 16 6.49129 16.0938 6.67572 16.2629L10.1621 19.4588C10.4828 19.7527 11 19.5252 11 19.0902V4.9099ZM8.81069 3.06701C10.4142 1.59714 13 2.73463 13 4.9099V19.0902C13 21.2655 10.4142 22.403 8.81069 20.9331L5.61102 18H4C2.34315 18 1 16.6569 1 15V9.00005C1 7.34319 2.34315 6.00005 4 6.00005H5.61102L8.81069 3.06701ZM20.3166 6.35665C20.8019 6.09313 21.409 6.27296 21.6725 6.75833C22.5191 8.3176 22.9996 10.1042 22.9996 12.0001C22.9996 13.8507 22.5418 15.5974 21.7323 17.1302C21.4744 17.6185 20.8695 17.8054 20.3811 17.5475C19.8927 17.2896 19.7059 16.6846 19.9638 16.1962C20.6249 14.9444 20.9996 13.5175 20.9996 12.0001C20.9996 10.4458 20.6064 8.98627 19.9149 7.71262C19.6514 7.22726 19.8312 6.62017 20.3166 6.35665ZM15.7994 7.90049C16.241 7.5688 16.8679 7.65789 17.1995 8.09947C18.0156 9.18593 18.4996 10.5379 18.4996 12.0001C18.4996 13.3127 18.1094 14.5372 17.4385 15.5604C17.1357 16.0222 16.5158 16.1511 16.0539 15.8483C15.5921 15.5455 15.4632 14.9255 15.766 14.4637C16.2298 13.7564 16.4996 12.9113 16.4996 12.0001C16.4996 10.9859 16.1653 10.0526 15.6004 9.30063C15.2687 8.85905 15.3578 8.23218 15.7994 7.90049Z" fill="currentColor"></path></svg>
 ```
 
-Documentation on the SSML
-format [can be found here](https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/speech-synthesis-markup)
-. All supported audio formats [can be found here](./src/OUTPUT_FORMAT.ts).
-
-## Example usage
-
-Make sure to **escape/sanitize** your user's input!
-Use a library like [xml-escape](https://www.npmjs.com/package/xml-escape).
-
-### Write to stream
-
-```js
-import {MsEdgeTTS, OUTPUT_FORMAT} from "msedge-tts";
-
-const tts = new MsEdgeTTS();
-await tts.setMetadata("en-IE-ConnorNeural", OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS);
-const readable = tts.toStream("Hi, how are you?");
-
-readable.on("data", (data) => {
-    console.log("DATA RECEIVED", data);
-    // raw audio file data
-});
-
-readable.on("close", () => {
-    console.log("STREAM CLOSED");
-});
+loading icon (have it spin too)
+```
+<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="animate-spin text-center icon-md-heavy" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg>
 ```
 
-### Write to file
-
-```js
-import {MsEdgeTTS, OUTPUT_FORMAT} from "msedge-tts";
-
-(async () => {
-    const tts = new MsEdgeTTS();
-    await tts.setMetadata("en-US-AriaNeural", OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS);
-    const filePath = await tts.toFile("./example_audio.webm", "Hi, how are you?");  
-})();
+stop icon
 ```
-
-### Change voice rate, pitch and volume
-```js
-import {MsEdgeTTS, OUTPUT_FORMAT} from "msedge-tts";
-
-(async () => {
-    const tts = new MsEdgeTTS();
-    await tts.setMetadata("en-US-AriaNeural", OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS);
-    const filePath = await tts.toFile("./example_audio.webm", "Hi, how are you?", {rate: 0.5, pitch: "+200Hz"});
-})();
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md-heavy"><path fill-rule="evenodd" clip-rule="evenodd" d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM9.5 8.5C8.94772 8.5 8.5 8.94772 8.5 9.5V14.5C8.5 15.0523 8.94772 15.5 9.5 15.5H14.5C15.0523 15.5 15.5 15.0523 15.5 14.5V9.5C15.5 8.94772 15.0523 8.5 14.5 8.5H9.5Z" fill="currentColor"></path></svg>
 ```
-
-### Use an alternative HTTP Agent
-Use a custom http.Agent implementation like [https-proxy-agent](https://github.com/TooTallNate/proxy-agents) or [socks-proxy-agent](https://github.com/TooTallNate/proxy-agents/tree/main/packages/socks-proxy-agent).
-```js
-import {SocksProxyAgent} from 'socks-proxy-agent';
-
-(async () => {
-    const agent = new SocksProxyAgent("socks://your-name%40gmail.com:abcdef12345124@br41.nordvpn.com")
-    const tts = new MsEdgeTTS(agent);
-    await tts.setMetadata("en-US-AriaNeural", OUTPUT_FORMAT.WEBM_24KHZ_16BIT_MONO_OPUS);
-    const filePath = await tts.toFile("./example_audio.webm", "Hi, how are you?");
-})();
-```
-
-## API
-
-For the full documentation check out the [API Documentation](https://migushthe2nd.github.io/MsEdgeTTS).
-
-This library only supports promises.
-```
-
-The audio should be streamed, to ensure it is delivered as fast as possible.
-
-Client side, the speaker icon should transform into a spinner when waiting for the audio, and then into a stop icon to interupt the playback.
 
 I want you to fully develop and implement this.
