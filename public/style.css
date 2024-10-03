@@ -314,14 +314,14 @@ body {
     background-color: #f6f6f6;
 }
 
-@keyframes spin {
+@keyframes spin-icon {
     100% {
         transform: rotate(360deg);
     }
 }
 
 .tts-spinner {
-    animation: spin 1s linear infinite;
+    animation: spin-icon 1s linear infinite;
 }
 
 .tts-button {
