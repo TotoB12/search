@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const ttsIcon = ttsButton.querySelector('.tts-icon');
     const ttsSpinner = ttsButton.querySelector('.tts-spinner');
     const ttsStop = ttsButton.querySelector('.tts-stop');
+    const copyButton = document.getElementById('copy-button');
+    const copyIcon = copyButton.querySelector('.copy-icon');
+    const checkmarkIcon = copyButton.querySelector('.checkmark-icon');
 
     let imageList = [];
     let currentImageIndex = 0;
@@ -228,8 +231,30 @@ document.addEventListener('DOMContentLoaded', function () {
         ttsIcon.style.display = 'block';
     }
 
-    // Event listener for TTS button
     ttsButton.addEventListener('click', handleTTS);
+    copyButton.addEventListener('click', handleCopy);
+
+    function handleCopy() {
+        const answerElement = document.getElementById('answer');
+        const clonedAnswerElement = answerElement.cloneNode(true);
+
+        const supElements = clonedAnswerElement.querySelectorAll('sup');
+        supElements.forEach(sup => sup.remove());
+
+        const answerText = clonedAnswerElement.innerText;
+
+        navigator.clipboard.writeText(answerText).then(() => {
+            copyIcon.style.display = 'none';
+            checkmarkIcon.style.display = 'block';
+
+            setTimeout(() => {
+                checkmarkIcon.style.display = 'none';
+                copyIcon.style.display = 'block';
+            }, 2000);
+        }).catch(err => {
+            console.error('Could not copy text: ', err);
+        });
+    }
 
     function openLightbox(imgSrc, index) {
         currentImageIndex = index;
@@ -316,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function submitSearch(query) {
-        
+
         showSkeletonLoader();
 
         const socket = io('https://api.totob12.com', {
@@ -406,14 +431,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 });
 
-                // toolbar.style.display = 'flex';
-
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
                 hideSkeletonLoader();
                 console.log(data);
                 answerDiv.innerText = `Error: An error occurred while processing the search query`;
-                // toolbar.style.display = 'none';
                 socket.disconnect();
             }
         });

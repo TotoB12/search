@@ -294,6 +294,7 @@ body {
 
 .toolbar {
     align-items: center;
+    display: flex;
 }
 
 .toolbar-button {
@@ -329,8 +330,8 @@ body {
 }
 
 .icon-md-heavy {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
 }
 
 .answerContainer {
