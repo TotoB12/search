@@ -102,6 +102,12 @@ body {
     }
 }
 
+.answerContent {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
 #answer,
 #skeleton-loader {
     opacity: 0;
@@ -287,7 +293,6 @@ body {
 }
 
 .toolbar {
-    display: none;
     align-items: center;
 }
 

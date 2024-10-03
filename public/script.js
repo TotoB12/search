@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('search-input');
     const answerContainer = document.querySelector('.answerContainer');
+    const answerContent = document.querySelector('.answerContent');
     const answerDiv = document.getElementById('answer');
     const searchButton = document.getElementById('search-button');
     const lightbox = document.querySelector('.lightbox');
@@ -91,11 +92,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showSkeletonLoader() {
-        if (answerDiv.style.display !== 'none') {
-            answerDiv.style.opacity = '0';
-            answerDiv.style.transform = 'translateY(20px)';
+        if (answerContent.style.display !== 'none') {
+            answerContent.style.opacity = '0';
+            answerContent.style.transform = 'translateY(20px)';
             setTimeout(() => {
-                answerDiv.style.display = 'none';
+                answerContent.style.display = 'none';
+                answerDiv.innerHTML = '';
                 insertSkeletonLoader();
             }, 300);
         } else {
@@ -144,15 +146,16 @@ document.addEventListener('DOMContentLoaded', function () {
             skeletonLoader.style.transform = 'translateY(20px)';
             setTimeout(() => {
                 skeletonLoader.remove();
-                answerDiv.style.display = 'block';
-                answerDiv.style.opacity = '0';
-                answerDiv.style.transform = 'translateY(20px)';
-                answerDiv.offsetHeight;
-                answerDiv.style.opacity = '1';
-                answerDiv.style.transform = 'translateY(0)';
+                answerContent.style.display = 'block';
+                answerContent.style.opacity = '0';
+                answerContent.style.transform = 'translateY(20px)';
+                // Trigger reflow to apply the transition
+                void answerContent.offsetWidth;
+                answerContent.style.opacity = '1';
+                answerContent.style.transform = 'translateY(0)';
             }, 300);
         } else {
-            answerDiv.style.display = 'block';
+            answerContent.style.display = 'block';
         }
     }
 
@@ -313,8 +316,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function submitSearch(query) {
-        answerDiv.innerHTML = '';
-        toolbar.style.display = 'none';
+        
         showSkeletonLoader();
 
         const socket = io('https://api.totob12.com', {
@@ -404,14 +406,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 });
 
-                toolbar.style.display = 'flex';
+                // toolbar.style.display = 'flex';
 
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
                 hideSkeletonLoader();
                 console.log(data);
                 answerDiv.innerText = `Error: An error occurred while processing the search query`;
-                toolbar.style.display = 'none';
+                // toolbar.style.display = 'none';
                 socket.disconnect();
             }
         });
