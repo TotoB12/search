@@ -19,8 +19,8 @@ public\index.html
             <button type="button" id="search-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <line x1="20" y1="20" x2="16.65" y2="16.65"></line>
                 </svg>
             </button>
             <input type="text" id="search-input" placeholder="What are you looking for?" required>
@@ -53,6 +53,20 @@ public\index.html
                         xmlns="http://www.w3.org/2000/svg" style="display: none;">
                         <path fill-rule="evenodd" clip-rule="evenodd"
                             d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM9.5 8.5C8.94772 8.5 8.5 8.94772 8.5 9.5V14.5C8.5 15.0523 8.94772 15.5 9.5 15.5H14.5C15.0523 15.5 15.5 15.0523 15.5 14.5V9.5C15.5 8.94772 15.0523 8.5 14.5 8.5H9.5Z"
+                            fill="currentColor"></path>
+                    </svg>
+                </button>
+                <button id="copy-button" class="toolbar-button">
+                    <svg class="copy-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
+                            fill="currentColor"></path>
+                    </svg>
+                    <svg class="checkmark-icon icon-md-heavy" width="24" height="24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M18.0633 5.67387C18.5196 5.98499 18.6374 6.60712 18.3262 7.06343L10.8262 18.0634C10.6585 18.3095 10.3898 18.4679 10.0934 18.4957C9.79688 18.5235 9.50345 18.4178 9.29289 18.2072L4.79289 13.7072C4.40237 13.3167 4.40237 12.6835 4.79289 12.293C5.18342 11.9025 5.81658 11.9025 6.20711 12.293L9.85368 15.9396L16.6738 5.93676C16.9849 5.48045 17.607 5.36275 18.0633 5.67387Z"
                             fill="currentColor"></path>
                     </svg>
                 </button>
@@ -117,6 +131,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const ttsIcon = ttsButton.querySelector('.tts-icon');
     const ttsSpinner = ttsButton.querySelector('.tts-spinner');
     const ttsStop = ttsButton.querySelector('.tts-stop');
+    const copyButton = document.getElementById('copy-button');
+    const copyIcon = copyButton.querySelector('.copy-icon');
+    const checkmarkIcon = copyButton.querySelector('.checkmark-icon');
 
     let imageList = [];
     let currentImageIndex = 0;
@@ -195,12 +212,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function showSkeletonLoader() {
         if (answerContent.style.display !== 'none') {
             answerContent.style.opacity = '0';
-            answerContent.style.transform = 'translateY(20px)';
+            answerContent.style.transform = 'translateY(-20px)';
             setTimeout(() => {
                 answerContent.style.display = 'none';
                 answerDiv.innerHTML = '';
                 insertSkeletonLoader();
-            }, 300);
+            }, 100);
         } else {
             insertSkeletonLoader();
         }
@@ -329,8 +346,30 @@ document.addEventListener('DOMContentLoaded', function () {
         ttsIcon.style.display = 'block';
     }
 
-    // Event listener for TTS button
     ttsButton.addEventListener('click', handleTTS);
+    copyButton.addEventListener('click', handleCopy);
+
+    function handleCopy() {
+        const answerElement = document.getElementById('answer');
+        const clonedAnswerElement = answerElement.cloneNode(true);
+
+        const supElements = clonedAnswerElement.querySelectorAll('sup');
+        supElements.forEach(sup => sup.remove());
+
+        const answerText = clonedAnswerElement.innerText;
+
+        navigator.clipboard.writeText(answerText).then(() => {
+            copyIcon.style.display = 'none';
+            checkmarkIcon.style.display = 'block';
+
+            setTimeout(() => {
+                checkmarkIcon.style.display = 'none';
+                copyIcon.style.display = 'block';
+            }, 2000);
+        }).catch(err => {
+            console.error('Could not copy text: ', err);
+        });
+    }
 
     function openLightbox(imgSrc, index) {
         currentImageIndex = index;
@@ -417,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function submitSearch(query) {
-        
+
         showSkeletonLoader();
 
         const socket = io('https://api.totob12.com', {
@@ -507,14 +546,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 });
 
-                // toolbar.style.display = 'flex';
-
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
                 hideSkeletonLoader();
                 console.log(data);
                 answerDiv.innerText = `Error: An error occurred while processing the search query`;
-                // toolbar.style.display = 'none';
                 socket.disconnect();
             }
         });
@@ -638,14 +674,14 @@ body {
 .answerContent {
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.5s ease, transform 0.5s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 #answer,
 #skeleton-loader {
     opacity: 0;
     transform: translateY(20px);
-    animation: fadeInUp 0.5s ease forwards;
+    animation: fadeInUp 0.2s ease forwards;
 }
 
 #search-button:hover svg {
@@ -827,6 +863,7 @@ body {
 
 .toolbar {
     align-items: center;
+    display: flex;
 }
 
 .toolbar-button {
@@ -862,8 +899,8 @@ body {
 }
 
 .icon-md-heavy {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
 }
 
 .answerContainer {
@@ -1079,16 +1116,10 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works great, but I want to add a new button to the toolbar. I want to add a copy icon. When clicked, it should copy the text from the answer, and change into a little check mark for a couple seconds. Here are some SVGs I foudn online that I want to use for it:
+This all works well, but I want to make a couple changes. I want to have the current search button just act as an icon, and have the new search button be on the right side of the search input. This new button should look like a black square (with curved borders), with a white arrow inside of it pointing right. I found a similar element online, but with an upwards arrow, that can be used as inspiration:
 
-copy icon
-```
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md-heavy"><path fill-rule="evenodd" clip-rule="evenodd" d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z" fill="currentColor"></path></svg>
-```
-
-checkmark icon
-```
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-md-heavy"><path fill-rule="evenodd" clip-rule="evenodd" d="M18.0633 5.67387C18.5196 5.98499 18.6374 6.60712 18.3262 7.06343L10.8262 18.0634C10.6585 18.3095 10.3898 18.4679 10.0934 18.4957C9.79688 18.5235 9.50345 18.4178 9.29289 18.2072L4.79289 13.7072C4.40237 13.3167 4.40237 12.6835 4.79289 12.293C5.18342 11.9025 5.81658 11.9025 6.20711 12.293L9.85368 15.9396L16.6738 5.93676C16.9849 5.48045 17.607 5.36275 18.0633 5.67387Z" fill="currentColor"></path></svg>
+```html
+<button aria-label="Send prompt" data-testid="send-button" class="mb-1 me-1 flex h-8 w-8 items-center justify-center rounded-full bg-black text-white transition-colors hover:opacity-70 focus-visible:outline-none focus-visible:outline-black disabled:text-[#f4f4f4] disabled:hover:opacity-100 dark:bg-white dark:text-black dark:focus-visible:outline-white disabled:dark:bg-token-text-quaternary dark:disabled:text-token-main-surface-secondary disabled:bg-[#D7D7D7]"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-2xl"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z" fill="currentColor"></path></svg></button>
 ```
 
 I want you to fully develop and implement this.
