@@ -16,14 +16,21 @@ public\index.html
     <h1 id="logo"><a href="/">SearchT</a></h1>
     <form id="search-form">
         <div class="search-container">
-            <button type="button" id="search-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <span id="search-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="7"></circle>
                     <line x1="20" y1="20" x2="16.65" y2="16.65"></line>
                 </svg>
-            </button>
+            </span>
             <input type="text" id="search-input" placeholder="What are you looking for?" required>
+            <button type="button" id="search-button" aria-label="Search">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z"
+                        fill="currentColor"></path>
+                </svg>
+            </button>
         </div>
     </form>
     <div class="answerContainer">
@@ -149,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
             submitSearch(query);
         }
     });
+
     searchInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -621,6 +629,7 @@ body {
 
 .search-container {
     display: flex;
+    align-items: center;
     background-color: #efefef;
     border-radius: 50px;
     padding: 0.5rem;
@@ -642,21 +651,42 @@ body {
     background: transparent;
 }
 
-#search-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
+#search-icon {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0.5rem;
+    color: #333;
+}
+
+#search-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+#search-button {
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
 }
 
 #search-button svg {
-    width: 24px;
-    height: 24px;
-    color: #333;
-    transition: color 0.3s ease;
+    width: 32px;
+    height: 32px;
+    rotate: 90deg;
+}
+
+#search-button:hover {
+    opacity: 0.8;
 }
 
 @keyframes fadeInUp {
@@ -682,10 +712,6 @@ body {
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.2s ease forwards;
-}
-
-#search-button:hover svg {
-    color: #007bff;
 }
 
 #answer {
@@ -1116,10 +1142,154 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to make a couple changes. I want to have the current search button just act as an icon, and have the new search button be on the right side of the search input. This new button should look like a black square (with curved borders), with a white arrow inside of it pointing right. I found a similar element online, but with an upwards arrow, that can be used as inspiration:
+This all works great, but I want to add a new feature. I want to have the cursor in the search input to be as smooth as possible. For this, I want the cursor to slide when the text changes. I have made another web app that used this concept:
 
 ```html
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-2xl"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z" fill="currentColor"></path></svg>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Wro</title>
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="editor" contenteditable="true" spellcheck="false"></div>
+  <div id="custom-cursor"></div>
+
+  <script src="/script.js"></script>
+</body>
+</html>
 ```
 
-I want you to fully develop and implement this.
+```css
+@font-face {
+  font-family: "Poly Sans";
+  src: url('fonts/PolySansNeutral.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: "Poly Sans Bulky";
+  src: url('fonts/PolySansBulky.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: "Poly Sans Slim";
+  src: url('fonts/PolySansSlim.ttf') format('truetype');
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: "Poly Sans Slim", Arial, sans-serif;
+  background-color: #f9f9f9;
+  position: relative;
+}
+
+#editor {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  outline: none;
+  resize: none;
+  font-size: 1.2em;
+  letter-spacing: 0.05em;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  caret-color: transparent;
+  position: relative;
+}
+
+#editor::selection {
+  background: rgba(0, 0, 255, 0.3);
+}
+
+#custom-cursor {
+  position: absolute;
+  width: 2px;
+  height: 1.2em;
+  background-color: black;
+  pointer-events: none;
+  z-index: 10;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: all 0.1s ease;
+}
+```
+
+```javascript
+document.addEventListener('DOMContentLoaded', () => {
+  const editor = document.getElementById('editor');
+  const customCursor = document.getElementById('custom-cursor');
+
+  const savedNote = localStorage.getItem('userNote');
+  if (savedNote) {
+    editor.innerText = savedNote;
+  }
+
+  const saveNote = () => {
+    localStorage.setItem('userNote', editor.innerText);
+  };
+
+  let saveTimeout;
+  editor.addEventListener('input', () => {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(saveNote, 300);
+    updateCustomCursor();
+  });
+
+  const getCaretCoordinates = () => {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return { x: 20, y: 20 };
+
+    const range = selection.getRangeAt(0).cloneRange();
+    range.collapse(true);
+
+    const dummy = document.createElement('span');
+    dummy.textContent = '\u200b';
+    range.insertNode(dummy);
+
+    const rect = dummy.getBoundingClientRect();
+    const x = rect.left;
+    const y = rect.top;
+
+    dummy.parentNode.removeChild(dummy);
+
+    return { x, y };
+  };
+
+  const updateCustomCursor = () => {
+    const { x, y } = getCaretCoordinates();
+    const editorRect = editor.getBoundingClientRect();
+
+    const cursorX = x - editorRect.left;
+    let cursorY = y - editorRect.top;
+
+    cursorY += 2;
+
+    const clampedX = Math.max(0, Math.min(cursorX, editor.clientWidth - 2)); // 2px width of cursor
+    const clampedY = Math.max(0, Math.min(cursorY, editor.clientHeight - parseInt(getComputedStyle(editor).fontSize)));
+
+    customCursor.style.left = `${clampedX}px`;
+    customCursor.style.top = `${clampedY}px`;
+  };
+
+  updateCustomCursor();
+
+  document.addEventListener('selectionchange', () => {
+    setTimeout(updateCustomCursor, 0);
+  });
+
+  window.addEventListener('resize', updateCustomCursor);
+});
+```
+
+I want the cursor in my search input to behave the exact same way. I want you to fully develop and implement this.
