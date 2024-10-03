@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
             submitSearch(query);
         }
     });
+
     searchInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
             e.preventDefault();

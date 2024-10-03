@@ -52,6 +52,7 @@ body {
 
 .search-container {
     display: flex;
+    align-items: center;
     background-color: #efefef;
     border-radius: 50px;
     padding: 0.5rem;
@@ -73,21 +74,42 @@ body {
     background: transparent;
 }
 
-#search-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.5rem;
+#search-icon {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0.5rem;
+    color: #333;
+}
+
+#search-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+#search-button {
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
 }
 
 #search-button svg {
-    width: 24px;
-    height: 24px;
-    color: #333;
-    transition: color 0.3s ease;
+    width: 32px;
+    height: 32px;
+    rotate: 90deg;
+}
+
+#search-button:hover {
+    opacity: 0.8;
 }
 
 @keyframes fadeInUp {
@@ -113,10 +135,6 @@ body {
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.2s ease forwards;
-}
-
-#search-button:hover svg {
-    color: #007bff;
 }
 
 #answer {
