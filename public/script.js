@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let imageList = [];
     let currentImageIndex = 0;
     let audioContext;
-let audioSource;
-let isPlaying = false;
+    let audioSource;
+    let isPlaying = false;
 
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
@@ -169,7 +169,7 @@ let isPlaying = false;
         const h2Elements = clonedAnswerElement.querySelectorAll('h2');
         h2Elements.forEach(h2 => h2.remove());
         const answerText = clonedAnswerElement.innerText;
-        console.log('TTS text:', answerText);
+        // console.log('TTS text:', answerText);
 
         ttsIcon.style.display = 'none';
         ttsSpinner.style.display = 'block';
@@ -346,31 +346,31 @@ let isPlaying = false;
 
                 if (data.images && data.images.length > 0) {
                     const imagesToShow = data.images.slice(0, 4);
-        
+
                     imageList = imagesToShow;
-        
+
                     const imageGrid = document.createElement('div');
                     imageGrid.className = 'image-grid';
-        
+
                     imagesToShow.forEach((imgUrl, index) => {
                         const gridItem = document.createElement('div');
                         gridItem.className = 'image-grid-item';
-        
+
                         const skeletonOverlay = document.createElement('div');
                         skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
                         gridItem.appendChild(skeletonOverlay);
-        
+
                         const img = document.createElement('img');
                         img.src = imgUrl + '?p=300';
                         img.dataset.fullSrc = imgUrl;
                         img.dataset.index = index;
                         img.alt = 'Related Image';
                         img.style.opacity = '0';
-        
+
                         gridItem.appendChild(img);
                         imageGrid.appendChild(gridItem);
                     });
-    
+
                     if (insertPosition === 'afterH2') {
                         if (firstElement.nextSibling) {
                             tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
@@ -389,7 +389,7 @@ let isPlaying = false;
                 answerDiv.innerHTML = finalHtml;
 
                 const images = answerDiv.querySelectorAll('.image-grid-item img');
-                
+
                 images.forEach(img => {
                     img.addEventListener('load', () => {
                         img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
@@ -405,7 +405,7 @@ let isPlaying = false;
                 });
 
                 toolbar.style.display = 'flex';
-            
+
                 socket.disconnect();
             } else if (data.status === 'error' || (data.answer && data.answer.error)) {
                 hideSkeletonLoader();

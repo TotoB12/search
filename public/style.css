@@ -315,7 +315,7 @@ body {
     }
 }
 
-.animate-spin {
+.tts-spinner {
     animation: spin 1s linear infinite;
 }
 
@@ -511,6 +511,7 @@ body.search-active .answerContainer {
 }
 
 @media (max-width: 800px) {
+
     .image-grid,
     .skeleton-image-grid {
         grid-template-columns: repeat(2, 1fr);
