@@ -97,12 +97,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function showSkeletonLoader() {
         if (answerContent.style.display !== 'none') {
             answerContent.style.opacity = '0';
-            answerContent.style.transform = 'translateY(20px)';
+            answerContent.style.transform = 'translateY(-20px)';
             setTimeout(() => {
                 answerContent.style.display = 'none';
                 answerDiv.innerHTML = '';
                 insertSkeletonLoader();
-            }, 300);
+            }, 100);
         } else {
             insertSkeletonLoader();
         }
