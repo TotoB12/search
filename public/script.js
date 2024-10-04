@@ -153,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 answerContent.style.display = 'block';
                 answerContent.style.opacity = '0';
                 answerContent.style.transform = 'translateY(20px)';
-                // Trigger reflow to apply the transition
                 void answerContent.offsetWidth;
                 answerContent.style.opacity = '1';
                 answerContent.style.transform = 'translateY(0)';
