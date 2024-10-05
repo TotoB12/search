@@ -106,6 +106,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 answerContent.style.display = 'none';
                 answerDiv.innerHTML = '';
                 insertSkeletonLoader();
+
+                // const existingSourcesGrid = document.querySelector('.sources-grid');
+                // if (existingSourcesGrid) {
+                //     existingSourcesGrid.remove();
+                // }
             }, 100);
         } else {
             insertSkeletonLoader();
@@ -168,22 +173,22 @@ document.addEventListener('DOMContentLoaded', function () {
     function createSourcesGrid(urls) {
         const gridContainer = document.createElement('div');
         gridContainer.className = 'sources-grid';
-    
+
         urls.forEach(urlObj => {
             const sourceItem = document.createElement('div');
             sourceItem.className = 'source-item';
-    
+
             const faviconImg = document.createElement('img');
             faviconImg.className = 'favicon';
             faviconImg.src = urlObj.favicon;
             faviconImg.alt = 'Favicon';
-    
+
             const titleLink = document.createElement('a');
             titleLink.href = urlObj.url;
             titleLink.target = '_blank';
             titleLink.rel = 'noopener noreferrer';
             titleLink.className = 'source-title';
-    
+
             const maxTitleLength = 50;
             let titleText = urlObj.title || '';
             titleText = titleText.replace(/Search icon.*$/, '').trim();
@@ -191,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 titleText = titleText.substring(0, maxTitleLength) + '...';
             }
             titleLink.textContent = titleText || urlObj.url;
-    
+
             const urlText = document.createElement('p');
             urlText.className = 'source-url';
             let urlDisplayText;
@@ -201,14 +206,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 urlDisplayText = urlObj.url;
             }
             urlText.textContent = urlDisplayText;
-    
+
             sourceItem.appendChild(faviconImg);
             sourceItem.appendChild(titleLink);
             sourceItem.appendChild(urlText);
-    
+
             gridContainer.appendChild(sourceItem);
         });
-    
+
         return gridContainer;
     }
 
@@ -407,6 +412,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (data.status === 'completed' && !data.error) {
                 console.log(data);
                 hideSkeletonLoader();
+
+                const existingSourcesGrid = document.querySelector('.sources-grid');
+                if (existingSourcesGrid) {
+                    existingSourcesGrid.remove();
+                }
 
                 const processedAnswer = processCitations(data.answer, data.urls);
                 const parsedHtml = marked.parse(processedAnswer);
