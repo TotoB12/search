@@ -394,6 +394,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function submitSearch(query) {
         showSkeletonLoader();
 
+        removeExistingWebResults();
+
         const socket = io('https://api.totob12.com', {
             transports: ['websocket'],
             withCredentials: true
@@ -556,5 +558,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const answerContainer = document.querySelector('.answerContainer');
         answerContainer.appendChild(webResultsContainer);
+    }
+
+    function removeExistingWebResults() {
+        const existingWebResults = document.querySelector('.web-results');
+        if (existingWebResults) {
+                existingWebResults.remove();
+        }
     }
 });

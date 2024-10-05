@@ -514,7 +514,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function submitSearch(query) {
-
         showSkeletonLoader();
 
         const socket = io('https://api.totob12.com', {
@@ -526,7 +525,12 @@ document.addEventListener('DOMContentLoaded', function () {
             socket.emit('search', query);
         });
 
-        socket.on('searchResult', (data) => {
+        socket.on('generalResults', (data) => {
+            console.log('Received general web results:', data);
+            displayGeneralWebResults(data.webResults);
+        });
+
+        socket.on('aiAnswer', (data) => {
             if (data.status === 'completed' && !data.error) {
                 console.log(data);
                 hideSkeletonLoader();
@@ -627,6 +631,53 @@ document.addEventListener('DOMContentLoaded', function () {
             hideSkeletonLoader();
             answerDiv.innerText = `Error: ${err.message}`;
         });
+    }
+
+    function displayGeneralWebResults(webResults) {
+        const webResultsContainer = document.createElement('div');
+        webResultsContainer.className = 'web-results';
+
+        webResults.forEach(result => {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'web-result-item';
+
+            const titleLink = document.createElement('a');
+            titleLink.href = result.url;
+            titleLink.target = '_blank';
+            titleLink.rel = 'noopener noreferrer';
+            titleLink.className = 'web-result-title';
+            titleLink.textContent = result.title;
+
+            const urlLink = document.createElement('a');
+            urlLink.href = result.url;
+            urlLink.target = '_blank';
+            urlLink.rel = 'noopener noreferrer';
+            urlLink.className = 'web-result-url';
+            urlLink.textContent = result.url;
+
+            const description = document.createElement('p');
+            description.className = 'web-result-description';
+            description.textContent = result.description;
+
+            const faviconImg = document.createElement('img');
+            faviconImg.className = 'web-result-favicon';
+            faviconImg.src = result.favicon;
+            faviconImg.alt = 'Favicon';
+
+            const header = document.createElement('div');
+            header.className = 'web-result-header';
+            header.appendChild(faviconImg);
+            header.appendChild(urlLink);
+
+            resultItem.appendChild(titleLink);
+            resultItem.appendChild(header);
+            resultItem.appendChild(description);
+
+            webResultsContainer.appendChild(resultItem);
+        });
+
+        const answerContainer = document.querySelector('.answerContainer');
+        answerContainer.appendChild(webResultsContainer);
     }
 });
 
@@ -1167,6 +1218,53 @@ body {
     }
 }
 
+.web-results {
+    margin-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 2rem;
+}
+
+.web-result-item {
+    margin-bottom: 1.5rem;
+}
+
+.web-result-title {
+    font-size: 1.2rem;
+    color: #1a0dab;
+    text-decoration: none;
+}
+
+.web-result-title:hover {
+    text-decoration: underline;
+}
+
+.web-result-header {
+    display: flex;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+.web-result-favicon {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.5rem;
+}
+
+.web-result-url {
+    font-size: 0.9rem;
+    color: #006621;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.web-result-description {
+    font-size: 0.9rem;
+    color: #4d5156;
+    line-height: 1.58;
+}
+
 body.search-active {
     padding-top: 100px;
     justify-content: flex-start;
@@ -1265,881 +1363,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-Here is the code for the API server:
-
-server.js
-```javascript
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const http = require('http');
-const { Server } = require("socket.io");
-
-const mainRouter = require('./main');
-const depotRouter = require('./depot');
-const { processQuery } = require('./search');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.json({ limit: '1gb' }));
-app.use(express.urlencoded({ limit: '1gb', extended: true }));
-app.use(cookieParser());
-
-app.use(cors({
-    origin: [
-        'https://totob12.com',
-        'https://depot.totob12.com',
-        'http://localhost:8000',
-        'https://search.totob12.com'
-    ],
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Authorization', 'Content-Type'],
-    credentials: true
-}));
-
-app.use('/depot', depotRouter);
-app.use('/', mainRouter);
-
-const httpServer = http.createServer(app);
-
-const io = new Server(httpServer, {
-    cors: {
-        origin: [
-            'https://totob12.com',
-            'https://depot.totob12.com',
-            'http://localhost:8000',
-            'https://search.totob12.com'
-        ],
-        methods: ['GET', 'POST', 'OPTIONS'],
-        allowedHeaders: ['Authorization', 'Content-Type'],
-        credentials: true
-    }
-});
-
-io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    socket.on('search', async (query) => {
-        console.log('Received search query:', query);
-        const result = await processQuery(query);
-
-        socket.emit('searchResult', result);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
-});
-
-httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`TotoB12 API server is running on port ${PORT}`);
-});
-```
-
-search.js
-```javascript
-const axios = require('axios');
-const cheerio = require('cheerio');
-const { image_search } = require("duckduckgo-images-api");
-const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
-const pLimit = require('p-limit');
-
-const genAI = new GoogleGenerativeAI(process.env.AI_STUDIO_KEY);
-const safetySettings = [
-    {
-        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-    }
-];
-const model = genAI.getGenerativeModel({
-    // model: "gemini-1.5-flash",
-    model: "gemini-1.5-flash-8b-exp-0924",
-    generationConfig: {
-        temperature: 0.0,
-        maxOutputTokens: 1000,
-        topP: 0.4,
-        topK: 10,
-        presencePenalty: 0,
-        frequencyPenalty: 0,
-    },
-    safetySettings: safetySettings,
-});
-
-async function processQuery(query) {
-    try {
-        const searchResults = await searchInternet(query);
-        const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries to answer/respond to the user's query.
-The user's query is:
-
-\`\`\`
-${query}
-\`\`\`
-
-Your response should be easy to read and understand, and be presented in a helpful and informative manner. Keep in mind that it should be relatively short. Make sure to provide accurate and relevant information.
-
-You should format it to be aerated and structured, and not be an ugly paragraph. You may use Markdown to format your response. You should always have a short title before your response using ##.
-If your response contains a group of words that can be considered a direct response/answer to the user's query, you should highlight it. To highlight a part of text, have it be contained inside two couples of curly brackets, like this: {{this is part of a sentence that will be highlighted}}.
-
-Never apologize for not being able to find an answer. Always answer something.
-
-You have online results to assist you in your response. If you use any of the content from these results, provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}
-For example, to cite the first result, use {{{0}}}
-To cite the second and fourth results, use {{{1,3}}}
-
-Web results:
-
-\`\`\`
-${JSON.stringify(searchResults, null, 2)}
-\`\`\`
-`;
-
-        const aiResultPromise = aiResponse(prompt);
-        const imagesPromise = get_images(query);
-
-        const [aiResult, images] = await Promise.all([aiResultPromise, imagesPromise]);
-
-        const usedUrls = searchResults.map(result => ({
-            index: result.index,
-            title: result.title,
-            favicon: result.favicon,
-            url: result.url
-        }));
-
-        return { status: 'completed', answer: aiResult, urls: usedUrls, images: images.images };
-    } catch (error) {
-        console.error(error);
-        return { status: 'error', error: 'Internal Server Error' };
-    }
-}
-
-// async function searchInternetOld(query) {
-//     const endpoint = "https://api.tavily.com/search";
-//     const body = {
-//         api_key: process.env.TAVILY_KEY,
-//         query: query,
-//         search_depth: "basic",
-//         include_answer: false,
-//         include_images: false,
-//         include_raw_content: false,
-//         max_results: 4,
-//         include_domains: [],
-//         exclude_domains: [],
-//     };
-
-//     try {
-//         const response = await axios.post(endpoint, body);
-//         if (response.data && response.data.results) {
-
-//             const results = response.data.results.slice(0, 4);
-//             const outputResults = results.map((result, index) => ({
-//                 index: index,
-//                 url: result.url,
-//                 content: result.content,
-//             }));
-
-//             return outputResults;
-//         }
-//     } catch (error) {
-//         console.error("Error calling Tavily search API:", error);
-//         return { error: error.message };
-//     }
-// }
-
-async function searchInternet(query) {
-    try {
-        const headers = {
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
-                '(KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        };
-
-        const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-        const response = await axios.get(url, { headers });
-
-        if (response.status !== 200) {
-            console.log(`Error: HTTP error ${response.status}`);
-            return { error: `HTTP error ${response.status}` };
-        }
-
-        const $ = cheerio.load(response.data);
-        let results = [];
-        $('a.result__a').each((i, elem) => {
-            const href = $(elem).attr('href');
-            if (href) {
-                results.push(href);
-            }
-        });
-
-        results = results
-            .filter(url => !url.startsWith("https://duckduckgo.com"))
-            .slice(0, 4);
-        console.log(`Found ${results.length} results for ${query}:`, results);
-
-        const maxCharacters = 2000000;
-
-        const limit = pLimit(4);
-
-        const fetchPagePromises = results.map((url) => limit(async () => {
-            try {
-                const pageResponse = await axios.get(url, {
-                    headers,
-                    maxRedirects: 2,
-                    timeout: 1200,
-                    validateStatus: function (status) {
-                        return status >= 200 && status < 400;
-                    },
-                });
-
-                const $page = cheerio.load(pageResponse.data);
-
-                $page('script, style').remove();
-
-                const pageText = $page('body').text()
-                    .replace(/\s+/g, ' ')
-                    .trim();
-
-                const pageTitle = $page('title').text().trim();
-                const pageFavicon = `https://external-content.duckduckgo.com/ip3/${new URL(url).hostname}.ico`;
-
-                return {
-                    url: url,
-                    title: pageTitle,
-                    favicon: pageFavicon,
-                    content: pageText,
-                };
-            } catch (error) {
-                console.log(`Error: Failed to fetch page ${url}, ${error.message}`);
-                return null;
-            }
-        }));
-
-        const fetchedResults = await Promise.all(fetchPagePromises);
-
-        let outputResults = [];
-        let totalContentLength = 0;
-        let currentIndex = 0;
-
-        for (let result of fetchedResults) {
-            if (result && totalContentLength < maxCharacters) {
-                let contentToAdd;
-                if (totalContentLength + result.content.length > maxCharacters) {
-                    contentToAdd = result.content.slice(0, maxCharacters - totalContentLength);
-                    totalContentLength = maxCharacters;
-                } else {
-                    contentToAdd = result.content;
-                    totalContentLength += contentToAdd.length;
-                }
-
-                outputResults.push({
-                    index: currentIndex,
-                    title: result.title,
-                    favicon: result.favicon,
-                    url: result.url,
-                    content: contentToAdd,
-                });
-                currentIndex++;
-
-                if (totalContentLength >= maxCharacters) {
-                    break;
-                }
-            }
-        }
-
-        return outputResults;
-
-    } catch (error) {
-        console.error(`Error: ${error.message}`);
-        return { error: error.message };
-    }
-}
-
-async function get_images(query, limit = 10) {
-    try {
-        const results = await image_search({
-            query: query,
-            moderate: false,
-            iterations: 1,
-            retries: 2,
-        });
-        const images = results.slice(0, limit).map((result) => result.image);
-        images.forEach((image, index) => {
-            images[index] = `https://api.totob12.com/image/${encodeURIComponent(image)}`;
-            // images[index] = `https://wsrv.nl/?url=${encodeURIComponent(image)}`;
-        });
-        return { images: images };
-    } catch (error) {
-        console.error(error);
-        return { results: null };
-    }
-}
-
-async function aiResponse(prompt) {
-    try {
-        const result = await model.generateContent(prompt);
-        return result.response.text();
-    } catch (error) {
-        console.log(error);
-        return "## Internal Server Error\n\nAn error occurred processing your query.";
-    }
-}
-
-module.exports = {
-    processQuery
-};
-```
-
-I wish to improve my web app to also show general web results, underneath the answer container. I want a list of results to be show, like on Google or Bing. To do this, I need to change the way that searches are made on my app. It should still only send one request to the API server, but should wait for two responses before closing the connection:
-
-- the first response should be the one that is currently already implemented and operational.
-- the second one should be the general search results. for each result, it should contain the favicon link, the title, the URL, and the description of the page.
-
-To ensure speed, the API server should only do one initial DuckDuckGo search, and then use the results for both responses, simultaneously to be as fast as possible. Here is an example HTML result of a DuckDuckGo search:
-
-```html
-<div class="serp__results">
-  <div id="links" class="results">
-
-      
-
-
-
-  
-
-    
-
-        <div class="result results_links results_links_deep result--ad ">
-
-          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
-
-          <h2 class="result__title">
-          
-            <a rel="nofollow" class="result__a" href="https://duckduckgo.com/y.js?ad_domain=walmart.com&amp;ad_provider=bingv7aa&amp;ad_type=txad&amp;click_metadata=O5uoHx_pGEPaCjkPtsHPMyds4PSPA8pX0ZnoHU4eeklsTKn05ae%2D9Jl1_Vd1sjvkC6K2wXSqxC14Yf3DTzTA67fr3I2Z9at27C5TmYwFKQGVjKQo%2DDWsiZ6uEkc6zQAv.BMWTvkIJZ_UfTPGiBRPdfQ&amp;rut=4a0a03c70226b3b928da9b7e0dee2bb8e4fda5db50240480d1c2155139b7cc01&amp;u3=https%3A%2F%2Fwww.bing.com%2Faclick%3Fld%3De8mAxGj6bFo_jEdoEABIR6tzVUCUysX2oc%2DgU9gbIy4Nmd7I34zYUIib0F02ARBIqxrDO55gGI_Vcw54ySymml8ojJgLe6PIQ5wcXdHzLVOUjzA0YKNWzNiWhtplADCCG7XxTBhyqirEhQhLD9GVH6LNRyfdY28Lvskr6fFBkwFQTKBlPL9y616no6dw_Urq%2D8%2DyyJmQ%26u%3DaHR0cHMlM2ElMmYlMmZjbGlja3NlcnZlLmRhcnRzZWFyY2gubmV0JTJmbGluayUyZmNsaWNrJTNmJTI2JTI2ZHNfZV9hZGlkJTNkNzI4NDI5ODA4MzU1MzklMjZkc19lX3RhcmdldF9pZCUzZGRhdC0yMzI0NjQyNDU5NTM2NDc5JTNhbG9jLTE5MCUyNiUyNmRzX3VybF92JTNkMiUyNmRzX2Rlc3RfdXJsJTNkaHR0cHMlM2ElMmYlMmZ3d3cud2FsbWFydC5jb20lMmZicm93c2UlMmZmb29kJTJmYmxvY2stY2hlZXNlJTJmZ3JlYXQtdmFsdWUlMmY5NzY3NTlfOTE3NjkwN18xMDAxNDY4XzU1NzMwMTIlMmZZbkpoYm1RNlIzSmxZWFFnVm1Gc2RXVWllJTNmYWRpZCUzZDIyMjIyMjIyMjY0NDU3NDYyMDEwJTI2d21sc3BhcnRuZXIlM2R3bXRsYWJzJTI2d2wwJTNkYiUyNndsMSUzZHMlMjZ3bDIlM2RjJTI2d2wzJTNkNzI4NDI5ODA4MzU1MzklMjZ3bDQlM2RkYXQtMjMyNDY0MjQ1OTUzNjQ3OSUzYWxvYy0xOTAlMjZ3bDUlM2Q4NzQ4MiUyNndsNiUzZCUyNndsNyUzZCUyNndsMTQlM2RjaGVlc2UlMjZ2ZWglM2RzZW0lMjZnY2xpZCUzZDM2ZTYyMGQzMzhkMzFlZTNhODE4NDdkMmI1ZWE1NmNlJTI2Z2Nsc3JjJTNkM3AuZHMlMjYlMjZtc2Nsa2lkJTNkMzZlNjIwZDMzOGQzMWVlM2E4MTg0N2QyYjVlYTU2Y2U%26rlid%3D36e620d338d31ee3a81847d2b5ea56ce&amp;vqd=4-158267892541762135028384411648685463401&amp;iurl=%7B1%7DIG%3DB67F1779EA7848D69B9AB0EEF0A875A5%26CID%3D1C559F4760996B7F2FBD8A48619D6A00%26ID%3DDevEx%2C5054.1">Cheese at Walmart - Block Cheese Online</a>
-          
-            <div class="result__badge-wrap">
-                <button class="badge--ad">Ad</button>
-                <div class="badge--ad__tooltip-wrap">
-                    <div class="tooltip tooltip--right">
-                       <div class="tooltip__triangle-outer"></div>
-                        <div class="tooltip__triangle-inner"></div>
-                        Viewing ads is privacy protected by DuckDuckGo. Ad clicks are managed by Microsoft's ad network (<a href="https://duckduckgo.com/duckduckgo-help-pages/company/ads-by-microsoft-on-duckduckgo-private-search" class="tooltip-link">more info</a>).
-                    </div>
-                </div>
-            </div>
-          </h2>
-
-          
-
-            
-            <div class="result__extras">
-                <div class="result__extras__url">
-
-<!-- Disable Ad Favicon
-                  <span class="result__icon">
-                    
-                      <a rel="nofollow" class="result__icon__img" href="https://duckduckgo.com/y.js?ad_domain=walmart.com&amp;ad_provider=bingv7aa&amp;ad_type=txad&amp;click_metadata=O5uoHx_pGEPaCjkPtsHPMyds4PSPA8pX0ZnoHU4eeklsTKn05ae%2D9Jl1_Vd1sjvkC6K2wXSqxC14Yf3DTzTA67fr3I2Z9at27C5TmYwFKQGVjKQo%2DDWsiZ6uEkc6zQAv.BMWTvkIJZ_UfTPGiBRPdfQ&amp;rut=4a0a03c70226b3b928da9b7e0dee2bb8e4fda5db50240480d1c2155139b7cc01&amp;u3=https%3A%2F%2Fwww.bing.com%2Faclick%3Fld%3De8mAxGj6bFo_jEdoEABIR6tzVUCUysX2oc%2DgU9gbIy4Nmd7I34zYUIib0F02ARBIqxrDO55gGI_Vcw54ySymml8ojJgLe6PIQ5wcXdHzLVOUjzA0YKNWzNiWhtplADCCG7XxTBhyqirEhQhLD9GVH6LNRyfdY28Lvskr6fFBkwFQTKBlPL9y616no6dw_Urq%2D8%2DyyJmQ%26u%3DaHR0cHMlM2ElMmYlMmZjbGlja3NlcnZlLmRhcnRzZWFyY2gubmV0JTJmbGluayUyZmNsaWNrJTNmJTI2JTI2ZHNfZV9hZGlkJTNkNzI4NDI5ODA4MzU1MzklMjZkc19lX3RhcmdldF9pZCUzZGRhdC0yMzI0NjQyNDU5NTM2NDc5JTNhbG9jLTE5MCUyNiUyNmRzX3VybF92JTNkMiUyNmRzX2Rlc3RfdXJsJTNkaHR0cHMlM2ElMmYlMmZ3d3cud2FsbWFydC5jb20lMmZicm93c2UlMmZmb29kJTJmYmxvY2stY2hlZXNlJTJmZ3JlYXQtdmFsdWUlMmY5NzY3NTlfOTE3NjkwN18xMDAxNDY4XzU1NzMwMTIlMmZZbkpoYm1RNlIzSmxZWFFnVm1Gc2RXVWllJTNmYWRpZCUzZDIyMjIyMjIyMjY0NDU3NDYyMDEwJTI2d21sc3BhcnRuZXIlM2R3bXRsYWJzJTI2d2wwJTNkYiUyNndsMSUzZHMlMjZ3bDIlM2RjJTI2d2wzJTNkNzI4NDI5ODA4MzU1MzklMjZ3bDQlM2RkYXQtMjMyNDY0MjQ1OTUzNjQ3OSUzYWxvYy0xOTAlMjZ3bDUlM2Q4NzQ4MiUyNndsNiUzZCUyNndsNyUzZCUyNndsMTQlM2RjaGVlc2UlMjZ2ZWglM2RzZW0lMjZnY2xpZCUzZDM2ZTYyMGQzMzhkMzFlZTNhODE4NDdkMmI1ZWE1NmNlJTI2Z2Nsc3JjJTNkM3AuZHMlMjYlMjZtc2Nsa2lkJTNkMzZlNjIwZDMzOGQzMWVlM2E4MTg0N2QyYjVlYTU2Y2U%26rlid%3D36e620d338d31ee3a81847d2b5ea56ce&amp;vqd=4-158267892541762135028384411648685463401&amp;iurl=%7B1%7DIG%3DB67F1779EA7848D69B9AB0EEF0A875A5%26CID%3D1C559F4760996B7F2FBD8A48619D6A00%26ID%3DDevEx%2C5054.1">
-                        <img width="16" height="16" alt=""
-                          src="//external-content.duckduckgo.com/ip3/.ico" name="i15" />
-                      </a>
-                  
-                  </span>
--->
-
-                  <a class="result__url" href="https://duckduckgo.com/y.js?ad_domain=walmart.com&amp;ad_provider=bingv7aa&amp;ad_type=txad&amp;click_metadata=O5uoHx_pGEPaCjkPtsHPMyds4PSPA8pX0ZnoHU4eeklsTKn05ae%2D9Jl1_Vd1sjvkC6K2wXSqxC14Yf3DTzTA67fr3I2Z9at27C5TmYwFKQGVjKQo%2DDWsiZ6uEkc6zQAv.BMWTvkIJZ_UfTPGiBRPdfQ&amp;rut=4a0a03c70226b3b928da9b7e0dee2bb8e4fda5db50240480d1c2155139b7cc01&amp;u3=https%3A%2F%2Fwww.bing.com%2Faclick%3Fld%3De8mAxGj6bFo_jEdoEABIR6tzVUCUysX2oc%2DgU9gbIy4Nmd7I34zYUIib0F02ARBIqxrDO55gGI_Vcw54ySymml8ojJgLe6PIQ5wcXdHzLVOUjzA0YKNWzNiWhtplADCCG7XxTBhyqirEhQhLD9GVH6LNRyfdY28Lvskr6fFBkwFQTKBlPL9y616no6dw_Urq%2D8%2DyyJmQ%26u%3DaHR0cHMlM2ElMmYlMmZjbGlja3NlcnZlLmRhcnRzZWFyY2gubmV0JTJmbGluayUyZmNsaWNrJTNmJTI2JTI2ZHNfZV9hZGlkJTNkNzI4NDI5ODA4MzU1MzklMjZkc19lX3RhcmdldF9pZCUzZGRhdC0yMzI0NjQyNDU5NTM2NDc5JTNhbG9jLTE5MCUyNiUyNmRzX3VybF92JTNkMiUyNmRzX2Rlc3RfdXJsJTNkaHR0cHMlM2ElMmYlMmZ3d3cud2FsbWFydC5jb20lMmZicm93c2UlMmZmb29kJTJmYmxvY2stY2hlZXNlJTJmZ3JlYXQtdmFsdWUlMmY5NzY3NTlfOTE3NjkwN18xMDAxNDY4XzU1NzMwMTIlMmZZbkpoYm1RNlIzSmxZWFFnVm1Gc2RXVWllJTNmYWRpZCUzZDIyMjIyMjIyMjY0NDU3NDYyMDEwJTI2d21sc3BhcnRuZXIlM2R3bXRsYWJzJTI2d2wwJTNkYiUyNndsMSUzZHMlMjZ3bDIlM2RjJTI2d2wzJTNkNzI4NDI5ODA4MzU1MzklMjZ3bDQlM2RkYXQtMjMyNDY0MjQ1OTUzNjQ3OSUzYWxvYy0xOTAlMjZ3bDUlM2Q4NzQ4MiUyNndsNiUzZCUyNndsNyUzZCUyNndsMTQlM2RjaGVlc2UlMjZ2ZWglM2RzZW0lMjZnY2xpZCUzZDM2ZTYyMGQzMzhkMzFlZTNhODE4NDdkMmI1ZWE1NmNlJTI2Z2Nsc3JjJTNkM3AuZHMlMjYlMjZtc2Nsa2lkJTNkMzZlNjIwZDMzOGQzMWVlM2E4MTg0N2QyYjVlYTU2Y2U%26rlid%3D36e620d338d31ee3a81847d2b5ea56ce&amp;vqd=4-158267892541762135028384411648685463401&amp;iurl=%7B1%7DIG%3DB67F1779EA7848D69B9AB0EEF0A875A5%26CID%3D1C559F4760996B7F2FBD8A48619D6A00%26ID%3DDevEx%2C5054.1">
-                  walmart.com
-                  </a>
-
-                  
-
-                </div>
-            </div>
-            
-
-            
-                  <a class="result__snippet" href="https://duckduckgo.com/y.js?ad_domain=walmart.com&amp;ad_provider=bingv7aa&amp;ad_type=txad&amp;click_metadata=O5uoHx_pGEPaCjkPtsHPMyds4PSPA8pX0ZnoHU4eeklsTKn05ae%2D9Jl1_Vd1sjvkC6K2wXSqxC14Yf3DTzTA67fr3I2Z9at27C5TmYwFKQGVjKQo%2DDWsiZ6uEkc6zQAv.BMWTvkIJZ_UfTPGiBRPdfQ&amp;rut=4a0a03c70226b3b928da9b7e0dee2bb8e4fda5db50240480d1c2155139b7cc01&amp;u3=https%3A%2F%2Fwww.bing.com%2Faclick%3Fld%3De8mAxGj6bFo_jEdoEABIR6tzVUCUysX2oc%2DgU9gbIy4Nmd7I34zYUIib0F02ARBIqxrDO55gGI_Vcw54ySymml8ojJgLe6PIQ5wcXdHzLVOUjzA0YKNWzNiWhtplADCCG7XxTBhyqirEhQhLD9GVH6LNRyfdY28Lvskr6fFBkwFQTKBlPL9y616no6dw_Urq%2D8%2DyyJmQ%26u%3DaHR0cHMlM2ElMmYlMmZjbGlja3NlcnZlLmRhcnRzZWFyY2gubmV0JTJmbGluayUyZmNsaWNrJTNmJTI2JTI2ZHNfZV9hZGlkJTNkNzI4NDI5ODA4MzU1MzklMjZkc19lX3RhcmdldF9pZCUzZGRhdC0yMzI0NjQyNDU5NTM2NDc5JTNhbG9jLTE5MCUyNiUyNmRzX3VybF92JTNkMiUyNmRzX2Rlc3RfdXJsJTNkaHR0cHMlM2ElMmYlMmZ3d3cud2FsbWFydC5jb20lMmZicm93c2UlMmZmb29kJTJmYmxvY2stY2hlZXNlJTJmZ3JlYXQtdmFsdWUlMmY5NzY3NTlfOTE3NjkwN18xMDAxNDY4XzU1NzMwMTIlMmZZbkpoYm1RNlIzSmxZWFFnVm1Gc2RXVWllJTNmYWRpZCUzZDIyMjIyMjIyMjY0NDU3NDYyMDEwJTI2d21sc3BhcnRuZXIlM2R3bXRsYWJzJTI2d2wwJTNkYiUyNndsMSUzZHMlMjZ3bDIlM2RjJTI2d2wzJTNkNzI4NDI5ODA4MzU1MzklMjZ3bDQlM2RkYXQtMjMyNDY0MjQ1OTUzNjQ3OSUzYWxvYy0xOTAlMjZ3bDUlM2Q4NzQ4MiUyNndsNiUzZCUyNndsNyUzZCUyNndsMTQlM2RjaGVlc2UlMjZ2ZWglM2RzZW0lMjZnY2xpZCUzZDM2ZTYyMGQzMzhkMzFlZTNhODE4NDdkMmI1ZWE1NmNlJTI2Z2Nsc3JjJTNkM3AuZHMlMjYlMjZtc2Nsa2lkJTNkMzZlNjIwZDMzOGQzMWVlM2E4MTg0N2QyYjVlYTU2Y2U%26rlid%3D36e620d338d31ee3a81847d2b5ea56ce&amp;vqd=4-158267892541762135028384411648685463401&amp;iurl=%7B1%7DIG%3DB67F1779EA7848D69B9AB0EEF0A875A5%26CID%3D1C559F4760996B7F2FBD8A48619D6A00%26ID%3DDevEx%2C5054.1">Free 2-day Shipping On Millions of Items. No Membership Fee. Shop Now!</a>
-            
-
-
-
-        <div class="clear"></div>
-          </div>
-
-
-        </div>
-
-    
-
-  
-
-
-
-  
-
-    
-
-        <div class="result results_links results_links_deep result--ad result--ad--small">
-
-          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
-
-          <h2 class="result__title">
-          
-            <a rel="nofollow" class="result__a" href="https://duckduckgo.com/y.js?ad_domain=gardnerswisconsincheese.com&amp;ad_provider=bingv7aa&amp;ad_type=txad&amp;click_metadata=K5F92D6lC2%2DRnocOTMJi6UoXTRfXI6zyEztCl6oUozSPdXNkuvIrJg5AeVLbk_eawpuKRrEpKQozuJG_In1uOGsMaFhUOye815xdKtPL6EZrqPd4IkiyHPfj0wKsD85A.XU6DdQZWlxqBTEEouwMyOQ&amp;rut=2eaea5fb652982f7761ebad72d09d6ca69f27280d242ea6c22bfc1ce6141144c&amp;u3=https%3A%2F%2Fwww.bing.com%2Faclick%3Fld%3De8mx6JLHqNTLsJyxM1WmSSoDVUCUzIzn2ATlzEEPjXcsR%2DI9QpHuEWTGYYnt8dn%2DaPB25h%2DOv7w13BKmQdf0O1%2Dc3TRSdxk247JC0eo1MWZvNTJszGB8h9BZIWzv5a6lEDQTk0suYEiUg2LXFu_r3ezfXE3dLcLh9oz30vxr8N7ChzimfLNP8S611pBKpCAveQg0z8kw%26u%3DaHR0cHMlM2ElMmYlMmZ3d3cuZ2FyZG5lcnN3aXNjb25zaW5jaGVlc2UuY29tJTJmY29sbGVjdGlvbnMlMmZzcGVjaWFsdHktYXJ0aXNhbi1jaGVlc2VzJTNmdHdfc291cmNlJTNkZ29vZ2xlJTI2dHdfYWRpZCUzZCUyNnR3X2NhbXBhaWduJTNkNDA3MTY5Nzg1JTI2bXNjbGtpZCUzZDkzNmVjNGNhMTI3NDEyN2YzOTgzYTNjYjlmNGRlMDIyJTI2dXRtX3NvdXJjZSUzZGJpbmclMjZ1dG1fbWVkaXVtJTNkY3BjJTI2dXRtX2NhbXBhaWduJTNkKipMUCUyNTIwU2VhcmNoJTI1MjAtJTI1MjBEU0ElMjZ1dG1fdGVybSUzZGdhcmRuZXJzd2lzY29uc2luY2hlZXNlJTI2dXRtX2NvbnRlbnQlM2RBbGwlMjUyMFdlYnBhZ2Vz%26rlid%3D936ec4ca1274127f3983a3cb9f4de022&amp;vqd=4-229626247302149214696795437176054056233&amp;iurl=%7B1%7DIG%3DB67F1779EA7848D69B9AB0EEF0A875A5%26CID%3D1C559F4760996B7F2FBD8A48619D6A00%26ID%3DDevEx%2C5057.1">Artisan Cheese - Gardners Wisconsin Cheese and Sausage</a>
-          
-            <div class="result__badge-wrap">
-                <button class="badge--ad">Ad</button>
-                <div class="badge--ad__tooltip-wrap">
-                    <div class="tooltip tooltip--right">
-                       <div class="tooltip__triangle-outer"></div>
-                        <div class="tooltip__triangle-inner"></div>
-                        Viewing ads is privacy protected by DuckDuckGo. Ad clicks are managed by Microsoft's ad network (<a href="https://duckduckgo.com/duckduckgo-help-pages/company/ads-by-microsoft-on-duckduckgo-private-search" class="tooltip-link">more info</a>).
-                    </div>
-                </div>
-            </div>
-          </h2>
-
-          
-              <a class="result__url sep--after" href="https://duckduckgo.com/y.js?ad_domain=gardnerswisconsincheese.com&amp;ad_provider=bingv7aa&amp;ad_type=txad&amp;click_metadata=K5F92D6lC2%2DRnocOTMJi6UoXTRfXI6zyEztCl6oUozSPdXNkuvIrJg5AeVLbk_eawpuKRrEpKQozuJG_In1uOGsMaFhUOye815xdKtPL6EZrqPd4IkiyHPfj0wKsD85A.XU6DdQZWlxqBTEEouwMyOQ&amp;rut=2eaea5fb652982f7761ebad72d09d6ca69f27280d242ea6c22bfc1ce6141144c&amp;u3=https%3A%2F%2Fwww.bing.com%2Faclick%3Fld%3De8mx6JLHqNTLsJyxM1WmSSoDVUCUzIzn2ATlzEEPjXcsR%2DI9QpHuEWTGYYnt8dn%2DaPB25h%2DOv7w13BKmQdf0O1%2Dc3TRSdxk247JC0eo1MWZvNTJszGB8h9BZIWzv5a6lEDQTk0suYEiUg2LXFu_r3ezfXE3dLcLh9oz30vxr8N7ChzimfLNP8S611pBKpCAveQg0z8kw%26u%3DaHR0cHMlM2ElMmYlMmZ3d3cuZ2FyZG5lcnN3aXNjb25zaW5jaGVlc2UuY29tJTJmY29sbGVjdGlvbnMlMmZzcGVjaWFsdHktYXJ0aXNhbi1jaGVlc2VzJTNmdHdfc291cmNlJTNkZ29vZ2xlJTI2dHdfYWRpZCUzZCUyNnR3X2NhbXBhaWduJTNkNDA3MTY5Nzg1JTI2bXNjbGtpZCUzZDkzNmVjNGNhMTI3NDEyN2YzOTgzYTNjYjlmNGRlMDIyJTI2dXRtX3NvdXJjZSUzZGJpbmclMjZ1dG1fbWVkaXVtJTNkY3BjJTI2dXRtX2NhbXBhaWduJTNkKipMUCUyNTIwU2VhcmNoJTI1MjAtJTI1MjBEU0ElMjZ1dG1fdGVybSUzZGdhcmRuZXJzd2lzY29uc2luY2hlZXNlJTI2dXRtX2NvbnRlbnQlM2RBbGwlMjUyMFdlYnBhZ2Vz%26rlid%3D936ec4ca1274127f3983a3cb9f4de022&amp;vqd=4-229626247302149214696795437176054056233&amp;iurl=%7B1%7DIG%3DB67F1779EA7848D69B9AB0EEF0A875A5%26CID%3D1C559F4760996B7F2FBD8A48619D6A00%26ID%3DDevEx%2C5057.1">
-              gardnerswisconsincheese.com
-              </a>
-          
-
-            
-
-            
-                  <a class="result__snippet" href="https://duckduckgo.com/y.js?ad_domain=gardnerswisconsincheese.com&amp;ad_provider=bingv7aa&amp;ad_type=txad&amp;click_metadata=K5F92D6lC2%2DRnocOTMJi6UoXTRfXI6zyEztCl6oUozSPdXNkuvIrJg5AeVLbk_eawpuKRrEpKQozuJG_In1uOGsMaFhUOye815xdKtPL6EZrqPd4IkiyHPfj0wKsD85A.XU6DdQZWlxqBTEEouwMyOQ&amp;rut=2eaea5fb652982f7761ebad72d09d6ca69f27280d242ea6c22bfc1ce6141144c&amp;u3=https%3A%2F%2Fwww.bing.com%2Faclick%3Fld%3De8mx6JLHqNTLsJyxM1WmSSoDVUCUzIzn2ATlzEEPjXcsR%2DI9QpHuEWTGYYnt8dn%2DaPB25h%2DOv7w13BKmQdf0O1%2Dc3TRSdxk247JC0eo1MWZvNTJszGB8h9BZIWzv5a6lEDQTk0suYEiUg2LXFu_r3ezfXE3dLcLh9oz30vxr8N7ChzimfLNP8S611pBKpCAveQg0z8kw%26u%3DaHR0cHMlM2ElMmYlMmZ3d3cuZ2FyZG5lcnN3aXNjb25zaW5jaGVlc2UuY29tJTJmY29sbGVjdGlvbnMlMmZzcGVjaWFsdHktYXJ0aXNhbi1jaGVlc2VzJTNmdHdfc291cmNlJTNkZ29vZ2xlJTI2dHdfYWRpZCUzZCUyNnR3X2NhbXBhaWduJTNkNDA3MTY5Nzg1JTI2bXNjbGtpZCUzZDkzNmVjNGNhMTI3NDEyN2YzOTgzYTNjYjlmNGRlMDIyJTI2dXRtX3NvdXJjZSUzZGJpbmclMjZ1dG1fbWVkaXVtJTNkY3BjJTI2dXRtX2NhbXBhaWduJTNkKipMUCUyNTIwU2VhcmNoJTI1MjAtJTI1MjBEU0ElMjZ1dG1fdGVybSUzZGdhcmRuZXJzd2lzY29uc2luY2hlZXNlJTI2dXRtX2NvbnRlbnQlM2RBbGwlMjUyMFdlYnBhZ2Vz%26rlid%3D936ec4ca1274127f3983a3cb9f4de022&amp;vqd=4-229626247302149214696795437176054056233&amp;iurl=%7B1%7DIG%3DB67F1779EA7848D69B9AB0EEF0A875A5%26CID%3D1C559F4760996B7F2FBD8A48619D6A00%26ID%3DDevEx%2C5057.1">Proud To Offer Hand-Crafted Artisan <b>Cheese</b> &amp; Sausage From The Heart Of America's Dairyland. Unopened, Our <b>Cheese</b> Will Last Up To One Year. Orders $59+ Get Free Cold-Pack Shipping.</a>
-            
-
-
-
-        <div class="clear"></div>
-          </div>
-
-
-        </div>
-
-    
-
-  
-
-
-
-  
-
-
-            <div class="result results_links results_links_deep web-result ">
-
-
-          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
-
-          <h2 class="result__title">
-          
-            <a rel="nofollow" class="result__a" href="https://en.wikipedia.org/wiki/Cheese">Cheese - Wikipedia</a>
-          
-          </h2>
-
-      
-
-            <div class="result__extras">
-                <div class="result__extras__url">
-                  <span class="result__icon">
-                    
-                      <a rel="nofollow" href="https://en.wikipedia.org/wiki/Cheese">
-                        <img class="result__icon__img" width="16" height="16" alt="" src="//external-content.duckduckgo.com/ip3/en.wikipedia.org.ico" name="i15">
-                      </a>
-                  
-                  </span>
-
-                  <a class="result__url" href="https://en.wikipedia.org/wiki/Cheese">
-                  en.wikipedia.org/wiki/Cheese
-                  </a>
-
-                  
-
-                </div>
-            </div>
-
-            
-                  <a class="result__snippet" href="https://en.wikipedia.org/wiki/Cheese">Learn about <b>cheese</b>, a dairy product made by coagulating milk protein casein. Discover its origins, varieties, flavors, nutritional value and cultural significance.</a>
-            
-
-            <div class="clear"></div>
-          </div>
-
-        </div>
-
-  
-
-
-
-  
-
-
-            <div class="result results_links results_links_deep web-result ">
-
-
-          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
-
-          <h2 class="result__title">
-          
-            <a rel="nofollow" class="result__a" href="https://www.healthline.com/nutrition/healthiest-cheese">The 9 Healthiest Types of Cheese</a>
-          
-          </h2>
-
-      
-
-            <div class="result__extras">
-                <div class="result__extras__url">
-                  <span class="result__icon">
-                    
-                      <a rel="nofollow" href="https://www.healthline.com/nutrition/healthiest-cheese">
-                        <img class="result__icon__img" width="16" height="16" alt="" src="//external-content.duckduckgo.com/ip3/www.healthline.com.ico" name="i15">
-                      </a>
-                  
-                  </span>
-
-                  <a class="result__url" href="https://www.healthline.com/nutrition/healthiest-cheese">
-                  www.healthline.com/nutrition/healthiest-cheese
-                  </a>
-
-                  
-                    <span>&nbsp; &nbsp; 2023-07-19T00:00:00.0000000</span>
-                  
-
-                </div>
-            </div>
-
-            
-                  <a class="result__snippet" href="https://www.healthline.com/nutrition/healthiest-cheese">Learn about the nutritional benefits and flavors of different <b>cheeses</b>, such as mozzarella, blue <b>cheese</b>, and feta. Find out which <b>cheeses</b> are high in protein, calcium, probiotics, and CLA, and how they may affect your health and weight.</a>
-            
-
-            <div class="clear"></div>
-          </div>
-
-        </div>
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            <div class="result results_links results_links_deep web-result ">
-
-
-          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
-
-          <h2 class="result__title">
-          
-            <a rel="nofollow" class="result__a" href="https://www.cheese.com/">Cheese.com - All Types of Cheese</a>
-          
-          </h2>
-
-      
-
-            <div class="result__extras">
-                <div class="result__extras__url">
-                  <span class="result__icon">
-                    
-                      <a rel="nofollow" href="https://www.cheese.com/">
-                        <img class="result__icon__img" width="16" height="16" alt="" src="//external-content.duckduckgo.com/ip3/www.cheese.com.ico" name="i15">
-                      </a>
-                  
-                  </span>
-
-                  <a class="result__url" href="https://www.cheese.com/">
-                  www.cheese.com
-                  </a>
-
-                  
-
-                </div>
-            </div>
-
-            
-                  <a class="result__snippet" href="https://www.cheese.com/">Find over 2,035 specialty <b>cheeses</b> from 74 countries and learn about their history, production, and flavors. Shop for <b>cheese</b> hampers, explore <b>cheese</b> recipes, and discover <b>cheese</b> facts and tips.</a>
-            
-
-            <div class="clear"></div>
-          </div>
-
-        </div>
-
-  
-
-
-
-  
-
-
-            <div class="result results_links results_links_deep web-result ">
-
-
-          <div class="links_main links_deep result__body"> <!-- This is the visible part -->
-
-          <h2 class="result__title">
-          
-            <a rel="nofollow" class="result__a" href="https://www.usdairy.com/news-articles/cheese-types-what-you-need-to-know-about-cheese">The Many Different Types of Cheese - U.S. Dairy</a>
-          
-          </h2>
-
-      
-
-            <div class="result__extras">
-                <div class="result__extras__url">
-                  <span class="result__icon">
-                    
-                      <a rel="nofollow" href="https://www.usdairy.com/news-articles/cheese-types-what-you-need-to-know-about-cheese">
-                        <img class="result__icon__img" width="16" height="16" alt="" src="//external-content.duckduckgo.com/ip3/www.usdairy.com.ico" name="i15">
-                      </a>
-                  
-                  </span>
-
-                  <a class="result__url" href="https://www.usdairy.com/news-articles/cheese-types-what-you-need-to-know-about-cheese">
-                  www.usdairy.com/news-articles/cheese-types-what-you-need-to-know-about-cheese
-                  </a>
-
-                  
-
-                </div>
-            </div>
-
-            
-                  <a class="result__snippet" href="https://www.usdairy.com/news-articles/cheese-types-what-you-need-to-know-about-cheese">The <b>cheese</b> is white, rindless, unripened, and elastic in texture with a sweet, buttery taste. Bocconcini can be enjoyed as they are or melted. Brie. Brie is a soft, white <b>cheese</b>. It comes in a wheel, sometimes in a small wooden box, and is considered a great dessert <b>cheese</b>. Experts recommend enjoying it at room temperature.</a>
-            
-
-            <div class="clear"></div>
-          </div>
-
-        </div>
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-  
-
-
-            
-
-  
-
-
-
-
-        
-        
-                <div class="nav-link">
-        <form action="/html/" method="post">
-          <input type="submit" class="btn btn--alt" value="Next">
-          <input type="hidden" name="q" value="cheese">
-          <input type="hidden" name="s" value="23">
-          <input type="hidden" name="nextParams" value="">
-          <input type="hidden" name="v" value="l">
-          <input type="hidden" name="o" value="json">
-          <input type="hidden" name="dc" value="26">
-          <input type="hidden" name="api" value="d.js">
-          <input type="hidden" name="vqd" value="4-82230691085562384253435155060276773892">
-
-        
-        
-        
-          <input name="kl" value="wt-wt" type="hidden">
-        
-        
-        
-        
-        </form>
-                </div>
-        
-
-
-
-        <div class=" feedback-btn">
-            <a rel="nofollow" href="//duckduckgo.com/feedback.html" target="_new">Feedback</a>
-        </div>
-        <div class="clear"></div>
-  </div>
-  </div>
-```
-
-My web app's API server should make sure to get all of the results, excluding the ads.
-
-I want you to fully develop and implement this for me.
+This all works well, but there is a few issues. When making a new search, the old web results should be removed, with a smooth animation similar to the `answerContent`.
