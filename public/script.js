@@ -394,8 +394,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function submitSearch(query) {
         showSkeletonLoader();
 
-        // const socket = io('https://api.totob12.com', {
-        const socket = io('http://localhost:3000', {
+        const socket = io('https://api.totob12.com', {
             transports: ['websocket'],
             withCredentials: true
         });
