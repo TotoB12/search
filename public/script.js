@@ -392,10 +392,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function submitSearch(query) {
-
         showSkeletonLoader();
 
-        const socket = io('https://api.totob12.com', {
+        // const socket = io('https://api.totob12.com', {
+        const socket = io('http://localhost:3000', {
             transports: ['websocket'],
             withCredentials: true
         });
@@ -404,7 +404,12 @@ document.addEventListener('DOMContentLoaded', function () {
             socket.emit('search', query);
         });
 
-        socket.on('searchResult', (data) => {
+        socket.on('generalResults', (data) => {
+            console.log('Received general web results:', data);
+            displayGeneralWebResults(data.webResults);
+        });
+
+        socket.on('aiAnswer', (data) => {
             if (data.status === 'completed' && !data.error) {
                 console.log(data);
                 hideSkeletonLoader();
@@ -505,5 +510,52 @@ document.addEventListener('DOMContentLoaded', function () {
             hideSkeletonLoader();
             answerDiv.innerText = `Error: ${err.message}`;
         });
+    }
+
+    function displayGeneralWebResults(webResults) {
+        const webResultsContainer = document.createElement('div');
+        webResultsContainer.className = 'web-results';
+
+        webResults.forEach(result => {
+            const resultItem = document.createElement('div');
+            resultItem.className = 'web-result-item';
+
+            const titleLink = document.createElement('a');
+            titleLink.href = result.url;
+            titleLink.target = '_blank';
+            titleLink.rel = 'noopener noreferrer';
+            titleLink.className = 'web-result-title';
+            titleLink.textContent = result.title;
+
+            const urlLink = document.createElement('a');
+            urlLink.href = result.url;
+            urlLink.target = '_blank';
+            urlLink.rel = 'noopener noreferrer';
+            urlLink.className = 'web-result-url';
+            urlLink.textContent = result.url;
+
+            const description = document.createElement('p');
+            description.className = 'web-result-description';
+            description.textContent = result.description;
+
+            const faviconImg = document.createElement('img');
+            faviconImg.className = 'web-result-favicon';
+            faviconImg.src = result.favicon;
+            faviconImg.alt = 'Favicon';
+
+            const header = document.createElement('div');
+            header.className = 'web-result-header';
+            header.appendChild(faviconImg);
+            header.appendChild(urlLink);
+
+            resultItem.appendChild(titleLink);
+            resultItem.appendChild(header);
+            resultItem.appendChild(description);
+
+            webResultsContainer.appendChild(resultItem);
+        });
+
+        const answerContainer = document.querySelector('.answerContainer');
+        answerContainer.appendChild(webResultsContainer);
     }
 });

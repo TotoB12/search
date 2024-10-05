@@ -531,6 +531,53 @@ body {
     }
 }
 
+.web-results {
+    margin-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 2rem;
+}
+
+.web-result-item {
+    margin-bottom: 1.5rem;
+}
+
+.web-result-title {
+    font-size: 1.2rem;
+    color: #1a0dab;
+    text-decoration: none;
+}
+
+.web-result-title:hover {
+    text-decoration: underline;
+}
+
+.web-result-header {
+    display: flex;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+.web-result-favicon {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.5rem;
+}
+
+.web-result-url {
+    font-size: 0.9rem;
+    color: #006621;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.web-result-description {
+    font-size: 0.9rem;
+    color: #4d5156;
+    line-height: 1.58;
+}
+
 body.search-active {
     padding-top: 100px;
     justify-content: flex-start;
