@@ -516,6 +516,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function submitSearch(query) {
         showSkeletonLoader();
 
+        removeExistingWebResults();
+
         const socket = io('https://api.totob12.com', {
             transports: ['websocket'],
             withCredentials: true
@@ -678,6 +680,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const answerContainer = document.querySelector('.answerContainer');
         answerContainer.appendChild(webResultsContainer);
+    }
+
+    function removeExistingWebResults() {
+        const existingWebResults = document.querySelector('.web-results');
+        if (existingWebResults) {
+                existingWebResults.remove();
+        }
     }
 });
 
@@ -1363,4 +1372,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but there is a few issues. When making a new search, the old web results should be removed, with a smooth animation similar to the `answerContent`.
+This all works great, but I want to improve the looks of the web app. I want to have a concreate "nav bar" at the top of the page, behind the search form and logo when a search is active. It should still be white, but the bottom of it should fade into transparency, to have the effect of items just flowing into a cloud when scrolling down on the page.
