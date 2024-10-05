@@ -218,6 +218,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showSkeletonLoader() {
+        if (isPlaying) {
+            stopTTS();
+        }
         if (answerContent.style.display !== 'none') {
             answerContent.style.opacity = '0';
             answerContent.style.transform = 'translateY(-20px)';
@@ -282,6 +285,53 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             answerContent.style.display = 'block';
         }
+    }
+
+    function createSourcesGrid(urls) {
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'sources-grid';
+
+        urls.forEach(urlObj => {
+            const sourceItem = document.createElement('div');
+            sourceItem.className = 'source-item';
+
+            const faviconImg = document.createElement('img');
+            faviconImg.className = 'favicon';
+            faviconImg.src = urlObj.favicon;
+            faviconImg.alt = 'Favicon';
+
+            const titleLink = document.createElement('a');
+            titleLink.href = urlObj.url;
+            titleLink.target = '_blank';
+            titleLink.rel = 'noopener noreferrer';
+            titleLink.className = 'source-title';
+
+            const maxTitleLength = 50;
+            let titleText = urlObj.title || '';
+            titleText = titleText.replace(/Search icon.*$/, '').trim();
+            if (titleText.length > maxTitleLength) {
+                titleText = titleText.substring(0, maxTitleLength) + '...';
+            }
+            titleLink.textContent = titleText || urlObj.url;
+
+            const urlText = document.createElement('p');
+            urlText.className = 'source-url';
+            let urlDisplayText;
+            try {
+                urlDisplayText = (new URL(urlObj.url)).hostname;
+            } catch (e) {
+                urlDisplayText = urlObj.url;
+            }
+            urlText.textContent = urlDisplayText;
+
+            sourceItem.appendChild(faviconImg);
+            sourceItem.appendChild(titleLink);
+            sourceItem.appendChild(urlText);
+
+            gridContainer.appendChild(sourceItem);
+        });
+
+        return gridContainer;
     }
 
     async function handleTTS() {
@@ -480,6 +530,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(data);
                 hideSkeletonLoader();
 
+                const existingSourcesGrid = document.querySelector('.sources-grid');
+                if (existingSourcesGrid) {
+                    existingSourcesGrid.remove();
+                }
+
                 const processedAnswer = processCitations(data.answer, data.urls);
                 const parsedHtml = marked.parse(processedAnswer);
 
@@ -492,6 +547,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (firstElement && firstElement.tagName === 'H2') {
                     insertPosition = 'afterH2';
                 }
+
+                const sourcesGrid = createSourcesGrid(data.urls);
+                const toolbar = document.querySelector('.toolbar');
+                answerContent.insertBefore(sourcesGrid, toolbar);
 
                 if (data.images && data.images.length > 0) {
                     const imagesToShow = data.images.slice(0, 4);
@@ -886,6 +945,54 @@ body {
     margin-bottom: 8px;
 }
 
+.sources-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+    gap: 1rem;
+}
+
+.source-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: calc(25% - 1rem);
+    box-sizing: border-box;
+    text-align: center;
+    padding: 0.5rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.source-item:hover {
+    background-color: #f1f1f1;
+}
+
+.favicon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 0.5rem;
+}
+
+.source-title {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    margin-bottom: 0.3rem;
+}
+
+.source-title:hover {
+    text-decoration: underline;
+}
+
+.source-url {
+    font-size: 0.8rem;
+    color: #666;
+    word-wrap: break-word;
+}
+
 .toolbar {
     align-items: center;
     display: flex;
@@ -1108,9 +1215,6 @@ body.search-active .answerContainer {
     body.search-active .search-container {
         width: 90%;
     }
-}
-
-@media (max-width: 800px) {
 
     .image-grid,
     .skeleton-image-grid {
@@ -1141,45 +1245,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to add a new feature. When an answer is displayed, I want to now also show the sources. Underneath the answer element, before the toolbar, I want each URL in the received response to be made into a little element. A row grid should be made with one element per link, where the webpage's title, favicon, and URL are shown. Here is what the response object looks like from the API server:
-
-```
-{
-    "status": "completed",
-    "answer": "## Chips Ahoy!\n\n{{Chips Ahoy!}} is an American chocolate chip cookie brand.  It's made by Nabisco, a subsidiary of Mondelez International. {{{2}}}  Introduced in 1963, {{{2}}} it's available in various flavors like original, reduced-fat, chunky, chewy, and candy-blasts. {{{2}}}  The cookies come in different sizes, from mini packages to large family-sized bags. {{{0,1}}}  The brand has had various advertising campaigns over the years, including those featuring Cookie Man and the Cookie Guys. {{{2}}}\n",
-    "urls": [
-        {
-            "index": 0,
-            "title": "Chips Ahoy Products | SnackworksSearch iconShare icon",
-            "favicon": "https://external-content.duckduckgo.com/ip3/www.snackworks.com.ico",
-            "url": "https://www.snackworks.com/brands/chips-ahoy/products/"
-        },
-        {
-            "index": 1,
-            "title": "Snackworks | Chips Ahoy!Search iconFacebook iconInstagram IconTikTok iconTwitter iconArrow iconArrow iconArrow iconArrow iconArrow iconIcon timeIcon timeShare iconIcon timeIcon timeShare iconIcon timeIcon timeShare iconIcon timeIcon timeShare iconIcon timeIcon timeShare iconIcon timeIcon timeShare icon",
-            "favicon": "https://external-content.duckduckgo.com/ip3/www.snackworks.com.ico",
-            "url": "https://www.snackworks.com/brands/chips-ahoy/"
-        },
-        {
-            "index": 2,
-            "title": "Chips Ahoy! - Wikipedia",
-            "favicon": "https://external-content.duckduckgo.com/ip3/en.wikipedia.org.ico",
-            "url": "https://en.wikipedia.org/wiki/Chips_Ahoy!"
-        }
-    ],
-    "images": [
-        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F340b53f5-1a21-4a14-aa4c-f9742dd3bc32_1.69cd24e1aa9be4278c0c2c7c2fefcb9c.jpeg",
-        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F19d106a6-8113-4678-bb1e-6ec4fe457698.8c71a4f03c72b340f576d0931aac50be.jpeg",
-        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2Ff8253177-e1b4-4198-90bb-3a326fb912fa_1.8e3787f66a64a2ea2742ff7209b917ab.jpeg",
-        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F9bace654-fa84-4121-94e2-ff5dd7972d17.8db9384570012515d97170f5b46f0527.jpeg",
-        "https://api.totob12.com/image/http%3A%2F%2Fimages.salsify.com%2Fimage%2Fupload%2Fs--9lfH7JAA--%2Frlv5z92lgbbxqnc7219x.jpg",
-        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F0cba4ea2-0946-4081-a2a9-cd9dd623de65.a553658dd20c51d958a8acc552973baf.jpeg",
-        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fseo%2FCHIPS-AHOY-Chewy-Chocolate-Chip-Cookies-13-oz_5902e3f2-960b-4b11-ade6-a77274955633.55663977ef35ff08c3e814b59e6b8d65.jpeg",
-        "https://api.totob12.com/image/https%3A%2F%2Fimages.heb.com%2Fis%2Fimage%2FHEBGrocery%2F001627508-1",
-        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F073a41b5-307c-4fb7-a38a-55229f61bd2a_1.eea6fcc8066992c13d2a9d83c793b7fd.jpeg",
-        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F3ea61c7c-33c7-46b4-b002-2cb5dc015107.b746df5cae820e8c6d25522367d5100d.jpeg"
-    ]
-}
-```
-
-I want you to fully develop and implement this.
+This all works well, but I am expeciencing an issue where the 

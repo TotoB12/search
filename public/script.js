@@ -106,11 +106,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 answerContent.style.display = 'none';
                 answerDiv.innerHTML = '';
                 insertSkeletonLoader();
-
-                // const existingSourcesGrid = document.querySelector('.sources-grid');
-                // if (existingSourcesGrid) {
-                //     existingSourcesGrid.remove();
-                // }
             }, 100);
         } else {
             insertSkeletonLoader();
