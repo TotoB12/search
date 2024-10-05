@@ -1245,4 +1245,5 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I am expeciencing an issue where the 
+This all works well, but I want to improve the looks of the sources grid. I want the favicon and the URL to be on the same row, and to have the title be underneath both of them. I also want each source item to have the same width.
+I want you to fully develop and implement this.

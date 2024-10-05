@@ -173,26 +173,15 @@ document.addEventListener('DOMContentLoaded', function () {
             const sourceItem = document.createElement('div');
             sourceItem.className = 'source-item';
 
+            const sourceHeader = document.createElement('div');
+            sourceHeader.className = 'source-header';
+
             const faviconImg = document.createElement('img');
             faviconImg.className = 'favicon';
             faviconImg.src = urlObj.favicon;
             faviconImg.alt = 'Favicon';
 
-            const titleLink = document.createElement('a');
-            titleLink.href = urlObj.url;
-            titleLink.target = '_blank';
-            titleLink.rel = 'noopener noreferrer';
-            titleLink.className = 'source-title';
-
-            const maxTitleLength = 50;
-            let titleText = urlObj.title || '';
-            titleText = titleText.replace(/Search icon.*$/, '').trim();
-            if (titleText.length > maxTitleLength) {
-                titleText = titleText.substring(0, maxTitleLength) + '...';
-            }
-            titleLink.textContent = titleText || urlObj.url;
-
-            const urlText = document.createElement('p');
+            const urlText = document.createElement('span');
             urlText.className = 'source-url';
             let urlDisplayText;
             try {
@@ -202,9 +191,21 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             urlText.textContent = urlDisplayText;
 
-            sourceItem.appendChild(faviconImg);
+            sourceHeader.appendChild(faviconImg);
+            sourceHeader.appendChild(urlText);
+
+            const titleLink = document.createElement('a');
+            titleLink.href = urlObj.url;
+            titleLink.target = '_blank';
+            titleLink.rel = 'noopener noreferrer';
+            titleLink.className = 'source-title';
+
+            let titleText = urlObj.title || '';
+            titleText = titleText.replace(/Search icon.*$/, '').trim();
+            titleLink.textContent = titleText || urlObj.url;
+
+            sourceItem.appendChild(sourceHeader);
             sourceItem.appendChild(titleLink);
-            sourceItem.appendChild(urlText);
 
             gridContainer.appendChild(sourceItem);
         });
