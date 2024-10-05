@@ -149,12 +149,31 @@ document.addEventListener('DOMContentLoaded', function () {
     let audioSource;
     let isPlaying = false;
 
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    function resetSearchLayout() {
+        document.body.classList.remove('search-active');
+        answerContainer.style.display = 'none';
+        answerDiv.innerHTML = '';
+        removeExistingWebResults();
+        searchInput.value = '';
+    }
+
+    function handleSearchSubmission(query) {
+        activateSearchLayout();
+        submitSearch(query);
+        const newUrl = `${window.location.pathname}?q=${encodeURIComponent(query)}`;
+        history.pushState({ query }, '', newUrl);
+    }
+
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
-            activateSearchLayout();
-            submitSearch(query);
+            handleSearchSubmission(query);
         }
     });
 
@@ -163,8 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             const query = searchInput.value.trim();
             if (query) {
-                activateSearchLayout();
-                submitSearch(query);
+                handleSearchSubmission(query);
             }
         }
     });
@@ -173,10 +191,27 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
-            activateSearchLayout();
-            submitSearch(query);
+            handleSearchSubmission(query);
         }
     });
+
+    const initialQuery = getQueryParam('q');
+    if (initialQuery) {
+        searchInput.value = initialQuery;
+        handleSearchSubmission(initialQuery);
+    }
+
+    window.addEventListener('popstate', function (event) {
+        const query = getQueryParam('q');
+        if (query) {
+            searchInput.value = query;
+            activateSearchLayout();
+            submitSearch(query);
+        } else {
+            resetSearchLayout();
+        }
+    });
+
 
     const highlightExtension = {
         name: 'highlight',
@@ -686,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function removeExistingWebResults() {
         const existingWebResults = document.querySelector('.web-results');
         if (existingWebResults) {
-                existingWebResults.remove();
+            existingWebResults.remove();
         }
     }
 });
@@ -1399,5 +1434,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to improve the access to my web app. When a search is done, the script should change the page's URL to contain the search term, like `/?q={term}`. The app should also allow searches directly, without passing by the home page: the site should immidietly be in search mode if a search term is in the URL.
-I want you to fully develop and implement this.
+This all works well, but I have some concerns. My objective is to make this as fast as possible. Looking at my scripts, do I really need to have my `script.js` wrapped in a `DOMContentLoaded` event listener?
