@@ -96,6 +96,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showSkeletonLoader() {
+        if (isPlaying) {
+            stopTTS();
+        }
         if (answerContent.style.display !== 'none') {
             answerContent.style.opacity = '0';
             answerContent.style.transform = 'translateY(-20px)';
@@ -160,6 +163,53 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             answerContent.style.display = 'block';
         }
+    }
+
+    function createSourcesGrid(urls) {
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'sources-grid';
+    
+        urls.forEach(urlObj => {
+            const sourceItem = document.createElement('div');
+            sourceItem.className = 'source-item';
+    
+            const faviconImg = document.createElement('img');
+            faviconImg.className = 'favicon';
+            faviconImg.src = urlObj.favicon;
+            faviconImg.alt = 'Favicon';
+    
+            const titleLink = document.createElement('a');
+            titleLink.href = urlObj.url;
+            titleLink.target = '_blank';
+            titleLink.rel = 'noopener noreferrer';
+            titleLink.className = 'source-title';
+    
+            const maxTitleLength = 50;
+            let titleText = urlObj.title || '';
+            titleText = titleText.replace(/Search icon.*$/, '').trim();
+            if (titleText.length > maxTitleLength) {
+                titleText = titleText.substring(0, maxTitleLength) + '...';
+            }
+            titleLink.textContent = titleText || urlObj.url;
+    
+            const urlText = document.createElement('p');
+            urlText.className = 'source-url';
+            let urlDisplayText;
+            try {
+                urlDisplayText = (new URL(urlObj.url)).hostname;
+            } catch (e) {
+                urlDisplayText = urlObj.url;
+            }
+            urlText.textContent = urlDisplayText;
+    
+            sourceItem.appendChild(faviconImg);
+            sourceItem.appendChild(titleLink);
+            sourceItem.appendChild(urlText);
+    
+            gridContainer.appendChild(sourceItem);
+        });
+    
+        return gridContainer;
     }
 
     async function handleTTS() {
@@ -370,6 +420,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (firstElement && firstElement.tagName === 'H2') {
                     insertPosition = 'afterH2';
                 }
+
+                const sourcesGrid = createSourcesGrid(data.urls);
+                const toolbar = document.querySelector('.toolbar');
+                answerContent.insertBefore(sourcesGrid, toolbar);
 
                 if (data.images && data.images.length > 0) {
                     const imagesToShow = data.images.slice(0, 4);

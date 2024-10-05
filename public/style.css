@@ -310,6 +310,54 @@ body {
     margin-bottom: 8px;
 }
 
+.sources-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    gap: 1rem;
+}
+
+.source-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: calc(25% - 1rem);
+    box-sizing: border-box;
+    text-align: center;
+    padding: 0.5rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.source-item:hover {
+    background-color: #f1f1f1;
+}
+
+.favicon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 0.5rem;
+}
+
+.source-title {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    margin-bottom: 0.3rem;
+}
+
+.source-title:hover {
+    text-decoration: underline;
+}
+
+.source-url {
+    font-size: 0.8rem;
+    color: #666;
+    word-wrap: break-word;
+}
+
 .toolbar {
     align-items: center;
     display: flex;
@@ -532,9 +580,6 @@ body.search-active .answerContainer {
     body.search-active .search-container {
         width: 90%;
     }
-}
-
-@media (max-width: 800px) {
 
     .image-grid,
     .skeleton-image-grid {

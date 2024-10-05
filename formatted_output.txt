@@ -275,7 +275,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 answerContent.style.display = 'block';
                 answerContent.style.opacity = '0';
                 answerContent.style.transform = 'translateY(20px)';
-                // Trigger reflow to apply the transition
                 void answerContent.offsetWidth;
                 answerContent.style.opacity = '1';
                 answerContent.style.transform = 'translateY(0)';
@@ -841,7 +840,7 @@ body {
     background: #eee;
     background: linear-gradient(270deg, #f1f1f1, #e1e1e1, #f1f1f1);
     background-size: 200% 100%;
-    border-radius: 4px;
+    border-radius: 8px;
     animation: gradientMoves 800ms linear infinite;
 }
 
@@ -865,7 +864,7 @@ body {
 }
 
 .skeleton-title {
-    width: 50%;
+    width: 45%;
     height: 32px;
     margin-bottom: 1rem;
 }
@@ -1142,4 +1141,45 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to add a new feature 
+This all works well, but I want to add a new feature. When an answer is displayed, I want to now also show the sources. Underneath the answer element, before the toolbar, I want each URL in the received response to be made into a little element. A row grid should be made with one element per link, where the webpage's title, favicon, and URL are shown. Here is what the response object looks like from the API server:
+
+```
+{
+    "status": "completed",
+    "answer": "## Chips Ahoy!\n\n{{Chips Ahoy!}} is an American chocolate chip cookie brand.  It's made by Nabisco, a subsidiary of Mondelez International. {{{2}}}  Introduced in 1963, {{{2}}} it's available in various flavors like original, reduced-fat, chunky, chewy, and candy-blasts. {{{2}}}  The cookies come in different sizes, from mini packages to large family-sized bags. {{{0,1}}}  The brand has had various advertising campaigns over the years, including those featuring Cookie Man and the Cookie Guys. {{{2}}}\n",
+    "urls": [
+        {
+            "index": 0,
+            "title": "Chips Ahoy Products | SnackworksSearch iconShare icon",
+            "favicon": "https://external-content.duckduckgo.com/ip3/www.snackworks.com.ico",
+            "url": "https://www.snackworks.com/brands/chips-ahoy/products/"
+        },
+        {
+            "index": 1,
+            "title": "Snackworks | Chips Ahoy!Search iconFacebook iconInstagram IconTikTok iconTwitter iconArrow iconArrow iconArrow iconArrow iconArrow iconIcon timeIcon timeShare iconIcon timeIcon timeShare iconIcon timeIcon timeShare iconIcon timeIcon timeShare iconIcon timeIcon timeShare iconIcon timeIcon timeShare icon",
+            "favicon": "https://external-content.duckduckgo.com/ip3/www.snackworks.com.ico",
+            "url": "https://www.snackworks.com/brands/chips-ahoy/"
+        },
+        {
+            "index": 2,
+            "title": "Chips Ahoy! - Wikipedia",
+            "favicon": "https://external-content.duckduckgo.com/ip3/en.wikipedia.org.ico",
+            "url": "https://en.wikipedia.org/wiki/Chips_Ahoy!"
+        }
+    ],
+    "images": [
+        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F340b53f5-1a21-4a14-aa4c-f9742dd3bc32_1.69cd24e1aa9be4278c0c2c7c2fefcb9c.jpeg",
+        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F19d106a6-8113-4678-bb1e-6ec4fe457698.8c71a4f03c72b340f576d0931aac50be.jpeg",
+        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2Ff8253177-e1b4-4198-90bb-3a326fb912fa_1.8e3787f66a64a2ea2742ff7209b917ab.jpeg",
+        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F9bace654-fa84-4121-94e2-ff5dd7972d17.8db9384570012515d97170f5b46f0527.jpeg",
+        "https://api.totob12.com/image/http%3A%2F%2Fimages.salsify.com%2Fimage%2Fupload%2Fs--9lfH7JAA--%2Frlv5z92lgbbxqnc7219x.jpg",
+        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F0cba4ea2-0946-4081-a2a9-cd9dd623de65.a553658dd20c51d958a8acc552973baf.jpeg",
+        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fseo%2FCHIPS-AHOY-Chewy-Chocolate-Chip-Cookies-13-oz_5902e3f2-960b-4b11-ade6-a77274955633.55663977ef35ff08c3e814b59e6b8d65.jpeg",
+        "https://api.totob12.com/image/https%3A%2F%2Fimages.heb.com%2Fis%2Fimage%2FHEBGrocery%2F001627508-1",
+        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F073a41b5-307c-4fb7-a38a-55229f61bd2a_1.eea6fcc8066992c13d2a9d83c793b7fd.jpeg",
+        "https://api.totob12.com/image/https%3A%2F%2Fi5.walmartimages.com%2Fasr%2F3ea61c7c-33c7-46b4-b002-2cb5dc015107.b746df5cae820e8c6d25522367d5100d.jpeg"
+    ]
+}
+```
+
+I want you to fully develop and implement this.
