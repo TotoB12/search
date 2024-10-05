@@ -13,6 +13,7 @@ public\index.html
 </head>
 
 <body>
+    <nav class="navbar"></nav>
     <h1 id="logo"><a href="/">SearchT</a></h1>
     <form id="search-form">
         <div class="search-container">
@@ -726,6 +727,22 @@ body {
     transition: padding-top 0.5s ease;
 }
 
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background-color: white;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    background: linear-gradient(to bottom, 
+        rgba(255, 255, 255, 1) 0%,
+        rgba(255, 255, 255, 1) 60%,
+        rgba(255, 255, 255, 0) 100%);
+}
+
 #logo {
     font-family: "Poly Sans Bulky", Arial, sans-serif;
     font-size: 4rem;
@@ -744,6 +761,12 @@ body {
     padding: 2rem;
     text-align: center;
     transition: all 0.5s ease;
+}
+
+#logo,
+#search-form {
+    position: relative;
+    z-index: 2;
 }
 
 .search-container {
@@ -1279,6 +1302,10 @@ body.search-active {
     justify-content: flex-start;
 }
 
+body.search-active .navbar {
+    opacity: 1;
+}
+
 body.search-active #logo {
     font-size: 2rem;
     position: fixed;
@@ -1372,4 +1399,5 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works great, but I want to improve the looks of the web app. I want to have a concreate "nav bar" at the top of the page, behind the search form and logo when a search is active. It should still be white, but the bottom of it should fade into transparency, to have the effect of items just flowing into a cloud when scrolling down on the page.
+This all works well, but I want to improve the access to my web app. When a search is done, the script should change the page's URL to contain the search term, like `/?q={term}`. The app should also allow searches directly, without passing by the home page: the site should immidietly be in search mode if a search term is in the URL.
+I want you to fully develop and implement this.

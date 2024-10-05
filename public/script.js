@@ -26,12 +26,31 @@ document.addEventListener('DOMContentLoaded', function () {
     let audioSource;
     let isPlaying = false;
 
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    function resetSearchLayout() {
+        document.body.classList.remove('search-active');
+        answerContainer.style.display = 'none';
+        answerDiv.innerHTML = '';
+        removeExistingWebResults();
+        searchInput.value = '';
+    }
+
+    function handleSearchSubmission(query) {
+        activateSearchLayout();
+        submitSearch(query);
+        const newUrl = `${window.location.pathname}?q=${encodeURIComponent(query)}`;
+        history.pushState({ query }, '', newUrl);
+    }
+
     searchButton.addEventListener('click', function (e) {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
-            activateSearchLayout();
-            submitSearch(query);
+            handleSearchSubmission(query);
         }
     });
 
@@ -40,8 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             const query = searchInput.value.trim();
             if (query) {
-                activateSearchLayout();
-                submitSearch(query);
+                handleSearchSubmission(query);
             }
         }
     });
@@ -50,10 +68,27 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
-            activateSearchLayout();
-            submitSearch(query);
+            handleSearchSubmission(query);
         }
     });
+
+    const initialQuery = getQueryParam('q');
+    if (initialQuery) {
+        searchInput.value = initialQuery;
+        handleSearchSubmission(initialQuery);
+    }
+
+    window.addEventListener('popstate', function (event) {
+        const query = getQueryParam('q');
+        if (query) {
+            searchInput.value = query;
+            activateSearchLayout();
+            submitSearch(query);
+        } else {
+            resetSearchLayout();
+        }
+    });
+
 
     const highlightExtension = {
         name: 'highlight',
@@ -563,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function removeExistingWebResults() {
         const existingWebResults = document.querySelector('.web-results');
         if (existingWebResults) {
-                existingWebResults.remove();
+            existingWebResults.remove();
         }
     }
 });
