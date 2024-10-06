@@ -635,25 +635,14 @@ function initializeTabs() {
 
 function switchTab(tabName) {
     if (currentTab === tabName) return;
-    
+
     const currentPane = document.querySelector(`#${currentTab}-tab`);
     const newPane = document.querySelector(`#${tabName}-tab`);
-    
-    currentPane.style.transform = tabName === 'images' ? 'translateX(-100%)' : 'translateX(100%)';
-    currentPane.style.opacity = '0';
-    setTimeout(() => {
-        currentPane.classList.remove('active');
-        currentPane.style.visibility = 'hidden';
-    }, 300);
-    
-    newPane.style.transform = tabName === 'images' ? 'translateX(100%)' : 'translateX(-100%)';
-    newPane.style.visibility = 'visible';
-    requestAnimationFrame(() => {
-        newPane.style.transform = 'translateX(0)';
-        newPane.style.opacity = '1';
-    });
+
+    currentPane.classList.remove('active');
+
     newPane.classList.add('active');
-    
+
     currentTab = tabName;
 }
 
