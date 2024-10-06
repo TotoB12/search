@@ -36,53 +36,68 @@ public\index.html
             </button>
         </div>
     </form>
-    <div class="answerContainer">
-        <div class="answerContent" style="display: none;">
-            <div id="answer"></div>
-            <div class="toolbar">
-                <button id="tts-button" class="toolbar-button">
-                    <svg class="tts-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M11 4.9099C11 4.47485 10.4828 4.24734 10.1621 4.54132L6.67572 7.7372C6.49129 7.90626 6.25019 8.00005 6 8.00005H4C3.44772 8.00005 3 8.44776 3 9.00005V15C3 15.5523 3.44772 16 4 16H6C6.25019 16 6.49129 16.0938 6.67572 16.2629L10.1621 19.4588C10.4828 19.7527 11 19.5252 11 19.0902V4.9099ZM8.81069 3.06701C10.4142 1.59714 13 2.73463 13 4.9099V19.0902C13 21.2655 10.4142 22.403 8.81069 20.9331L5.61102 18H4C2.34315 18 1 16.6569 1 15V9.00005C1 7.34319 2.34315 6.00005 4 6.00005H5.61102L8.81069 3.06701ZM20.3166 6.35665C20.8019 6.09313 21.409 6.27296 21.6725 6.75833C22.5191 8.3176 22.9996 10.1042 22.9996 12.0001C22.9996 13.8507 22.5418 15.5974 21.7323 17.1302C21.4744 17.6185 20.8695 17.8054 20.3811 17.5475C19.8927 17.2896 19.7059 16.6846 19.9638 16.1962C20.6249 14.9444 20.9996 13.5175 20.9996 12.0001C20.9996 10.4458 20.6064 8.98627 19.9149 7.71262C19.6514 7.22726 19.8312 6.62017 20.3166 6.35665ZM15.7994 7.90049C16.241 7.5688 16.8679 7.65789 17.1995 8.09947C18.0156 9.18593 18.4996 10.5379 18.4996 12.0001C18.4996 13.3127 18.1094 14.5372 17.4385 15.5604C17.1357 16.0222 16.5158 16.1511 16.0539 15.8483C15.5921 15.5455 15.4632 14.9255 15.766 14.4637C16.2298 13.7564 16.4996 12.9113 16.4996 12.0001C16.4996 10.9859 16.1653 10.0526 15.6004 9.30063C15.2687 8.85905 15.3578 8.23218 15.7994 7.90049Z"
-                            fill="currentColor"></path>
-                    </svg>
-                    <svg class="tts-spinner icon-md-heavy" width="24" height="24" stroke="currentColor" fill="none"
-                        stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"
-                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                        <line x1="12" y1="2" x2="12" y2="6"></line>
-                        <line x1="12" y1="18" x2="12" y2="22"></line>
-                        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-                        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-                        <line x1="2" y1="12" x2="6" y2="12"></line>
-                        <line x1="18" y1="12" x2="22" y2="12"></line>
-                        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-                        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-                    </svg>
-                    <svg class="tts-stop icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM9.5 8.5C8.94772 8.5 8.5 8.94772 8.5 9.5V14.5C8.5 15.0523 8.94772 15.5 9.5 15.5H14.5C15.0523 15.5 15.5 15.0523 15.5 14.5V9.5C15.5 8.94772 15.0523 8.5 14.5 8.5H9.5Z"
-                            fill="currentColor"></path>
-                    </svg>
-                </button>
-                <button id="copy-button" class="toolbar-button">
-                    <svg class="copy-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
-                            fill="currentColor"></path>
-                    </svg>
-                    <svg class="checkmark-icon icon-md-heavy" width="24" height="24" fill="none"
-                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M18.0633 5.67387C18.5196 5.98499 18.6374 6.60712 18.3262 7.06343L10.8262 18.0634C10.6585 18.3095 10.3898 18.4679 10.0934 18.4957C9.79688 18.5235 9.50345 18.4178 9.29289 18.2072L4.79289 13.7072C4.40237 13.3167 4.40237 12.6835 4.79289 12.293C5.18342 11.9025 5.81658 11.9025 6.20711 12.293L9.85368 15.9396L16.6738 5.93676C16.9849 5.48045 17.607 5.36275 18.0633 5.67387Z"
-                            fill="currentColor"></path>
-                    </svg>
-                </button>
+
+    <div class="tab-navigation">
+        <button class="tab-button active" data-tab="all">All</button>
+        <button class="tab-button" data-tab="images">Images</button>
+        <div class="tab-indicator"></div>
+    </div>
+
+    <div class="tab-content">
+        <div class="tab-pane active" id="all-tab">
+            <div class="answerContainer">
+                <div class="answerContent" style="display: none;">
+                    <div id="answer"></div>
+                    <div class="toolbar">
+                        <button id="tts-button" class="toolbar-button">
+                            <svg class="tts-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M11 4.9099C11 4.47485 10.4828 4.24734 10.1621 4.54132L6.67572 7.7372C6.49129 7.90626 6.25019 8.00005 6 8.00005H4C3.44772 8.00005 3 8.44776 3 9.00005V15C3 15.5523 3.44772 16 4 16H6C6.25019 16 6.49129 16.0938 6.67572 16.2629L10.1621 19.4588C10.4828 19.7527 11 19.5252 11 19.0902V4.9099ZM8.81069 3.06701C10.4142 1.59714 13 2.73463 13 4.9099V19.0902C13 21.2655 10.4142 22.403 8.81069 20.9331L5.61102 18H4C2.34315 18 1 16.6569 1 15V9.00005C1 7.34319 2.34315 6.00005 4 6.00005H5.61102L8.81069 3.06701ZM20.3166 6.35665C20.8019 6.09313 21.409 6.27296 21.6725 6.75833C22.5191 8.3176 22.9996 10.1042 22.9996 12.0001C22.9996 13.8507 22.5418 15.5974 21.7323 17.1302C21.4744 17.6185 20.8695 17.8054 20.3811 17.5475C19.8927 17.2896 19.7059 16.6846 19.9638 16.1962C20.6249 14.9444 20.9996 13.5175 20.9996 12.0001C20.9996 10.4458 20.6064 8.98627 19.9149 7.71262C19.6514 7.22726 19.8312 6.62017 20.3166 6.35665ZM15.7994 7.90049C16.241 7.5688 16.8679 7.65789 17.1995 8.09947C18.0156 9.18593 18.4996 10.5379 18.4996 12.0001C18.4996 13.3127 18.1094 14.5372 17.4385 15.5604C17.1357 16.0222 16.5158 16.1511 16.0539 15.8483C15.5921 15.5455 15.4632 14.9255 15.766 14.4637C16.2298 13.7564 16.4996 12.9113 16.4996 12.0001C16.4996 10.9859 16.1653 10.0526 15.6004 9.30063C15.2687 8.85905 15.3578 8.23218 15.7994 7.90049Z"
+                                    fill="currentColor"></path>
+                            </svg>
+                            <svg class="tts-spinner icon-md-heavy" width="24" height="24" stroke="currentColor"
+                                fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                                stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                <line x1="12" y1="2" x2="12" y2="6"></line>
+                                <line x1="12" y1="18" x2="12" y2="22"></line>
+                                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                                <line x1="2" y1="12" x2="6" y2="12"></line>
+                                <line x1="18" y1="12" x2="22" y2="12"></line>
+                                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                            </svg>
+                            <svg class="tts-stop icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM9.5 8.5C8.94772 8.5 8.5 8.94772 8.5 9.5V14.5C8.5 15.0523 8.94772 15.5 9.5 15.5H14.5C15.0523 15.5 15.5 15.0523 15.5 14.5V9.5C15.5 8.94772 15.0523 8.5 14.5 8.5H9.5Z"
+                                    fill="currentColor"></path>
+                            </svg>
+                        </button>
+                        <button id="copy-button" class="toolbar-button">
+                            <svg class="copy-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
+                                    fill="currentColor"></path>
+                            </svg>
+                            <svg class="checkmark-icon icon-md-heavy" width="24" height="24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M18.0633 5.67387C18.5196 5.98499 18.6374 6.60712 18.3262 7.06343L10.8262 18.0634C10.6585 18.3095 10.3898 18.4679 10.0934 18.4957C9.79688 18.5235 9.50345 18.4178 9.29289 18.2072L4.79289 13.7072C4.40237 13.3167 4.40237 12.6835 4.79289 12.293C5.18342 11.9025 5.81658 11.9025 6.20711 12.293L9.85368 15.9396L16.6738 5.93676C16.9849 5.48045 17.607 5.36275 18.0633 5.67387Z"
+                                    fill="currentColor"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
+        <div class="tab-pane" id="images-tab">
+            <div class="images-grid"></div>
+        </div>
     </div>
+
     <div class="lightbox">
         <button class="lightbox-close">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="white" stroke-width="2"
@@ -149,6 +164,8 @@ let currentImageIndex = 0;
 let audioContext;
 let audioSource;
 let isPlaying = false;
+let currentTab = 'all';
+let storedImages = [];
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -567,6 +584,10 @@ function submitSearch(query) {
     socket.on('generalResults', (data) => {
         console.log('Received general web results:', data);
         displayGeneralWebResults(data.webResults);
+        
+        // Store images and update images tab
+        storedImages = data.images || [];
+        displayImages(storedImages);
     });
 
     socket.on('aiAnswer', (data) => {
@@ -726,6 +747,98 @@ function removeExistingWebResults() {
     }
 }
 
+function initializeTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabIndicator = document.querySelector('.tab-indicator');
+    
+    function updateTabIndicator(button) {
+        tabIndicator.style.width = `${button.offsetWidth}px`;
+        tabIndicator.style.left = `${button.offsetLeft}px`;
+    }
+    
+    tabButtons.forEach(button => {
+        if (button.classList.contains('active')) {
+            updateTabIndicator(button);
+        }
+        
+        button.addEventListener('click', () => {
+            const tabName = button.dataset.tab;
+            switchTab(tabName);
+            
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            updateTabIndicator(button);
+        });
+    });
+}
+
+function switchTab(tabName) {
+    if (currentTab === tabName) return;
+    
+    const currentPane = document.querySelector(`#${currentTab}-tab`);
+    const newPane = document.querySelector(`#${tabName}-tab`);
+    
+    currentPane.style.transform = tabName === 'images' ? 'translateX(-100%)' : 'translateX(100%)';
+    currentPane.style.opacity = '0';
+    setTimeout(() => {
+        currentPane.classList.remove('active');
+        currentPane.style.visibility = 'hidden';
+    }, 300);
+    
+    newPane.style.transform = tabName === 'images' ? 'translateX(100%)' : 'translateX(-100%)';
+    newPane.style.visibility = 'visible';
+    requestAnimationFrame(() => {
+        newPane.style.transform = 'translateX(0)';
+        newPane.style.opacity = '1';
+    });
+    newPane.classList.add('active');
+    
+    currentTab = tabName;
+}
+
+function displayImages(images) {
+    const imagesGrid = document.querySelector('.images-grid');
+    imagesGrid.innerHTML = '';
+    
+    images.forEach((imageUrl, index) => {
+        const imageItem = document.createElement('div');
+        imageItem.className = 'image-item';
+        
+        const img = document.createElement('img');
+        img.setAttribute('data-src', imageUrl);
+        img.setAttribute('data-index', index);
+        img.alt = 'Search result image';
+        
+        imageItem.appendChild(img);
+        imagesGrid.appendChild(imageItem);
+        
+        imageItem.addEventListener('click', () => {
+            openLightbox(imageUrl, index);
+        });
+    });
+    
+    initializeLazyLoading();
+}
+
+function initializeLazyLoading() {
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                observer.unobserve(img);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.image-item img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+    });
+}
+
+initializeTabs();
 ```
 
 public\style.css
@@ -876,6 +989,62 @@ body {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.tab-navigation {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 800px;
+}
+
+.tab-button {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    font-family: "Poly Sans", Arial, sans-serif;
+    font-size: 1rem;
+    color: #666;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.tab-button.active {
+    color: #000;
+}
+
+.tab-indicator {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    background-color: #000;
+    transition: all 0.3s ease;
+}
+
+.tab-content {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    overflow: hidden;
+}
+
+.tab-pane {
+    width: 100%;
+    position: absolute;
+    transition: transform 0.3s ease;
+    transform: translateX(100%);
+    opacity: 0;
+    visibility: hidden;
+}
+
+.tab-pane.active {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    position: relative;
 }
 
 .answerContent {
@@ -1332,6 +1501,36 @@ body {
     line-height: 1.58;
 }
 
+.images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 16px;
+}
+
+.image-item {
+    position: relative;
+    padding-bottom: 100%;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    cursor: pointer;
+}
+
+.image-item img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.image-item:hover img {
+    transform: scale(1.05);
+}
+
 body.search-active {
     padding-top: 100px;
     justify-content: flex-start;
@@ -1369,6 +1568,16 @@ body.search-active .search-container {
     max-width: 600px;
     width: 100%;
     margin: 0 auto;
+}
+
+body.search-active .tab-navigation {
+    position: fixed;
+    top: 60px;
+    z-index: 1;
+}
+
+body.search-active .tab-content {
+    margin-top: 40px;
 }
 
 body.search-active .answerContainer {
@@ -1487,4 +1696,12 @@ This all works great, but I want to introduce new features. Like many popular se
 ```
 
 Of course, I want all the rendered images to have lazy loading. Also, I want the transition from the "All" tab to the "Images" tab to be as smooth as possible, sliding from left to right seamlessly.
-I want you to fully develop and implement this. Return me the full code of the changes scripts.
+
+I have already tried to implement this as best as I could, but there are a couple issues:
+
+- I no longer want tab content to have a maximum width of 800 px. It should take up the entire page's width.
+- The tab navigation should have `top: 70px;`, rather than 60px. And the `navbar` height should be 200px.
+- The animation between the tabs is not perfect: whenever a different tab is selected, I want the tabs to switch and slide from left to right, like an image carousel.
+- The tab navigation buttons should only be shown when a search is active.
+
+I want you to fully develop and implement this. Return me the full new scripts.

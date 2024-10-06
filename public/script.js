@@ -24,6 +24,8 @@ let currentImageIndex = 0;
 let audioContext;
 let audioSource;
 let isPlaying = false;
+let currentTab = 'all';
+let storedImages = [];
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -442,6 +444,10 @@ function submitSearch(query) {
     socket.on('generalResults', (data) => {
         console.log('Received general web results:', data);
         displayGeneralWebResults(data.webResults);
+        
+        // Store images and update images tab
+        storedImages = data.images || [];
+        displayImages(storedImages);
     });
 
     socket.on('aiAnswer', (data) => {
@@ -600,3 +606,96 @@ function removeExistingWebResults() {
         existingWebResults.remove();
     }
 }
+
+function initializeTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabIndicator = document.querySelector('.tab-indicator');
+    
+    function updateTabIndicator(button) {
+        tabIndicator.style.width = `${button.offsetWidth}px`;
+        tabIndicator.style.left = `${button.offsetLeft}px`;
+    }
+    
+    tabButtons.forEach(button => {
+        if (button.classList.contains('active')) {
+            updateTabIndicator(button);
+        }
+        
+        button.addEventListener('click', () => {
+            const tabName = button.dataset.tab;
+            switchTab(tabName);
+            
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            updateTabIndicator(button);
+        });
+    });
+}
+
+function switchTab(tabName) {
+    if (currentTab === tabName) return;
+    
+    const currentPane = document.querySelector(`#${currentTab}-tab`);
+    const newPane = document.querySelector(`#${tabName}-tab`);
+    
+    currentPane.style.transform = tabName === 'images' ? 'translateX(-100%)' : 'translateX(100%)';
+    currentPane.style.opacity = '0';
+    setTimeout(() => {
+        currentPane.classList.remove('active');
+        currentPane.style.visibility = 'hidden';
+    }, 300);
+    
+    newPane.style.transform = tabName === 'images' ? 'translateX(100%)' : 'translateX(-100%)';
+    newPane.style.visibility = 'visible';
+    requestAnimationFrame(() => {
+        newPane.style.transform = 'translateX(0)';
+        newPane.style.opacity = '1';
+    });
+    newPane.classList.add('active');
+    
+    currentTab = tabName;
+}
+
+function displayImages(images) {
+    const imagesGrid = document.querySelector('.images-grid');
+    imagesGrid.innerHTML = '';
+    
+    images.forEach((imageUrl, index) => {
+        const imageItem = document.createElement('div');
+        imageItem.className = 'image-item';
+        
+        const img = document.createElement('img');
+        img.setAttribute('data-src', imageUrl);
+        img.setAttribute('data-index', index);
+        img.alt = 'Search result image';
+        
+        imageItem.appendChild(img);
+        imagesGrid.appendChild(imageItem);
+        
+        imageItem.addEventListener('click', () => {
+            openLightbox(imageUrl, index);
+        });
+    });
+    
+    initializeLazyLoading();
+}
+
+function initializeLazyLoading() {
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                observer.unobserve(img);
+            }
+        });
+    });
+    
+    document.querySelectorAll('.image-item img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+    });
+}
+
+initializeTabs();
