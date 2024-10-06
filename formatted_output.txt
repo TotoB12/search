@@ -880,14 +880,14 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100px;
+    height: 150px;
     background-color: white;
     z-index: 1;
     opacity: 0;
     transition: opacity 0.5s ease;
     background: linear-gradient(to bottom, 
         rgba(255, 255, 255, 1) 0%,
-        rgba(255, 255, 255, 1) 60%,
+        rgba(255, 255, 255, 1) 80%,
         rgba(255, 255, 255, 0) 100%);
 }
 
@@ -992,12 +992,13 @@ body {
 }
 
 .tab-navigation {
-    display: flex;
+    display: none;
+    position: fixed;
     justify-content: center;
-    position: relative;
-    margin-bottom: 20px;
     width: 100%;
     max-width: 800px;
+    top: 70px;
+    z-index: 1;
 }
 
 .tab-button {
@@ -1027,7 +1028,6 @@ body {
 .tab-content {
     position: relative;
     width: 100%;
-    max-width: 800px;
     overflow: hidden;
 }
 
@@ -1048,6 +1048,8 @@ body {
 }
 
 .answerContent {
+    max-width: 800px;    
+    align-self: center;
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -1458,6 +1460,7 @@ body {
     margin-top: 2rem;
     border-top: 1px solid #e0e0e0;
     padding-top: 2rem;
+    max-width: 800px;
 }
 
 .web-result-item {
@@ -1571,9 +1574,7 @@ body.search-active .search-container {
 }
 
 body.search-active .tab-navigation {
-    position: fixed;
-    top: 60px;
-    z-index: 1;
+    display: flex;
 }
 
 body.search-active .tab-content {
@@ -1643,65 +1644,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works great, but I want to introduce new features. Like many popular search engines, I want to have an "All" tab (containing the current setup with the AI response and general web results), along with an "Images" tab. This new image tab should display all of the images received in the data of `generalResults`. Here is an example of that object:
-
-```
-{
-    "status": "completed",
-    "webResults": [
-        {
-            "title": "GitHub Skills",
-            "url": "https://skills.github.com/",
-            "description": "GitHub Skills. Learn how to use GitHub with interactive courses designed for beginners and experts. Start with Introduction to GitHub. Our courses First day on GitHub. Introduction to GitHub. Get started using GitHub in less than an hour. Communicate using Markdown.",
-            "favicon": "//external-content.duckduckgo.com/ip3/skills.github.com.ico"
-        },
-        {
-            "title": "GitHub Desktop | Simple collaboration from your desktop",
-            "url": "https://github.com/apps/desktop",
-            "description": "Whether you're new to Git or a seasoned user, GitHub Desktop enables collaboration from your desktop and can simplify your development workflow. Download now Release Notes. Get Involved. Community-supported for collaboration. Check out our roadmap, contribute to projects, and help us make collaboration even easier. ...",
-            "favicon": "//external-content.duckduckgo.com/ip3/github.com.ico"
-        },
-        {
-            "title": "About Git - GitHub Docs",
-            "url": "https://docs.github.com/en/get-started/using-git/about-git",
-            "description": "GitHub hosts Git repositories and provides developers with tools to ship better code through command line features, issues (threaded discussions), pull requests, code review, or the use of a collection of free and for-purchase apps in the GitHub Marketplace. With collaboration layers like the GitHub flow, a community of 100 million developers ...",
-            "favicon": "//external-content.duckduckgo.com/ip3/docs.github.com.ico"
-        },
-        {
-            "title": "Twitter. It's what's happening / Twitter",
-            "url": "https://twitter.com/github",
-            "description": "Official Twitter account of GitHub.",
-            "favicon": "//external-content.duckduckgo.com/ip3/twitter.com.ico"
-        },
-        {
-            "title": "Get started using GitHub in less than an hour.",
-            "url": "https://github.com/skills/introduction-to-github",
-            "description": "GitHub Skills' \"Introduction to GitHub\" course guides you through everything you need to start contributing in less than an hour. Who is this for: New developers, new GitHub users, and students. What you'll learn: We'll introduce repositories, branches, commits, and pull requests. What you'll build: We'll make a short Markdown file you ...",
-            "favicon": "//external-content.duckduckgo.com/ip3/github.com.ico"
-        }
-    ],
-    "images": [
-        "https://api.totob12.com/image/https%3A%2F%2Flogos-world.net%2Fwp-content%2Fuploads%2F2020%2F11%2FGitHub-Logo.png",
-        "https://api.totob12.com/image/https%3A%2F%2Flogos-world.net%2Fwp-content%2Fuploads%2F2020%2F11%2FGitHub-Symbol.png",
-        "https://api.totob12.com/image/https%3A%2F%2Fstatic.vecteezy.com%2Fsystem%2Fresources%2Fpreviews%2F017%2F119%2F660%2Foriginal%2Fgithub-logo-git-hub-icon-with-text-on-white-and-black-background-free-vector.jpg",
-        "https://api.totob12.com/image/https%3A%2F%2Fpngimg.com%2Fuploads%2Fgithub%2Fgithub_PNG80.png",
-        "https://api.totob12.com/image/https%3A%2F%2Fpngimg.com%2Fuploads%2Fgithub%2Fgithub_PNG40.png",
-        "https://api.totob12.com/image/https%3A%2F%2Fpngimg.com%2Fuploads%2Fgithub%2Fgithub_PNG53.png",
-        "https://api.totob12.com/image/https%3A%2F%2Flogowik.com%2Fcontent%2Fuploads%2Fimages%2Fgithub9775.jpg",
-        "https://api.totob12.com/image/http%3A%2F%2Fi1.wp.com%2Fwww.analyticsvidhya.com%2Fwp-content%2Fuploads%2F2015%2F07%2Fgithub_logo.png",
-        "https://api.totob12.com/image/https%3A%2F%2Fstatic-00.iconduck.com%2Fassets.00%2Fgithub-icon-2048x2048-dpporae2.png",
-        "https://api.totob12.com/image/https%3A%2F%2Fstatic-00.iconduck.com%2Fassets.00%2Fgithub-icon-2048x2048-eyd5tyuo.png"
-    ]
-}
-```
-
-Of course, I want all the rendered images to have lazy loading. Also, I want the transition from the "All" tab to the "Images" tab to be as smooth as possible, sliding from left to right seamlessly.
-
-I have already tried to implement this as best as I could, but there are a couple issues:
-
-- I no longer want tab content to have a maximum width of 800 px. It should take up the entire page's width.
-- The tab navigation should have `top: 70px;`, rather than 60px. And the `navbar` height should be 200px.
-- The animation between the tabs is not perfect: whenever a different tab is selected, I want the tabs to switch and slide from left to right, like an image carousel.
-- The tab navigation buttons should only be shown when a search is active.
-
-I want you to fully develop and implement this. Return me the full new scripts.
+This all works well, but I need to make a couple changes. I need the change between tabs "All" and "Images" to happen smoothly, as if the both tab contents are constantly loaded, just waiting on the left and right, unseen. I need you to develop and implement this.
