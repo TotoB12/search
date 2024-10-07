@@ -182,6 +182,7 @@ function resetSearchLayout() {
 
 function handleSearchSubmission(query) {
     activateSearchLayout();
+    initializeTabs();
     submitSearch(query);
     const newUrl = `${window.location.pathname}?q=${encodeURIComponent(query)}`;
     history.pushState({ query }, '', newUrl);
@@ -772,6 +773,7 @@ function initializeTabs() {
     });
 }
 
+
 function switchTab(tabName) {
     if (currentTab === tabName) return;
 
@@ -827,7 +829,6 @@ function initializeLazyLoading() {
     });
 }
 
-initializeTabs();
 ```
 
 public\style.css
@@ -1641,4 +1642,5 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I have an issue. The tab indicator is not being shown properly when performing an initional search. It only appears when I click on one of the tab buttons.
+This all works great, but I want to add a new feature. I want to set an imposed max height on the answer container. If the received and displayed answer container has a bigger height than this limit, I want half the container to be trimmed to this limit, and have a large dropdown button to expand it to show it all. The button should also be able to re-close it. The container should only be trimmed and the button should only be shown if the container does excede the improsed limit height.
+I want you to fully develop and implement this.
