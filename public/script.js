@@ -447,7 +447,8 @@ lightbox.addEventListener('click', (e) => {
 });
 
 function submitSearch(query) {
-    const query = btoa(query);
+    query = btoa(query);
+    console.log('Submitting search:', query);
     removeExpandButton();
     showSkeletonLoader();
     removeExistingWebResults();
