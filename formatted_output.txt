@@ -2019,5 +2019,10 @@ module.exports = {
 };
 ```
 
-This all works, but I want to make a pretty big change. I no longer want my web app to use Websockets, but rather simple HTTP endpoints.
-I want you to fully develop and implement this.
+This all works, but I want to make a pretty big change. I no longer want my web app to use Websockets, but rather simple HTTP endpoints. When a search is made, the client script should call 3 endpoints:
+
+- the aiResult call --> server-side, an AI generated answer should be generated, but making a duckduckgo search (same limit of 4), generating an answer, and getting 4 images
+- the generalWebResults call --> the server should make one large duckduckgo search, format everything (thumbnails, title, and all), and send it back
+- the images --> the server should simply make one large image search and get them all back to the user
+
+I want you to fully develop and implement this. Everything should look and work just like the way it is currently set up.

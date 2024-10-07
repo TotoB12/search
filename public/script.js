@@ -27,6 +27,8 @@ let isPlaying = false;
 let currentTab = 'all';
 let storedImages = [];
 const MAX_ANSWER_HEIGHT = 400;
+// const API_BASE_URL = 'https://api.totob12.com/search';
+const API_BASE_URL = 'http://localhost:3000/search';
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -449,153 +451,164 @@ function submitSearch(query) {
     showSkeletonLoader();
     removeExistingWebResults();
 
-    const socket = io('https://api.totob12.com', {
-        transports: ['websocket'],
-        withCredentials: true
-    });
+    fetch(`${API_BASE_URL}/generalWebResults?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Received general web results:', data);
+            if (data.status === 'completed') {
+                displayGeneralWebResults(data.webResults);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching general web results:', error);
+        });
 
-    socket.on('connect', () => {
-        socket.emit('search', query);
-    });
+    // Fetch Images
+    fetch(`${API_BASE_URL}/images?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Received images:', data);
+            storedImages = data.images || [];
+            displayImages(storedImages);
+        })
+        .catch(error => {
+            console.error('Error fetching images:', error);
+        });
 
-    socket.on('generalResults', (data) => {
-        console.log('Received general web results:', data);
-        displayGeneralWebResults(data.webResults);
-        
-        storedImages = data.images || [];
-        displayImages(storedImages);
-    });
+    // Fetch AI Result
+    fetch(`${API_BASE_URL}/aiResult`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'completed' && !data.error) {
+                console.log('Received AI answer:', data);
+                hideSkeletonLoader(() => {
+                    if (answerContent.scrollHeight > MAX_ANSWER_HEIGHT) {
+                        answerContent.classList.add('collapsed');
+                        answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
 
-    socket.on('aiAnswer', (data) => {
-        if (data.status === 'completed' && !data.error) {
-            console.log(data);
-            hideSkeletonLoader(() => {
-                if (answerContent.scrollHeight > MAX_ANSWER_HEIGHT) {
-                    answerContent.classList.add('collapsed');
-                    answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
-    
-                    const expandButton = document.createElement('button');
-                    expandButton.className = 'expand-button';
-                    expandButton.textContent = 'Show more';
-    
-                    answerContent.insertAdjacentElement('afterend', expandButton);
-    
-                    expandButton.addEventListener('click', function () {
-                        if (answerContent.classList.contains('collapsed')) {
-                            answerContent.classList.remove('collapsed');
-                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
-                            expandButton.textContent = 'Show less';
-                            answerContent.addEventListener('transitionend', function handler() {
-                                answerContent.style.maxHeight = 'none';
-                                answerContent.removeEventListener('transitionend', handler);
-                            });
-                        } else {
-                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
-                            answerContent.offsetHeight;
-                            answerContent.classList.add('collapsed');
-                            answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
-                            expandButton.textContent = 'Show more';
-                        }
+                        const expandButton = document.createElement('button');
+                        expandButton.className = 'expand-button';
+                        expandButton.textContent = 'Show more';
+
+                        answerContent.insertAdjacentElement('afterend', expandButton);
+
+                        expandButton.addEventListener('click', function () {
+                            if (answerContent.classList.contains('collapsed')) {
+                                answerContent.classList.remove('collapsed');
+                                answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                                expandButton.textContent = 'Show less';
+                                answerContent.addEventListener('transitionend', function handler() {
+                                    answerContent.style.maxHeight = 'none';
+                                    answerContent.removeEventListener('transitionend', handler);
+                                });
+                            } else {
+                                answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                                answerContent.offsetHeight;
+                                answerContent.classList.add('collapsed');
+                                answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
+                                expandButton.textContent = 'Show more';
+                            }
+                        });
+                    }
+                });
+
+                const existingSourcesGrid = document.querySelector('.sources-grid');
+                if (existingSourcesGrid) {
+                    existingSourcesGrid.remove();
+                }
+
+                const processedAnswer = processCitations(data.answer, data.urls);
+                const parsedHtml = marked.parse(processedAnswer);
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = parsedHtml;
+
+                const firstElement = tempDiv.firstElementChild;
+                let insertPosition = 'start';
+
+                if (firstElement && firstElement.tagName === 'H2') {
+                    insertPosition = 'afterH2';
+                }
+
+                const sourcesGrid = createSourcesGrid(data.urls);
+                const toolbar = document.querySelector('.toolbar');
+                answerContent.insertBefore(sourcesGrid, toolbar);
+
+                if (data.images && data.images.length > 0) {
+                    const imagesToShow = data.images.slice(0, 4);
+
+                    imageList = imagesToShow;
+
+                    const imageGrid = document.createElement('div');
+                    imageGrid.className = 'image-grid';
+
+                    imagesToShow.forEach((imgUrl, index) => {
+                        const gridItem = document.createElement('div');
+                        gridItem.className = 'image-grid-item';
+
+                        const skeletonOverlay = document.createElement('div');
+                        skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
+                        gridItem.appendChild(skeletonOverlay);
+
+                        const img = document.createElement('img');
+                        img.src = imgUrl + '?p=300';
+                        img.dataset.fullSrc = imgUrl;
+                        img.dataset.index = index;
+                        img.alt = 'Related Image';
+                        img.style.opacity = '0';
+
+                        gridItem.appendChild(img);
+                        imageGrid.appendChild(gridItem);
                     });
-                }
-            });
 
-            const existingSourcesGrid = document.querySelector('.sources-grid');
-            if (existingSourcesGrid) {
-                existingSourcesGrid.remove();
-            }
-
-            const processedAnswer = processCitations(data.answer, data.urls);
-            const parsedHtml = marked.parse(processedAnswer);
-
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = parsedHtml;
-
-            const firstElement = tempDiv.firstElementChild;
-            let insertPosition = 'start';
-
-            if (firstElement && firstElement.tagName === 'H2') {
-                insertPosition = 'afterH2';
-            }
-
-            const sourcesGrid = createSourcesGrid(data.urls);
-            const toolbar = document.querySelector('.toolbar');
-            answerContent.insertBefore(sourcesGrid, toolbar);
-
-            if (data.images && data.images.length > 0) {
-                const imagesToShow = data.images.slice(0, 4);
-
-                imageList = imagesToShow;
-
-                const imageGrid = document.createElement('div');
-                imageGrid.className = 'image-grid';
-
-                imagesToShow.forEach((imgUrl, index) => {
-                    const gridItem = document.createElement('div');
-                    gridItem.className = 'image-grid-item';
-
-                    const skeletonOverlay = document.createElement('div');
-                    skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
-                    gridItem.appendChild(skeletonOverlay);
-
-                    const img = document.createElement('img');
-                    img.src = imgUrl + '?p=300';
-                    img.dataset.fullSrc = imgUrl;
-                    img.dataset.index = index;
-                    img.alt = 'Related Image';
-                    img.style.opacity = '0';
-
-                    gridItem.appendChild(img);
-                    imageGrid.appendChild(gridItem);
-                });
-
-                if (insertPosition === 'afterH2') {
-                    if (firstElement.nextSibling) {
-                        tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
+                    if (insertPosition === 'afterH2') {
+                        if (firstElement.nextSibling) {
+                            tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
+                        } else {
+                            tempDiv.appendChild(imageGrid);
+                        }
                     } else {
-                        tempDiv.appendChild(imageGrid);
+                        tempDiv.insertBefore(imageGrid, tempDiv.firstChild);
                     }
-                } else {
-                    tempDiv.insertBefore(imageGrid, tempDiv.firstChild);
                 }
+
+                const config = {
+                    ADD_ATTR: ['target', 'rel']
+                };
+                const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
+                answerDiv.innerHTML = finalHtml;
+
+                const images = answerDiv.querySelectorAll('.image-grid-item img');
+
+                images.forEach(img => {
+                    img.addEventListener('load', () => {
+                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
+                        const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
+                        if (skeletonOverlay) {
+                            skeletonOverlay.remove();
+                        }
+                        img.style.opacity = '1';
+                    });
+                    img.addEventListener('error', () => {
+                        img.alt = 'Failed to load image';
+                    });
+                });
+
+            } else if (data.status === 'error' || data.error) {
+                hideSkeletonLoader();
+                console.log(data);
+                answerDiv.innerText = `Error: An error occurred while processing the search query`;
             }
-
-            const config = {
-                ADD_ATTR: ['target', 'rel']
-            };
-            const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
-            answerDiv.innerHTML = finalHtml;
-
-            const images = answerDiv.querySelectorAll('.image-grid-item img');
-
-            images.forEach(img => {
-                img.addEventListener('load', () => {
-                    img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
-                    const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
-                    if (skeletonOverlay) {
-                        skeletonOverlay.remove();
-                    }
-                    img.style.opacity = '1';
-                });
-                img.addEventListener('error', () => {
-                    img.alt = 'Failed to load image';
-                });
-            });
-
-            socket.disconnect();
-        } else if (data.status === 'error' || (data.answer && data.answer.error)) {
+        })
+        .catch(error => {
+            console.error('Error fetching AI result:', error);
             hideSkeletonLoader();
-            console.log(data);
-            answerDiv.innerText = `Error: An error occurred while processing the search query`;
-            socket.disconnect();
-        }
-    });
-
-    socket.on('connect_error', (err) => {
-        console.log('Connection error:', err.message);
-        hideSkeletonLoader();
-        answerDiv.innerText = `Error: ${err.message}`;
-    });
+            answerDiv.innerText = `Error: ${error.message}`;
+        });
 }
 
 function displayGeneralWebResults(webResults) {
