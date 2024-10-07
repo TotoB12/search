@@ -656,6 +656,7 @@ function displayImages(images) {
         
         const img = document.createElement('img');
         img.setAttribute('data-src', imageUrl);
+        img.setAttribute('data-fullSrc', imageUrl);
         img.setAttribute('data-index', index);
         img.alt = 'Search result image';
         

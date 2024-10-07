@@ -669,6 +669,7 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 16px;
     padding: 16px;
+    margin-top: 3rem;
 }
 
 .image-item {
@@ -695,7 +696,7 @@ body {
 }
 
 body.search-active {
-    padding-top: 100px;
+    padding-top: 75px;
     justify-content: flex-start;
 }
 
