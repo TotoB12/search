@@ -27,8 +27,8 @@ let isPlaying = false;
 let currentTab = 'all';
 let storedImages = [];
 const MAX_ANSWER_HEIGHT = 400;
-// const API_BASE_URL = 'https://api.totob12.com/search';
-const API_BASE_URL = 'http://localhost:3000/search';
+const API_BASE_URL = 'https://api.totob12.com/search';
+// const API_BASE_URL = 'http://localhost:3000/search';
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
