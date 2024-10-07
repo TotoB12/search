@@ -18,6 +18,7 @@ const ttsStop = ttsButton.querySelector('.tts-stop');
 const copyButton = document.getElementById('copy-button');
 const copyIcon = copyButton.querySelector('.copy-icon');
 const checkmarkIcon = copyButton.querySelector('.checkmark-icon');
+const suggestionsContainer = document.getElementById('suggestions-container');
 
 let imageList = [];
 let currentImageIndex = 0;
@@ -29,6 +30,7 @@ let storedImages = [];
 const MAX_ANSWER_HEIGHT = 400;
 const API_BASE_URL = 'https://api.totob12.com/search';
 // const API_BASE_URL = 'http://localhost:3000/search';
+let suggestionTimeout;
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -71,6 +73,7 @@ searchButton.addEventListener('click', function (e) {
 
 searchInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
+        searchInput.blur();
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
@@ -84,6 +87,35 @@ searchForm.addEventListener('submit', function (e) {
     const query = searchInput.value.trim();
     if (query) {
         handleSearchSubmission(query);
+    }
+});
+
+searchInput.addEventListener('focus', function() {
+    const query = searchInput.value.trim();
+    fetchSuggestions(query);
+});
+
+searchInput.addEventListener('blur', function(event) {
+    setTimeout(() => {
+        if (!suggestionsContainer.contains(document.activeElement)) {
+            clearSuggestions();
+        }
+    }, 100);
+});
+
+searchInput.addEventListener('input', function() {
+    const query = searchInput.value.trim();
+    if (suggestionTimeout) {
+        clearTimeout(suggestionTimeout);
+    }
+    suggestionTimeout = setTimeout(() => {
+        fetchSuggestions(query);
+    }, 300);
+});
+
+document.addEventListener('click', function(event) {
+    if (!searchForm.contains(event.target) && !suggestionsContainer.contains(event.target)) {
+        clearSuggestions();
     }
 });
 
@@ -668,24 +700,24 @@ function removeExistingWebResults() {
 function initializeTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabIndicator = document.querySelector('.tab-indicator');
-    
+
     function updateTabIndicator(button) {
         tabIndicator.style.width = `${button.offsetWidth}px`;
         tabIndicator.style.left = `${button.offsetLeft}px`;
     }
-    
+
     tabButtons.forEach(button => {
         if (button.classList.contains('active')) {
             updateTabIndicator(button);
         }
-        
+
         button.addEventListener('click', () => {
             const tabName = button.dataset.tab;
             switchTab(tabName);
-            
+
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-            
+
             updateTabIndicator(button);
         });
     });
@@ -708,25 +740,25 @@ function switchTab(tabName) {
 function displayImages(images) {
     const imagesGrid = document.querySelector('.images-grid');
     imagesGrid.innerHTML = '';
-    
+
     images.forEach((imageUrl, index) => {
         const imageItem = document.createElement('div');
         imageItem.className = 'image-item';
-        
+
         const img = document.createElement('img');
         img.setAttribute('data-src', imageUrl);
         img.setAttribute('data-fullSrc', imageUrl);
         img.setAttribute('data-index', index);
         img.alt = 'Search result image';
-        
+
         imageItem.appendChild(img);
         imagesGrid.appendChild(imageItem);
-        
+
         imageItem.addEventListener('click', () => {
             openLightbox(imageUrl, index);
         });
     });
-    
+
     initializeLazyLoading();
 }
 
@@ -741,8 +773,45 @@ function initializeLazyLoading() {
             }
         });
     });
-    
+
     document.querySelectorAll('.image-item img[data-src]').forEach(img => {
         imageObserver.observe(img);
     });
+}
+
+function fetchSuggestions(query) {
+    query = btoa(query);
+    fetch(`${API_BASE_URL}/suggestions?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            displaySuggestions(data.suggestions);
+        })
+        .catch(error => {
+            console.error('Error fetching suggestions:', error);
+        });
+}
+
+function displaySuggestions(suggestions) {
+    suggestionsContainer.innerHTML = '';
+    suggestions.forEach(suggestion => {
+        const suggestionItem = document.createElement('div');
+        suggestionItem.className = 'suggestion-item';
+        suggestionItem.textContent = suggestion;
+        suggestionItem.addEventListener('click', () => {
+            searchInput.value = suggestion;
+            clearSuggestions();
+            handleSearchSubmission(suggestion);
+        });
+        suggestionsContainer.appendChild(suggestionItem);
+    });
+    if (suggestions.length > 0) {
+        suggestionsContainer.style.display = 'block';
+    } else {
+        suggestionsContainer.style.display = 'none';
+    }
+}
+
+function clearSuggestions() {
+    suggestionsContainer.innerHTML = '';
+    suggestionsContainer.style.display = 'none';
 }

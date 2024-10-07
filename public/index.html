@@ -22,7 +22,10 @@
                     <line x1="20" y1="20" x2="16.65" y2="16.65"></line>
                 </svg>
             </span>
-            <input type="text" id="search-input" placeholder="What are you looking for?" required>
+            <div class="search-input-wrapper">
+                <input type="text" id="search-input" placeholder="What are you looking for?" required>
+                <div id="suggestions-container"></div>
+            </div>
             <button type="button" id="search-button" aria-label="Search">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd"
