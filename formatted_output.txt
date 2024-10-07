@@ -123,7 +123,6 @@ public\index.html
             <img src="" alt="Lightbox Image" style="display: none;">
         </div>
     </div>
-    <script src="https://cdn.socket.io/4.5.1/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.8/dist/purify.min.js"></script>
     <script src="script.js"></script>
@@ -167,6 +166,8 @@ let isPlaying = false;
 let currentTab = 'all';
 let storedImages = [];
 const MAX_ANSWER_HEIGHT = 400;
+const API_BASE_URL = 'https://api.totob12.com/search';
+// const API_BASE_URL = 'http://localhost:3000/search';
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -585,157 +586,168 @@ lightbox.addEventListener('click', (e) => {
 });
 
 function submitSearch(query) {
+    query = btoa(query);
+    console.log('Submitting search:', query);
     removeExpandButton();
     showSkeletonLoader();
     removeExistingWebResults();
 
-    const socket = io('https://api.totob12.com', {
-        transports: ['websocket'],
-        withCredentials: true
-    });
+    fetch(`${API_BASE_URL}/generalWebResults?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Received general web results:', data);
+            if (data.status === 'completed') {
+                displayGeneralWebResults(data.webResults);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching general web results:', error);
+        });
 
-    socket.on('connect', () => {
-        socket.emit('search', query);
-    });
+    fetch(`${API_BASE_URL}/images?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Received images:', data);
+            storedImages = data.images || [];
+            displayImages(storedImages);
+        })
+        .catch(error => {
+            console.error('Error fetching images:', error);
+        });
 
-    socket.on('generalResults', (data) => {
-        console.log('Received general web results:', data);
-        displayGeneralWebResults(data.webResults);
-        
-        storedImages = data.images || [];
-        displayImages(storedImages);
-    });
+    fetch(`${API_BASE_URL}/aiResult`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'completed' && !data.error) {
+                console.log('Received AI answer:', data);
+                hideSkeletonLoader(() => {
+                    if (answerContent.scrollHeight > MAX_ANSWER_HEIGHT) {
+                        answerContent.classList.add('collapsed');
+                        answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
 
-    socket.on('aiAnswer', (data) => {
-        if (data.status === 'completed' && !data.error) {
-            console.log(data);
-            hideSkeletonLoader(() => {
-                if (answerContent.scrollHeight > MAX_ANSWER_HEIGHT) {
-                    answerContent.classList.add('collapsed');
-                    answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
-    
-                    const expandButton = document.createElement('button');
-                    expandButton.className = 'expand-button';
-                    expandButton.textContent = 'Show more';
-    
-                    answerContent.insertAdjacentElement('afterend', expandButton);
-    
-                    expandButton.addEventListener('click', function () {
-                        if (answerContent.classList.contains('collapsed')) {
-                            answerContent.classList.remove('collapsed');
-                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
-                            expandButton.textContent = 'Show less';
-                            answerContent.addEventListener('transitionend', function handler() {
-                                answerContent.style.maxHeight = 'none';
-                                answerContent.removeEventListener('transitionend', handler);
-                            });
-                        } else {
-                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
-                            answerContent.offsetHeight;
-                            answerContent.classList.add('collapsed');
-                            answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
-                            expandButton.textContent = 'Show more';
-                        }
+                        const expandButton = document.createElement('button');
+                        expandButton.className = 'expand-button';
+                        expandButton.textContent = 'Show more';
+
+                        answerContent.insertAdjacentElement('afterend', expandButton);
+
+                        expandButton.addEventListener('click', function () {
+                            if (answerContent.classList.contains('collapsed')) {
+                                answerContent.classList.remove('collapsed');
+                                answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                                expandButton.textContent = 'Show less';
+                                answerContent.addEventListener('transitionend', function handler() {
+                                    answerContent.style.maxHeight = 'none';
+                                    answerContent.removeEventListener('transitionend', handler);
+                                });
+                            } else {
+                                answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                                answerContent.offsetHeight;
+                                answerContent.classList.add('collapsed');
+                                answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
+                                expandButton.textContent = 'Show more';
+                            }
+                        });
+                    }
+                });
+
+                const existingSourcesGrid = document.querySelector('.sources-grid');
+                if (existingSourcesGrid) {
+                    existingSourcesGrid.remove();
+                }
+
+                const processedAnswer = processCitations(data.answer, data.urls);
+                const parsedHtml = marked.parse(processedAnswer);
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = parsedHtml;
+
+                const firstElement = tempDiv.firstElementChild;
+                let insertPosition = 'start';
+
+                if (firstElement && firstElement.tagName === 'H2') {
+                    insertPosition = 'afterH2';
+                }
+
+                const sourcesGrid = createSourcesGrid(data.urls);
+                const toolbar = document.querySelector('.toolbar');
+                answerContent.insertBefore(sourcesGrid, toolbar);
+
+                if (data.images && data.images.length > 0) {
+                    const imagesToShow = data.images.slice(0, 4);
+
+                    imageList = imagesToShow;
+
+                    const imageGrid = document.createElement('div');
+                    imageGrid.className = 'image-grid';
+
+                    imagesToShow.forEach((imgUrl, index) => {
+                        const gridItem = document.createElement('div');
+                        gridItem.className = 'image-grid-item';
+
+                        const skeletonOverlay = document.createElement('div');
+                        skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
+                        gridItem.appendChild(skeletonOverlay);
+
+                        const img = document.createElement('img');
+                        img.src = imgUrl + '?p=300';
+                        img.dataset.fullSrc = imgUrl;
+                        img.dataset.index = index;
+                        img.alt = 'Related Image';
+                        img.style.opacity = '0';
+
+                        gridItem.appendChild(img);
+                        imageGrid.appendChild(gridItem);
                     });
-                }
-            });
 
-            const existingSourcesGrid = document.querySelector('.sources-grid');
-            if (existingSourcesGrid) {
-                existingSourcesGrid.remove();
-            }
-
-            const processedAnswer = processCitations(data.answer, data.urls);
-            const parsedHtml = marked.parse(processedAnswer);
-
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = parsedHtml;
-
-            const firstElement = tempDiv.firstElementChild;
-            let insertPosition = 'start';
-
-            if (firstElement && firstElement.tagName === 'H2') {
-                insertPosition = 'afterH2';
-            }
-
-            const sourcesGrid = createSourcesGrid(data.urls);
-            const toolbar = document.querySelector('.toolbar');
-            answerContent.insertBefore(sourcesGrid, toolbar);
-
-            if (data.images && data.images.length > 0) {
-                const imagesToShow = data.images.slice(0, 4);
-
-                imageList = imagesToShow;
-
-                const imageGrid = document.createElement('div');
-                imageGrid.className = 'image-grid';
-
-                imagesToShow.forEach((imgUrl, index) => {
-                    const gridItem = document.createElement('div');
-                    gridItem.className = 'image-grid-item';
-
-                    const skeletonOverlay = document.createElement('div');
-                    skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
-                    gridItem.appendChild(skeletonOverlay);
-
-                    const img = document.createElement('img');
-                    img.src = imgUrl + '?p=300';
-                    img.dataset.fullSrc = imgUrl;
-                    img.dataset.index = index;
-                    img.alt = 'Related Image';
-                    img.style.opacity = '0';
-
-                    gridItem.appendChild(img);
-                    imageGrid.appendChild(gridItem);
-                });
-
-                if (insertPosition === 'afterH2') {
-                    if (firstElement.nextSibling) {
-                        tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
+                    if (insertPosition === 'afterH2') {
+                        if (firstElement.nextSibling) {
+                            tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
+                        } else {
+                            tempDiv.appendChild(imageGrid);
+                        }
                     } else {
-                        tempDiv.appendChild(imageGrid);
+                        tempDiv.insertBefore(imageGrid, tempDiv.firstChild);
                     }
-                } else {
-                    tempDiv.insertBefore(imageGrid, tempDiv.firstChild);
                 }
+
+                const config = {
+                    ADD_ATTR: ['target', 'rel']
+                };
+                const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
+                answerDiv.innerHTML = finalHtml;
+
+                const images = answerDiv.querySelectorAll('.image-grid-item img');
+
+                images.forEach(img => {
+                    img.addEventListener('load', () => {
+                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
+                        const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
+                        if (skeletonOverlay) {
+                            skeletonOverlay.remove();
+                        }
+                        img.style.opacity = '1';
+                    });
+                    img.addEventListener('error', () => {
+                        img.alt = 'Failed to load image';
+                    });
+                });
+
+            } else if (data.status === 'error' || data.error) {
+                hideSkeletonLoader();
+                console.log(data);
+                answerDiv.innerText = `Error: An error occurred while processing the search query`;
             }
-
-            const config = {
-                ADD_ATTR: ['target', 'rel']
-            };
-            const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
-            answerDiv.innerHTML = finalHtml;
-
-            const images = answerDiv.querySelectorAll('.image-grid-item img');
-
-            images.forEach(img => {
-                img.addEventListener('load', () => {
-                    img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
-                    const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
-                    if (skeletonOverlay) {
-                        skeletonOverlay.remove();
-                    }
-                    img.style.opacity = '1';
-                });
-                img.addEventListener('error', () => {
-                    img.alt = 'Failed to load image';
-                });
-            });
-
-            socket.disconnect();
-        } else if (data.status === 'error' || (data.answer && data.answer.error)) {
+        })
+        .catch(error => {
+            console.error('Error fetching AI result:', error);
             hideSkeletonLoader();
-            console.log(data);
-            answerDiv.innerText = `Error: An error occurred while processing the search query`;
-            socket.disconnect();
-        }
-    });
-
-    socket.on('connect_error', (err) => {
-        console.log('Connection error:', err.message);
-        hideSkeletonLoader();
-        answerDiv.innerText = `Error: ${err.message}`;
-    });
+            answerDiv.innerText = `Error: ${error.message}`;
+        });
 }
 
 function displayGeneralWebResults(webResults) {
@@ -1730,12 +1742,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const http = require('http');
-const { Server } = require("socket.io");
 
 const mainRouter = require('./main');
 const depotRouter = require('./depot');
-const { processQuery } = require('./search');
+const searchRouter = require('./search');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -1757,49 +1767,24 @@ app.use(cors({
 }));
 
 app.use('/depot', depotRouter);
+app.use('/search', searchRouter);
 app.use('/', mainRouter);
 
-const httpServer = http.createServer(app);
-
-const io = new Server(httpServer, {
-    cors: {
-        origin: [
-            'https://totob12.com',
-            'https://depot.totob12.com',
-            'http://localhost:8000',
-            'https://search.totob12.com'
-        ],
-        methods: ['GET', 'POST', 'OPTIONS'],
-        allowedHeaders: ['Authorization', 'Content-Type'],
-        credentials: true
-    }
-});
-
-io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    socket.on('search', async (query) => {
-        console.log('Received search query:', query);
-        await processQuery(socket, query);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
-});
-
-httpServer.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`TotoB12 API server is running on port ${PORT}`);
 });
 ```
 
 search.js
 ```javascript
+const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { image_search } = require("duckduckgo-images-api");
 const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
 const pLimit = require('p-limit');
+
+const router = express.Router();
 
 const genAI = new GoogleGenerativeAI(process.env.AI_STUDIO_KEY);
 const safetySettings = [
@@ -1834,48 +1819,65 @@ const model = genAI.getGenerativeModel({
     safetySettings: safetySettings,
 });
 
-async function processQuery(socket, query) {
+async function processAiResult(query) {
     try {
-        console.log('Processing query:', query);
+        console.log('AI result for:', query);
 
-        const [searchPromise, imageResults] = await Promise.all([
-            performDuckDuckGoSearch(query),
-            get_images(query)
+        const [searchResults, imageResults] = await Promise.all([
+            performDuckDuckGoSearch(query, true, 4),
+            get_images(query, 4)
         ]);
 
-        const { webResults, searchResults } = searchPromise;
-        
-        socket.emit('generalResults', { 
-            status: 'completed', 
-            webResults,
-            images: imageResults.images
-        });
+        const aiAnswer = await generateAIResponse(query, searchResults.searchResults);
 
-        const aiResult = await generateAIResponse(query, searchResults);
-
-        const usedUrls = searchResults.map(result => ({
+        const usedUrls = searchResults.searchResults.map(result => ({
             index: result.index,
             title: result.title,
             favicon: result.favicon,
             url: result.url
         }));
 
-        const aiImages = imageResults.images.slice(0, 4);
-
-        socket.emit('aiAnswer', { 
-            status: 'completed', 
-            answer: aiResult, 
-            urls: usedUrls, 
-            images: aiImages 
-        });
+        return {
+            status: 'completed',
+            answer: aiAnswer,
+            urls: usedUrls,
+            images: imageResults.images
+        };
 
     } catch (error) {
-        console.error('Error in processQuery:', error);
-        socket.emit('error', { status: 'error', error: 'Internal Server Error' });
+        console.error('Error in processAiResult:', error);
+        throw error;
     }
 }
 
-async function performDuckDuckGoSearch(query) {
+async function getGeneralWebResults(query) {
+    try {
+        console.log('Web results for:', query);
+
+        const { webResults } = await performDuckDuckGoSearch(query, false);
+
+        return {
+            status: 'completed',
+            webResults
+        };
+    } catch (error) {
+        console.error('Error in getGeneralWebResults:', error);
+        throw error;
+    }
+}
+
+async function getImages(query) {
+    try {
+        console.log('Iimages for:', query);
+        const imageResults = await get_images(query);
+        return imageResults;
+    } catch (error) {
+        console.error('Error in getImages:', error);
+        throw error;
+    }
+}
+
+async function performDuckDuckGoSearch(query, ai, limit = 100) {
     const headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
         'Accept-Language': 'en-US,en;q=0.9',
@@ -1902,25 +1904,30 @@ async function performDuckDuckGoSearch(query) {
         }
     });
 
-    console.log('Web results done');
+    const limitedWebResults = webResults.slice(0, limit);
 
-    const searchResults = await processDetailedContent(webResults);
+    if (ai === false) {
+        return { webResults: limitedWebResults };
+    } else {
 
-    return { webResults, searchResults };
+        const searchResults = await processDetailedContent(limitedWebResults);
+
+        return { searchResults }
+    };
 }
 
 async function processDetailedContent(webResults) {
     const maxCharacters = 2000000;
     const limit = pLimit(4);
     let totalContentLength = 0;
-    
+
     const headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0',
         'Accept-Language': 'en-US,en;q=0.9',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept': 'text/html',
     };
 
-    const fetchPagePromises = webResults.slice(0, 4).map((result, index) => limit(async () => {
+    const fetchPagePromises = webResults.map((result, index) => limit(async () => {
         try {
             const pageResponse = await axios.get(result.url, {
                 headers,
@@ -1947,7 +1954,7 @@ async function processDetailedContent(webResults) {
                 content: contentToAdd,
             };
         } catch (error) {
-            console.log(`Error: Failed to fetch page ${result.url}, ${error.message}`);
+            console.log(`Error fetching page ${result.url}: ${error.message}`);
             return null;
         }
     }));
@@ -1993,7 +2000,7 @@ async function get_images(query, limit = 100) {
             iterations: 1,
             retries: 2,
         });
-        const images = results.slice(0, limit).map(result => 
+        const images = results.slice(0, limit).map(result =>
             `https://api.totob12.com/image/${encodeURIComponent(result.image)}`
             // `https://wsrv.nl/?url=${encodeURIComponent(image)}`
         );
@@ -2014,15 +2021,116 @@ async function aiResponse(prompt) {
     }
 }
 
-module.exports = {
-    processQuery
-};
+router.post('/aiResult', async (req, res) => {
+    const query = Buffer.from(req.body.query, 'base64').toString('utf-8');
+    if (!query) {
+        return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    try {
+        const result = await processAiResult(query);
+        res.json(result);
+    } catch (error) {
+        console.error('Error in /aiResult:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.get('/generalWebResults', async (req, res) => {
+    const query = Buffer.from(req.query.q, 'base64').toString('utf-8');
+    if (!query) {
+        return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    try {
+        const result = await getGeneralWebResults(query);
+        res.json(result);
+    } catch (error) {
+        console.error('Error in /generalWebResults:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.get('/images', async (req, res) => {
+    const query = Buffer.from(req.query.q, 'base64').toString('utf-8');
+    if (!query) {
+        return res.status(400).json({ error: 'Query parameter is required' });
+    }
+    try {
+        const result = await getImages(query);
+        res.json(result);
+    } catch (error) {
+        console.error('Error in /images:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+module.exports = router;
 ```
 
-This all works, but I want to make a pretty big change. I no longer want my web app to use Websockets, but rather simple HTTP endpoints. When a search is made, the client script should call 3 endpoints:
+This all works well, but I now want to add a new feature. I want to add auto suggestions to the search input. When the text field is selected, I want 5 suggestions to appear underneath the search container, in rows, like on Google or Bing. These suggestions should update whenever the text content of the input changes. For this, I want a new endpoint on my API server. This endpoint can itself call the URL "https://api.bing.com/osjson.aspx?query={query}" to get the suggestions. Here is an example of what the result of that Bing API looks like:
 
-- the aiResult call --> server-side, an AI generated answer should be generated, but making a duckduckgo search (same limit of 4), generating an answer, and getting 4 images
-- the generalWebResults call --> the server should make one large duckduckgo search, format everything (thumbnails, title, and all), and send it back
-- the images --> the server should simply make one large image search and get them all back to the user
+```
+[
+    "cheese",
+    [
+        "cheese",
+        "cheesecake recipes",
+        "cheesecake factory",
+        "cheesecake",
+        "cheeseburger",
+        "cheese curds",
+        "cheeseburger near me",
+        "cheesecloth",
+        "cheese pizza",
+        "cheese grater",
+        "cheese whiz",
+        "cheese balls",
+        "cheesecake near me",
+        "cheesecake factory near me",
+        "cheese recall",
+        "cheese game",
+        "cheese sticks",
+        "cheese sauce",
+        "cheeseburger sliders",
+        "cheeseburger soup",
+        "cheesesteak",
+        "cheese bread",
+        "cheesecake factory menu",
+        "cheeseburger in paradise",
+        "cheeseburger casserole"
+    ],
+    [],
+    [],
+    {
+        "google:suggestrelevance": [
+            1300,
+            1299,
+            1298,
+            1297,
+            1296,
+            1295,
+            1294,
+            1293,
+            1292,
+            1291,
+            1290,
+            1289,
+            1288,
+            1287,
+            1286,
+            1285,
+            1284,
+            1283,
+            1282,
+            1281,
+            1280,
+            1279,
+            1278,
+            1277,
+            1276
+        ]
+    }
+]
+```
 
-I want you to fully develop and implement this. Everything should look and work just like the way it is currently set up.
+My web app should display the 5 first. These should be clickable, replacing the text of the input with it and submitting it.
+I want you to fully develop and implement this.
