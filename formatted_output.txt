@@ -1,4 +1,4 @@
-I am working on web app that will act like a simply search engine, where users can enter a search term or question, and get an AI generated answer in seconds. Here is the full project:
+This doesnt work properly. Here are all the current files:
 
 public\index.html
 ```html
@@ -166,6 +166,7 @@ let audioSource;
 let isPlaying = false;
 let currentTab = 'all';
 let storedImages = [];
+const MAX_ANSWER_HEIGHT = 500;
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -661,6 +662,39 @@ function submitSearch(query) {
             const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
             answerDiv.innerHTML = finalHtml;
 
+            setTimeout(() => {
+                const answerContent = document.querySelector('.answerContent');
+                if (answerContent.scrollHeight > MAX_ANSWER_HEIGHT) {
+                    answerContent.classList.add('collapsed');
+                    answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
+    
+                    const expandButton = document.createElement('button');
+                    expandButton.className = 'expand-button';
+                    expandButton.textContent = 'Show more';
+    
+                    const answerContainer = document.querySelector('.answerContainer');
+                    answerContainer.appendChild(expandButton);
+    
+                    expandButton.addEventListener('click', function () {
+                        if (answerContent.classList.contains('collapsed')) {
+                            answerContent.classList.remove('collapsed');
+                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                            expandButton.textContent = 'Show less';
+                            answerContent.addEventListener('transitionend', function handler() {
+                                answerContent.style.maxHeight = 'none';
+                                answerContent.removeEventListener('transitionend', handler);
+                            });
+                        } else {
+                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                            answerContent.offsetHeight;
+                            answerContent.classList.add('collapsed');
+                            answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
+                            expandButton.textContent = 'Show more';
+                        }
+                    });
+                }
+            }, 0);
+
             const images = answerDiv.querySelectorAll('.image-grid-item img');
 
             images.forEach(img => {
@@ -1048,7 +1082,39 @@ body {
     align-self: center;
     opacity: 0;
     transform: translateY(20px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.5s ease;
+    overflow: hidden;
+}
+
+.collapsed {
+    position: relative;
+}
+
+.collapsed::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+}
+
+.expand-button {
+    display: block;
+    margin: 20px auto;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.expand-button:hover {
+    background-color: #333;
 }
 
 #answer,
@@ -1279,6 +1345,7 @@ body {
     text-decoration: none;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.3;
@@ -1642,5 +1709,3 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works great, but I want to add a new feature. I want to set an imposed max height on the answer container. If the received and displayed answer container has a bigger height than this limit, I want half the container to be trimmed to this limit, and have a large dropdown button to expand it to show it all. The button should also be able to re-close it. The container should only be trimmed and the button should only be shown if the container does excede the improsed limit height.
-I want you to fully develop and implement this.

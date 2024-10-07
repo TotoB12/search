@@ -26,6 +26,7 @@ let audioSource;
 let isPlaying = false;
 let currentTab = 'all';
 let storedImages = [];
+const MAX_ANSWER_HEIGHT = 400;
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -161,6 +162,7 @@ function insertSkeletonLoader() {
 
     const skeletonTitle = document.createElement('div');
     skeletonTitle.className = 'skeleton-title skeleton-element';
+    skeletonTitle.style.width = `${Math.floor(Math.random() * 20) + 30}%`;
     skeletonLoader.appendChild(skeletonTitle);
 
     const skeletonImageGrid = document.createElement('div');
@@ -174,16 +176,17 @@ function insertSkeletonLoader() {
 
     skeletonLoader.appendChild(skeletonImageGrid);
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
         const skeletonText = document.createElement('div');
         skeletonText.className = 'skeleton-text skeleton-element';
+        skeletonText.style.width = `${Math.floor(Math.random() * 60) + 40}%`;
         skeletonLoader.appendChild(skeletonText);
     }
 
     answerContainer.appendChild(skeletonLoader);
 }
 
-function hideSkeletonLoader() {
+function hideSkeletonLoader(callback) {
     const skeletonLoader = document.getElementById('skeleton-loader');
     if (skeletonLoader) {
         skeletonLoader.style.opacity = '0';
@@ -196,9 +199,11 @@ function hideSkeletonLoader() {
             void answerContent.offsetWidth;
             answerContent.style.opacity = '1';
             answerContent.style.transform = 'translateY(0)';
+            if (callback) callback();
         }, 300);
     } else {
         answerContent.style.display = 'block';
+        if (callback) callback();
     }
 }
 
@@ -453,7 +458,36 @@ function submitSearch(query) {
     socket.on('aiAnswer', (data) => {
         if (data.status === 'completed' && !data.error) {
             console.log(data);
-            hideSkeletonLoader();
+            hideSkeletonLoader(() => {
+                if (answerContent.scrollHeight > MAX_ANSWER_HEIGHT) {
+                    answerContent.classList.add('collapsed');
+                    answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
+    
+                    const expandButton = document.createElement('button');
+                    expandButton.className = 'expand-button';
+                    expandButton.textContent = 'Show more';
+    
+                    answerContent.insertAdjacentElement('afterend', expandButton);
+    
+                    expandButton.addEventListener('click', function () {
+                        if (answerContent.classList.contains('collapsed')) {
+                            answerContent.classList.remove('collapsed');
+                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                            expandButton.textContent = 'Show less';
+                            answerContent.addEventListener('transitionend', function handler() {
+                                answerContent.style.maxHeight = 'none';
+                                answerContent.removeEventListener('transitionend', handler);
+                            });
+                        } else {
+                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                            answerContent.offsetHeight;
+                            answerContent.classList.add('collapsed');
+                            answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
+                            expandButton.textContent = 'Show more';
+                        }
+                    });
+                }
+            });
 
             const existingSourcesGrid = document.querySelector('.sources-grid');
             if (existingSourcesGrid) {
