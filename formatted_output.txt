@@ -1575,7 +1575,7 @@ body.search-active .tab-navigation {
 }
 
 body.search-active .tab-content {
-    height: calc(100vh - 135px);
+    height: calc(100vh - 80px);
 }
 
 body.search-active .answerContainer {
@@ -1641,4 +1641,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I need all tab contents to be anchored to the bottom of the page, as it is currently centered vertically.
+This all works well, but I have an issue. The tab indicator is not being shown properly when performing an initional search. It only appears when I click on one of the tab buttons.

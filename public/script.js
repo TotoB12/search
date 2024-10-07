@@ -42,6 +42,7 @@ function resetSearchLayout() {
 
 function handleSearchSubmission(query) {
     activateSearchLayout();
+    initializeTabs();
     submitSearch(query);
     const newUrl = `${window.location.pathname}?q=${encodeURIComponent(query)}`;
     history.pushState({ query }, '', newUrl);
@@ -632,6 +633,7 @@ function initializeTabs() {
     });
 }
 
+
 function switchTab(tabName) {
     if (currentTab === tabName) return;
 
@@ -686,5 +688,3 @@ function initializeLazyLoading() {
         imageObserver.observe(img);
     });
 }
-
-initializeTabs();
