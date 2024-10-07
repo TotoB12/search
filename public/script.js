@@ -445,7 +445,6 @@ function submitSearch(query) {
         console.log('Received general web results:', data);
         displayGeneralWebResults(data.webResults);
         
-        // Store images and update images tab
         storedImages = data.images || [];
         displayImages(storedImages);
     });
