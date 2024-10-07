@@ -1,4 +1,4 @@
-This doesnt work properly. Here are all the current files:
+I am working on web app that will act like a simply search engine, where users can enter a search term or question, and get an AI generated answer in seconds. Here is the full project:
 
 public\index.html
 ```html
@@ -166,7 +166,7 @@ let audioSource;
 let isPlaying = false;
 let currentTab = 'all';
 let storedImages = [];
-const MAX_ANSWER_HEIGHT = 500;
+const MAX_ANSWER_HEIGHT = 400;
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -179,6 +179,16 @@ function resetSearchLayout() {
     answerDiv.innerHTML = '';
     removeExistingWebResults();
     searchInput.value = '';
+    removeExpandButton();
+}
+
+function removeExpandButton() {
+    const existingButton = document.querySelector('.expand-button');
+    if (existingButton) {
+        existingButton.remove();
+    }
+    answerContent.style.maxHeight = '';
+    answerContent.classList.remove('collapsed');
 }
 
 function handleSearchSubmission(query) {
@@ -277,6 +287,7 @@ function showSkeletonLoader() {
     if (isPlaying) {
         stopTTS();
     }
+    removeExpandButton();
     if (answerContent.style.display !== 'none') {
         answerContent.style.opacity = '0';
         answerContent.style.transform = 'translateY(-20px)';
@@ -302,6 +313,7 @@ function insertSkeletonLoader() {
 
     const skeletonTitle = document.createElement('div');
     skeletonTitle.className = 'skeleton-title skeleton-element';
+    skeletonTitle.style.width = `${Math.floor(Math.random() * 20) + 30}%`;
     skeletonLoader.appendChild(skeletonTitle);
 
     const skeletonImageGrid = document.createElement('div');
@@ -315,16 +327,17 @@ function insertSkeletonLoader() {
 
     skeletonLoader.appendChild(skeletonImageGrid);
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
         const skeletonText = document.createElement('div');
         skeletonText.className = 'skeleton-text skeleton-element';
+        skeletonText.style.width = `${Math.floor(Math.random() * 60) + 40}%`;
         skeletonLoader.appendChild(skeletonText);
     }
 
     answerContainer.appendChild(skeletonLoader);
 }
 
-function hideSkeletonLoader() {
+function hideSkeletonLoader(callback) {
     const skeletonLoader = document.getElementById('skeleton-loader');
     if (skeletonLoader) {
         skeletonLoader.style.opacity = '0';
@@ -337,9 +350,11 @@ function hideSkeletonLoader() {
             void answerContent.offsetWidth;
             answerContent.style.opacity = '1';
             answerContent.style.transform = 'translateY(0)';
+            if (callback) callback();
         }, 300);
     } else {
         answerContent.style.display = 'block';
+        if (callback) callback();
     }
 }
 
@@ -570,8 +585,8 @@ lightbox.addEventListener('click', (e) => {
 });
 
 function submitSearch(query) {
+    removeExpandButton();
     showSkeletonLoader();
-
     removeExistingWebResults();
 
     const socket = io('https://api.totob12.com', {
@@ -594,7 +609,36 @@ function submitSearch(query) {
     socket.on('aiAnswer', (data) => {
         if (data.status === 'completed' && !data.error) {
             console.log(data);
-            hideSkeletonLoader();
+            hideSkeletonLoader(() => {
+                if (answerContent.scrollHeight > MAX_ANSWER_HEIGHT) {
+                    answerContent.classList.add('collapsed');
+                    answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
+    
+                    const expandButton = document.createElement('button');
+                    expandButton.className = 'expand-button';
+                    expandButton.textContent = 'Show more';
+    
+                    answerContent.insertAdjacentElement('afterend', expandButton);
+    
+                    expandButton.addEventListener('click', function () {
+                        if (answerContent.classList.contains('collapsed')) {
+                            answerContent.classList.remove('collapsed');
+                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                            expandButton.textContent = 'Show less';
+                            answerContent.addEventListener('transitionend', function handler() {
+                                answerContent.style.maxHeight = 'none';
+                                answerContent.removeEventListener('transitionend', handler);
+                            });
+                        } else {
+                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                            answerContent.offsetHeight;
+                            answerContent.classList.add('collapsed');
+                            answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
+                            expandButton.textContent = 'Show more';
+                        }
+                    });
+                }
+            });
 
             const existingSourcesGrid = document.querySelector('.sources-grid');
             if (existingSourcesGrid) {
@@ -661,39 +705,6 @@ function submitSearch(query) {
             };
             const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
             answerDiv.innerHTML = finalHtml;
-
-            setTimeout(() => {
-                const answerContent = document.querySelector('.answerContent');
-                if (answerContent.scrollHeight > MAX_ANSWER_HEIGHT) {
-                    answerContent.classList.add('collapsed');
-                    answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
-    
-                    const expandButton = document.createElement('button');
-                    expandButton.className = 'expand-button';
-                    expandButton.textContent = 'Show more';
-    
-                    const answerContainer = document.querySelector('.answerContainer');
-                    answerContainer.appendChild(expandButton);
-    
-                    expandButton.addEventListener('click', function () {
-                        if (answerContent.classList.contains('collapsed')) {
-                            answerContent.classList.remove('collapsed');
-                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
-                            expandButton.textContent = 'Show less';
-                            answerContent.addEventListener('transitionend', function handler() {
-                                answerContent.style.maxHeight = 'none';
-                                answerContent.removeEventListener('transitionend', handler);
-                            });
-                        } else {
-                            answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
-                            answerContent.offsetHeight;
-                            answerContent.classList.add('collapsed');
-                            answerContent.style.maxHeight = MAX_ANSWER_HEIGHT + 'px';
-                            expandButton.textContent = 'Show more';
-                        }
-                    });
-                }
-            }, 0);
 
             const images = answerDiv.querySelectorAll('.image-grid-item img');
 
@@ -1102,7 +1113,7 @@ body {
 
 .expand-button {
     display: block;
-    margin: 20px auto;
+    margin: 20px auto 0px auto;
     background-color: #000;
     color: #fff;
     border: none;
@@ -1111,6 +1122,7 @@ body {
     border-radius: 25px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    z-index: 1;
 }
 
 .expand-button:hover {
@@ -1279,7 +1291,8 @@ body {
 .skeleton-title {
     width: 45%;
     height: 32px;
-    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.0rem;
 }
 
 .skeleton-image::after {
@@ -1647,7 +1660,7 @@ body.search-active .tab-content {
 }
 
 body.search-active .answerContainer {
-    padding: 2rem;
+    padding: 0 2rem;
     min-height: 200px;
 }
 
@@ -1709,3 +1722,302 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
+And here is the API server:
+
+server.js
+```javascript
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const http = require('http');
+const { Server } = require("socket.io");
+
+const mainRouter = require('./main');
+const depotRouter = require('./depot');
+const { processQuery } = require('./search');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json({ limit: '1gb' }));
+app.use(express.urlencoded({ limit: '1gb', extended: true }));
+app.use(cookieParser());
+
+app.use(cors({
+    origin: [
+        'https://totob12.com',
+        'https://depot.totob12.com',
+        'http://localhost:8000',
+        'https://search.totob12.com'
+    ],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Authorization', 'Content-Type'],
+    credentials: true
+}));
+
+app.use('/depot', depotRouter);
+app.use('/', mainRouter);
+
+const httpServer = http.createServer(app);
+
+const io = new Server(httpServer, {
+    cors: {
+        origin: [
+            'https://totob12.com',
+            'https://depot.totob12.com',
+            'http://localhost:8000',
+            'https://search.totob12.com'
+        ],
+        methods: ['GET', 'POST', 'OPTIONS'],
+        allowedHeaders: ['Authorization', 'Content-Type'],
+        credentials: true
+    }
+});
+
+io.on('connection', (socket) => {
+    console.log('A user connected');
+
+    socket.on('search', async (query) => {
+        console.log('Received search query:', query);
+        await processQuery(socket, query);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+});
+
+httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`TotoB12 API server is running on port ${PORT}`);
+});
+```
+
+search.js
+```javascript
+const axios = require('axios');
+const cheerio = require('cheerio');
+const { image_search } = require("duckduckgo-images-api");
+const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
+const pLimit = require('p-limit');
+
+const genAI = new GoogleGenerativeAI(process.env.AI_STUDIO_KEY);
+const safetySettings = [
+    {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    },
+    {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
+    }
+];
+const model = genAI.getGenerativeModel({
+    // model: "gemini-1.5-flash",
+    model: "gemini-1.5-flash-8b-exp-0924",
+    generationConfig: {
+        temperature: 0.0,
+        maxOutputTokens: 1000,
+        topP: 0.4,
+        topK: 10,
+        presencePenalty: 0,
+        frequencyPenalty: 0,
+    },
+    safetySettings: safetySettings,
+});
+
+async function processQuery(socket, query) {
+    try {
+        console.log('Processing query:', query);
+
+        const [searchPromise, imageResults] = await Promise.all([
+            performDuckDuckGoSearch(query),
+            get_images(query)
+        ]);
+
+        const { webResults, searchResults } = searchPromise;
+        
+        socket.emit('generalResults', { 
+            status: 'completed', 
+            webResults,
+            images: imageResults.images
+        });
+
+        const aiResult = await generateAIResponse(query, searchResults);
+
+        const usedUrls = searchResults.map(result => ({
+            index: result.index,
+            title: result.title,
+            favicon: result.favicon,
+            url: result.url
+        }));
+
+        const aiImages = imageResults.images.slice(0, 4);
+
+        socket.emit('aiAnswer', { 
+            status: 'completed', 
+            answer: aiResult, 
+            urls: usedUrls, 
+            images: aiImages 
+        });
+
+    } catch (error) {
+        console.error('Error in processQuery:', error);
+        socket.emit('error', { status: 'error', error: 'Internal Server Error' });
+    }
+}
+
+async function performDuckDuckGoSearch(query) {
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    };
+
+    const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+    const response = await axios.get(url, { headers });
+
+    if (response.status !== 200) {
+        throw new Error(`HTTP error ${response.status}`);
+    }
+
+    const $ = cheerio.load(response.data);
+    const webResults = [];
+    $('div.result.results_links.results_links_deep.web-result').each((i, elem) => {
+        const title = $(elem).find('h2.result__title a.result__a').text().trim();
+        const url = $(elem).find('h2.result__title a.result__a').attr('href');
+        const description = $(elem).find('a.result__snippet').text().trim();
+        const favicon = $(elem).find('img.result__icon__img').attr('src') || '';
+
+        if (!$(elem).find('.badge--ad').length) {
+            webResults.push({ title, url, description, favicon });
+        }
+    });
+
+    console.log('Web results done');
+
+    const searchResults = await processDetailedContent(webResults);
+
+    return { webResults, searchResults };
+}
+
+async function processDetailedContent(webResults) {
+    const maxCharacters = 2000000;
+    const limit = pLimit(4);
+    let totalContentLength = 0;
+    
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    };
+
+    const fetchPagePromises = webResults.slice(0, 4).map((result, index) => limit(async () => {
+        try {
+            const pageResponse = await axios.get(result.url, {
+                headers,
+                maxRedirects: 2,
+                timeout: 1200,
+                validateStatus: status => status >= 200 && status < 400,
+            });
+
+            const $page = cheerio.load(pageResponse.data);
+            $page('script, style').remove();
+            const pageText = $page('body').text().replace(/\s+/g, ' ').trim();
+
+            const contentToAdd = totalContentLength + pageText.length > maxCharacters
+                ? pageText.slice(0, maxCharacters - totalContentLength)
+                : pageText;
+
+            totalContentLength += contentToAdd.length;
+
+            return {
+                index,
+                title: result.title,
+                favicon: result.favicon,
+                url: result.url,
+                content: contentToAdd,
+            };
+        } catch (error) {
+            console.log(`Error: Failed to fetch page ${result.url}, ${error.message}`);
+            return null;
+        }
+    }));
+
+    const results = await Promise.all(fetchPagePromises);
+    return results.filter(Boolean);
+}
+
+async function generateAIResponse(query, searchResults) {
+    const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries to answer/respond to the user's query.
+The user's query is:
+
+\`\`\`
+${query}
+\`\`\`
+
+Your response should be easy to read and understand, and be presented in a helpful and informative manner. Keep in mind that it should be relatively short. Make sure to provide accurate and relevant information.
+
+You should format it to be aerated and structured, and not be an ugly paragraph. You may use Markdown to format your response. You should always have a short title before your response using ##.
+If your response contains a group of words that can be considered a direct response/answer to the user's query, you should highlight it. To highlight a part of text, have it be contained inside two couples of curly brackets, like this: {{this is part of a sentence that will be highlighted}}.
+
+Never apologize for not being able to find an answer. Always answer something.
+
+You have online results to assist you in your response. If you use any of the content from these results, provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}
+For example, to cite the first result, use {{{0}}}
+To cite the second and fourth results, use {{{1,3}}}
+
+Web results:
+
+\`\`\`
+${JSON.stringify(searchResults, null, 2)}
+\`\`\`
+`;
+
+    return aiResponse(prompt);
+}
+
+async function get_images(query, limit = 100) {
+    try {
+        const results = await image_search({
+            query: query,
+            moderate: false,
+            iterations: 1,
+            retries: 2,
+        });
+        const images = results.slice(0, limit).map(result => 
+            `https://api.totob12.com/image/${encodeURIComponent(result.image)}`
+            // `https://wsrv.nl/?url=${encodeURIComponent(image)}`
+        );
+        return { images };
+    } catch (error) {
+        console.error(error);
+        return { images: [] };
+    }
+}
+
+async function aiResponse(prompt) {
+    try {
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+    } catch (error) {
+        console.log(error);
+        return "## Internal Server Error\n\nAn error occurred processing your query.";
+    }
+}
+
+module.exports = {
+    processQuery
+};
+```
+
+This all works, but I want to make a pretty big change. I no longer want my web app to use Websockets, but rather simple HTTP endpoints.
+I want you to fully develop and implement this.
