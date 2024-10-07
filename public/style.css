@@ -109,7 +109,7 @@ body {
     top: calc(100% + 9px);
     left: 50%;
     transform: translateX(-50%);
-    width: 90%;
+    width: 100%;
     max-width: 800px;
     background-color: #fff;
     border: 1px solid #ccc;
