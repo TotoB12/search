@@ -447,6 +447,7 @@ lightbox.addEventListener('click', (e) => {
 });
 
 function submitSearch(query) {
+    const query = btoa(query);
     removeExpandButton();
     showSkeletonLoader();
     removeExistingWebResults();
@@ -463,7 +464,6 @@ function submitSearch(query) {
             console.error('Error fetching general web results:', error);
         });
 
-    // Fetch Images
     fetch(`${API_BASE_URL}/images?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
@@ -475,7 +475,6 @@ function submitSearch(query) {
             console.error('Error fetching images:', error);
         });
 
-    // Fetch AI Result
     fetch(`${API_BASE_URL}/aiResult`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
