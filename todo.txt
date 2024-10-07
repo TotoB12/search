@@ -1,5 +1,3 @@
-- fixed height for ai overview, dropdown once generated
-
 - redesign image grid in ai overview --> good border radius
 
 - image grid in image tab use original aspect ratio in row flex

@@ -39,6 +39,16 @@ function resetSearchLayout() {
     answerDiv.innerHTML = '';
     removeExistingWebResults();
     searchInput.value = '';
+    removeExpandButton();
+}
+
+function removeExpandButton() {
+    const existingButton = document.querySelector('.expand-button');
+    if (existingButton) {
+        existingButton.remove();
+    }
+    answerContent.style.maxHeight = '';
+    answerContent.classList.remove('collapsed');
 }
 
 function handleSearchSubmission(query) {
@@ -137,6 +147,7 @@ function showSkeletonLoader() {
     if (isPlaying) {
         stopTTS();
     }
+    removeExpandButton();
     if (answerContent.style.display !== 'none') {
         answerContent.style.opacity = '0';
         answerContent.style.transform = 'translateY(-20px)';
@@ -434,8 +445,8 @@ lightbox.addEventListener('click', (e) => {
 });
 
 function submitSearch(query) {
+    removeExpandButton();
     showSkeletonLoader();
-
     removeExistingWebResults();
 
     const socket = io('https://api.totob12.com', {
