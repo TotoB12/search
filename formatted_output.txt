@@ -43,6 +43,7 @@ public\index.html
     <div class="tab-navigation">
         <button class="tab-button active" data-tab="all">All</button>
         <button class="tab-button" data-tab="images">Images</button>
+        <button class="tab-button" data-tab="create">Create</button>
         <div class="tab-indicator"></div>
     </div>
 
@@ -98,6 +99,18 @@ public\index.html
         </div>
         <div class="tab-pane" id="images-tab">
             <div class="images-grid"></div>
+        </div>
+        <div class="tab-pane" id="create-tab">
+            <div class="create-container">
+                <form id="create-form">
+                    <input type="text" id="create-input" placeholder="Describe what to create" required>
+                    <button type="submit" id="create-button">Generate</button>
+                </form>
+                <div class="create-result">
+                    <img id="create-image" src="" alt="Your created image" style="display: none;">
+                    <div id="create-placeholder">Your image will appear here</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -161,6 +174,11 @@ const copyButton = document.getElementById('copy-button');
 const copyIcon = copyButton.querySelector('.copy-icon');
 const checkmarkIcon = copyButton.querySelector('.checkmark-icon');
 const suggestionsContainer = document.getElementById('suggestions-container');
+const createForm = document.getElementById('create-form');
+const createInput = document.getElementById('create-input');
+const createButton = document.getElementById('create-button');
+const createImage = document.getElementById('create-image');
+const createPlaceholder = document.getElementById('create-placeholder');
 
 let imageList = [];
 let currentImageIndex = 0;
@@ -278,6 +296,13 @@ window.addEventListener('popstate', function (event) {
     }
 });
 
+createForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const prompt = createInput.value.trim();
+    if (prompt) {
+        generateCreateImage(prompt);
+    }
+});
 
 const highlightExtension = {
     name: 'highlight',
@@ -873,8 +898,11 @@ function switchTab(tabName) {
     const newPane = document.querySelector(`#${tabName}-tab`);
 
     currentPane.classList.remove('active');
-
     newPane.classList.add('active');
+    
+    if (tabName === 'create') {
+        createInput.value = searchInput.value.trim();
+    }
 
     currentTab = tabName;
 }
@@ -958,6 +986,33 @@ function clearSuggestions() {
     suggestionsContainer.style.display = 'none';
 }
 
+function generateCreateImage(prompt) {
+    prompt = btoa(prompt);
+    createPlaceholder.textContent = 'Generating image...';
+    createImage.style.display = 'none';
+
+    fetch(`${API_BASE_URL}/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'completed' && data.imageUrl) {
+            createImage.src = data.imageUrl;
+            createImage.style.display = 'block';
+            createPlaceholder.style.display = 'none';
+        } else {
+            createPlaceholder.textContent = 'Failed to generate image';
+            createPlaceholder.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error generating image:', error);
+        createPlaceholder.textContent = 'Error generating image';
+        createPlaceholder.style.display = 'block';
+    });
+}
 ```
 
 public\style.css
@@ -1200,7 +1255,7 @@ body {
     visibility: hidden;
     transition: opacity 0.5s ease, visibility 0.5s ease;
     background-color: #ffffff;
-    padding: 1rem;
+    padding: 2rem;
 }
 
 .tab-pane.active {
@@ -1735,6 +1790,58 @@ body {
     transform: scale(1.05);
 }
 
+.create-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+}
+
+#create-form {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+#create-input {
+    width: 300px;
+    padding: 0.5rem;
+    font-size: 1rem;
+    margin-right: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#create-button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+}
+
+.create-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#create-image {
+    max-width: 100%;
+    max-height: 500px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+#create-placeholder {
+    font-size: 1rem;
+    color: #666;
+    margin-top: 1rem;
+}
+
 body.search-active {
     padding-top: 75px;
     justify-content: flex-start;
@@ -1845,402 +1952,305 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-And here is the API server:
+This all works well, but I want to introduce a new feature. I want to add a new container on the right of the `answerContainer`: a quick results view. This slim element will display elements received and formated from a new `/quick` endpoint that I have already added to the API server at `/quick?q={query}`. The response looks like this:
 
-server.js
-```javascript
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-
-const mainRouter = require('./main');
-const depotRouter = require('./depot');
-const searchRouter = require('./search');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.json({ limit: '1gb' }));
-app.use(express.urlencoded({ limit: '1gb', extended: true }));
-app.use(cookieParser());
-
-app.use(cors({
-    origin: [
-        'https://totob12.com',
-        'https://depot.totob12.com',
-        'http://localhost:8000',
-        'https://search.totob12.com'
-    ],
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Authorization', 'Content-Type'],
-    credentials: true
-}));
-
-app.use('/depot', depotRouter);
-app.use('/search', searchRouter);
-app.use('/', mainRouter);
-
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`TotoB12 API server is running on port ${PORT}`);
-});
-```
-
-search.js
-```javascript
-const express = require('express');
-const axios = require('axios');
-const cheerio = require('cheerio');
-const { image_search } = require("duckduckgo-images-api");
-const { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } = require("@google/generative-ai");
-const pLimit = require('p-limit');
-
-const router = express.Router();
-
-const genAI = new GoogleGenerativeAI(process.env.AI_STUDIO_KEY);
-const safetySettings = [
-    {
-        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-    },
-    {
-        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-    }
-];
-const model = genAI.getGenerativeModel({
-    // model: "gemini-1.5-flash",
-    model: "gemini-1.5-flash-8b-exp-0924",
-    generationConfig: {
-        temperature: 0.0,
-        maxOutputTokens: 1000,
-        topP: 0.4,
-        topK: 10,
-        presencePenalty: 0,
-        frequencyPenalty: 0,
-    },
-    safetySettings: safetySettings,
-});
-
-async function processAiResult(query) {
-    try {
-        const [searchResults, imageResults] = await Promise.all([
-            performDuckDuckGoSearch(query, true, 4),
-            get_images(query, 4)
-        ]);
-
-        const aiAnswer = await generateAIResponse(query, searchResults.searchResults);
-
-        const usedUrls = searchResults.searchResults.map(result => ({
-            index: result.index,
-            title: result.title,
-            favicon: result.favicon,
-            url: result.url
-        }));
-
-        return {
-            status: 'completed',
-            answer: aiAnswer,
-            urls: usedUrls,
-            images: imageResults.images
-        };
-
-    } catch (error) {
-        console.error('Error in processAiResult:', error);
-        throw error;
-    }
-}
-
-async function getGeneralWebResults(query) {
-    try {
-        const { webResults } = await performDuckDuckGoSearch(query, false);
-
-        return {
-            status: 'completed',
-            webResults
-        };
-    } catch (error) {
-        console.error('Error in getGeneralWebResults:', error);
-        throw error;
-    }
-}
-
-async function getImages(query) {
-    try {
-        const imageResults = await get_images(query);
-        return imageResults;
-    } catch (error) {
-        console.error('Error in getImages:', error);
-        throw error;
-    }
-}
-
-async function performDuckDuckGoSearch(query, ai, limit = 100) {
-    const headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-    };
-
-    const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-    const response = await axios.get(url, { headers });
-
-    if (response.status !== 200) {
-        throw new Error(`HTTP error ${response.status}`);
-    }
-
-    const $ = cheerio.load(response.data);
-    const webResults = [];
-    $('div.result.results_links.results_links_deep.web-result').each((i, elem) => {
-        const title = $(elem).find('h2.result__title a.result__a').text().trim();
-        const url = $(elem).find('h2.result__title a.result__a').attr('href');
-        const description = $(elem).find('a.result__snippet').text().trim();
-        const favicon = $(elem).find('img.result__icon__img').attr('src') || '';
-
-        if (!$(elem).find('.badge--ad').length) {
-            webResults.push({ title, url, description, favicon });
-        }
-    });
-
-    const limitedWebResults = webResults.slice(0, limit);
-
-    if (ai === false) {
-        return { webResults: limitedWebResults };
-    } else {
-
-        const searchResults = await processDetailedContent(limitedWebResults);
-
-        return { searchResults }
-    };
-}
-
-async function processDetailedContent(webResults) {
-    const maxCharacters = 2000000;
-    const limit = pLimit(4);
-    let totalContentLength = 0;
-
-    const headers = {
-        'User-Agent': 'Mozilla/5.0',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept': 'text/html',
-    };
-
-    const fetchPagePromises = webResults.map((result, index) => limit(async () => {
-        try {
-            const pageResponse = await axios.get(result.url, {
-                headers,
-                maxRedirects: 2,
-                timeout: 1200,
-                validateStatus: status => status >= 200 && status < 400,
-            });
-
-            const $page = cheerio.load(pageResponse.data);
-            $page('script, style').remove();
-            const pageText = $page('body').text().replace(/\s+/g, ' ').trim();
-
-            const contentToAdd = totalContentLength + pageText.length > maxCharacters
-                ? pageText.slice(0, maxCharacters - totalContentLength)
-                : pageText;
-
-            totalContentLength += contentToAdd.length;
-
-            return {
-                index,
-                title: result.title,
-                favicon: result.favicon,
-                url: result.url,
-                content: contentToAdd,
-            };
-        } catch (error) {
-            console.log(`Error fetching page ${result.url}: ${error.message}`);
-            return null;
-        }
-    }));
-
-    const results = await Promise.all(fetchPagePromises);
-    return results.filter(Boolean);
-}
-
-async function generateAIResponse(query, searchResults) {
-    const prompt = `You are a helpful search companion and assistant. Your purpose is to generate relevant and concise summaries to answer/respond to the user's query.
-The user's query is:
-
-\`\`\`
-${query}
-\`\`\`
-
-Your response should be easy to read and understand, and be presented in a helpful and informative manner. Keep in mind that it should be relatively short. Make sure to provide accurate and relevant information.
-
-You should format it to be aerated and structured, and not be an ugly paragraph. You may use Markdown to format your response. You should always have a short title before your response using ##.
-If your response contains a group of words that can be considered a direct response/answer to the user's query, you should highlight it. To highlight a part of text, have it be contained inside two couples of curly brackets, like this: {{this is part of a sentence that will be highlighted}}.
-
-Never apologize for not being able to find an answer. Always answer something.
-
-You have online results to assist you in your response. If you use any of the content from these results, provide a citation to the original source using its index number. You can use the following format to cite a result: {{{number}}}
-For example, to cite the first result, use {{{0}}}
-To cite the second and fourth results, use {{{1,3}}}
-
-Web results:
-
-\`\`\`
-${JSON.stringify(searchResults, null, 2)}
-\`\`\`
-`;
-
-    return aiResponse(prompt);
-}
-
-async function get_images(query, limit = 100) {
-    try {
-        const results = await image_search({
-            query: query,
-            moderate: false,
-            iterations: 1,
-            retries: 2,
-        });
-        const images = results.slice(0, limit).map(result =>
-            `https://api.totob12.com/image/${encodeURIComponent(result.image)}`
-            // `https://wsrv.nl/?url=${encodeURIComponent(image)}`
-        );
-        return { images };
-    } catch (error) {
-        console.error(error);
-        return { images: [] };
-    }
-}
-
-async function aiResponse(prompt) {
-    try {
-        const result = await model.generateContent(prompt);
-        return result.response.text();
-    } catch (error) {
-        console.log(error);
-        return "## Internal Server Error\n\nAn error occurred processing your query.";
-    }
-}
-
-router.post('/aiResult', async (req, res) => {
-    const query = Buffer.from(req.body.query, 'base64').toString('utf-8');
-    console.log('AI result for:', query);
-    if (!query) {
-        return res.status(400).json({ error: 'Query parameter is required' });
-    }
-    try {
-        const result = await processAiResult(query);
-        res.json(result);
-    } catch (error) {
-        console.error('Error in /aiResult:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-router.get('/generalWebResults', async (req, res) => {
-    const query = Buffer.from(req.query.q, 'base64').toString('utf-8');
-    console.log('Web results for:', query);
-    if (!query) {
-        return res.status(400).json({ error: 'Query parameter is required' });
-    }
-    try {
-        const result = await getGeneralWebResults(query);
-        res.json(result);
-    } catch (error) {
-        console.error('Error in /generalWebResults:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-router.get('/images', async (req, res) => {
-    const query = Buffer.from(req.query.q, 'base64').toString('utf-8');
-    console.log('Images for:', query);
-    if (!query) {
-        return res.status(400).json({ error: 'Query parameter is required' });
-    }
-    try {
-        const result = await getImages(query);
-        res.json(result);
-    } catch (error) {
-        console.error('Error in /images:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-router.get('/suggestions', async (req, res) => {
-    const query = Buffer.from(req.query.q  || '', 'base64').toString('utf-8');
-    console.log('Suggestions for:', query);
-    try {
-        const bingResponse = await axios.get('https://api.bing.com/osjson.aspx', {
-            params: {
-                query: query
+```json
+{
+    "queryresult": {
+        "success": true,
+        "error": false,
+        "numpods": 5,
+        "datatypes": "USState",
+        "timedout": "",
+        "timedoutpods": "",
+        "timing": 1.443,
+        "parsetiming": 0.252,
+        "parsetimedout": false,
+        "recalculate": "",
+        "id": "MSP213511i734i4dcfh9c61400005he36963dg48d005",
+        "host": "https://www6b3.wolframalpha.com",
+        "server": "12",
+        "related": "https://www6b3.wolframalpha.com/api/v1/relatedQueries.jsp?id=MSPa213521i734i4dcfh9c614000016i51e3hi2a1icie822558548030476863",
+        "version": "2.6",
+        "inputstring": "california population",
+        "pods": [
+            {
+                "title": "Input interpretation",
+                "scanner": "Identity",
+                "id": "Input",
+                "position": 100,
+                "error": false,
+                "numsubpods": 1,
+                "subpods": [
+                    {
+                        "title": "",
+                        "img": {
+                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213531i734i4dcfh9c61400001d19a3b1f789b15d?MSPStoreType=image/gif&s=12",
+                            "alt": "California | population",
+                            "title": "California | population",
+                            "width": 194,
+                            "height": 33,
+                            "type": "Grid",
+                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
+                            "colorinvertable": true,
+                            "contenttype": "image/gif"
+                        }
+                    }
+                ],
+                "expressiontypes": {
+                    "name": "Grid"
+                }
+            },
+            {
+                "title": "Result",
+                "scanner": "Data",
+                "id": "Result",
+                "position": 200,
+                "error": false,
+                "numsubpods": 1,
+                "primary": true,
+                "subpods": [
+                    {
+                        "title": "",
+                        "microsources": {
+                            "microsource": "USStateData"
+                        },
+                        "datasources": {
+                            "datasource": "USCensusQuickfacts"
+                        },
+                        "img": {
+                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213541i734i4dcfh9c61400004ia0d2i11f6i7f79?MSPStoreType=image/gif&s=12",
+                            "alt": "38.97 million people (2023)",
+                            "title": "38.97 million people (2023)",
+                            "width": 163,
+                            "height": 19,
+                            "type": "Default",
+                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
+                            "colorinvertable": true,
+                            "contenttype": "image/gif"
+                        }
+                    }
+                ],
+                "expressiontypes": {
+                    "name": "Default"
+                }
+            },
+            {
+                "title": "Population history",
+                "scanner": "Data",
+                "id": "History:Population:USStateData",
+                "position": 300,
+                "error": false,
+                "numsubpods": 1,
+                "subpods": [
+                    {
+                        "title": "",
+                        "microsources": {
+                            "microsource": "USStateData"
+                        },
+                        "datasources": {
+                            "datasource": "USCensusQuickfacts"
+                        },
+                        "img": {
+                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213551i734i4dcfh9c6140000368hhea6b7a67acb?MSPStoreType=image/gif&s=12",
+                            "alt": "Population history",
+                            "title": "",
+                            "width": 369,
+                            "height": 166,
+                            "type": "TimeSeriesPlot_1",
+                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
+                            "colorinvertable": true,
+                            "contenttype": "image/gif"
+                        }
+                    }
+                ],
+                "expressiontypes": {
+                    "name": "Default"
+                },
+                "states": [
+                    {
+                        "name": "Log scale",
+                        "input": "History:Population:USStateData__Log scale"
+                    }
+                ]
+            },
+            {
+                "title": "Population",
+                "scanner": "Data",
+                "id": "Population:USStateData",
+                "position": 400,
+                "error": false,
+                "numsubpods": 1,
+                "subpods": [
+                    {
+                        "title": "",
+                        "microsources": {
+                            "microsource": "USStateData"
+                        },
+                        "datasources": {
+                            "datasource": "USCensusQuickfacts"
+                        },
+                        "img": {
+                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213561i734i4dcfh9c61400001g54h800hb30i1e3?MSPStoreType=image/gif&s=12",
+                            "alt": "population | 38.97 million people\npopulation growth | +1.05% per year (2010-12)\npopulation density | 238 people/mi^2\nannual deaths | 302704 people/yr\nannual births | 414120 people/yr\n(2023)",
+                            "title": "population | 38.97 million people\npopulation growth | +1.05% per year (2010-12)\npopulation density | 238 people/mi^2\nannual deaths | 302704 people/yr\nannual births | 414120 people/yr\n(2023)",
+                            "width": 333,
+                            "height": 195,
+                            "type": "Grid",
+                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
+                            "colorinvertable": true,
+                            "contenttype": "image/gif"
+                        }
+                    }
+                ],
+                "expressiontypes": {
+                    "name": "Grid"
+                },
+                "infos": {
+                    "units": [
+                        [
+                            {
+                                "short": "people/yr",
+                                "long": "people per year"
+                            },
+                            {
+                                "short": "person/mi^2",
+                                "long": "people per square mile"
+                            }
+                        ],
+                        {
+                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213571i734i4dcfh9c6140000401d43e3126h5a6a?MSPStoreType=image/gif&s=12",
+                            "width": "211",
+                            "height": "50"
+                        }
+                    ]
+                }
+            },
+            {
+                "title": "Comparisons",
+                "scanner": "Unit",
+                "id": "ComparisonAsPersonCount",
+                "position": 500,
+                "error": false,
+                "numsubpods": 3,
+                "subpods": [
+                    {
+                        "title": "",
+                        "img": {
+                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213581i734i4dcfh9c61400005ia2cgfeiha0134h?MSPStoreType=image/gif&s=12",
+                            "alt": " ≈ 0.6 × current population of France ( 64.98 million people )",
+                            "title": " ≈ 0.6 × current population of France ( 64.98 million people )",
+                            "width": 344,
+                            "height": 19,
+                            "type": "Default",
+                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
+                            "colorinvertable": true,
+                            "contenttype": "image/gif"
+                        }
+                    },
+                    {
+                        "title": "",
+                        "img": {
+                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213591i734i4dcfh9c61400004b0032g9g1d75fd1?MSPStoreType=image/gif&s=12",
+                            "alt": " ≈ 1.1 × current population of Canada ( 36.62 million people )",
+                            "title": " ≈ 1.1 × current population of Canada ( 36.62 million people )",
+                            "width": 350,
+                            "height": 19,
+                            "type": "Default",
+                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
+                            "colorinvertable": true,
+                            "contenttype": "image/gif"
+                        }
+                    },
+                    {
+                        "title": "",
+                        "img": {
+                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213601i734i4dcfh9c6140000610cd81e9c0a1d52?MSPStoreType=image/gif&s=12",
+                            "alt": " ≈ 1.4 × current population of Texas ( 28.3 million people )",
+                            "title": " ≈ 1.4 × current population of Texas ( 28.3 million people )",
+                            "width": 333,
+                            "height": 19,
+                            "type": "Default",
+                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
+                            "colorinvertable": true,
+                            "contenttype": "image/gif"
+                        }
+                    }
+                ],
+                "expressiontypes": [
+                    {
+                        "name": "Default"
+                    },
+                    {
+                        "name": "Default"
+                    },
+                    {
+                        "name": "Default"
+                    }
+                ]
             }
-        });
-        const suggestions = bingResponse.data[1].slice(0, 5);
-        res.json({ suggestions });
-    } catch (error) {
-        console.error('Error in /suggestions:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        ],
+        "assumptions": {
+            "type": "Clash",
+            "word": "california",
+            "template": "Assuming \"${word}\" is ${desc1}. Use as ${desc2} instead",
+            "count": 3,
+            "values": [
+                {
+                    "name": "USState",
+                    "desc": "a US state",
+                    "input": "*C.california-_*USState-"
+                },
+                {
+                    "name": "AdministrativeDivision",
+                    "desc": "an administrative division",
+                    "input": "*C.california-_*AdministrativeDivision-"
+                },
+                {
+                    "name": "City",
+                    "desc": "a city",
+                    "input": "*C.california-_*City-"
+                }
+            ]
+        },
+        "sources": {
+            "url": "https://www6b3.wolframalpha.com/sources/USStateDataSourceInformationNotes.html",
+            "text": "US state data"
+        }
     }
-});
-
-module.exports = router;
+}
 ```
 
-This all works well, but I want to introduce a new navigation tab. I want to create an "Imagine" tab. This tab should be extremely simple and elegant, offering an AI image creating. It should just show a text field, a image placeholder, and a generate button. The text field should display the current search, but should be editable. When the button is pressed, it should call a new endpoint on the API server. I have made the following demo script that the new endpoint should use:
+This should be called at the same time as the main web searches and the AI results. Once received, it should be displayed in that new container on the right of the `answerContainer`. For this, the script will have to parse re JSON into sections:
 
-```javascript
-const axios = require("axios");
+- get all of the `pods`
+- get the `title` of each `pod` and display it
+- underneath each `title`, display the `img`s of all the `subpods` in that `pod`
 
-async function generateImage() {
-  const baseUrl = "https://black-forest-labs-flux-1-schnell.hf.space";
+For example, following the JSON above, it would be something like:
 
-  try {
-    const postResponse = await axios.post(
-      `${baseUrl}/call/infer`,
-      {
-        data: ["a cute dog", 0, true, 1024, 1024, 4],
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      },
-    );
+```
+Input interpretation
 
-    console.log("POST response:", postResponse.data);
+img
 
-    if (!postResponse.data.event_id) {
-      throw new Error("No event_id received in the POST response");
-    }
+Result
 
-    const eventId = postResponse.data.event_id;
+img
 
-    const getResponse = await axios.get(`${baseUrl}/call/infer/${eventId}`);
+Population history
 
-    console.log("GET response:", getResponse.data);
+img
 
-    const dataMatch = getResponse.data.match(/data: (.+)/);
-    if (dataMatch) {
-        const jsonData = JSON.parse(dataMatch[1]);
+Population
 
-        const url = jsonData[0].url;
-        console.log(url);
-    }
-  } catch (error) {
-    console.error(
-      "Error:",
-      error.response ? error.response.data : error.message,
-    );
-  }
-}
+img
 
-generateImage();
+Comparisons
+
+img
+img
+img
 ```
 
 I want you to fully develop and implement this.
