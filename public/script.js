@@ -19,11 +19,11 @@ const copyButton = document.getElementById('copy-button');
 const copyIcon = copyButton.querySelector('.copy-icon');
 const checkmarkIcon = copyButton.querySelector('.checkmark-icon');
 const suggestionsContainer = document.getElementById('suggestions-container');
-const imagineForm = document.getElementById('imagine-form');
-const imagineInput = document.getElementById('imagine-input');
-const imagineButton = document.getElementById('imagine-button');
-const imagineImage = document.getElementById('imagine-image');
-const imaginePlaceholder = document.getElementById('imagine-placeholder');
+const createForm = document.getElementById('create-form');
+const createInput = document.getElementById('create-input');
+const createButton = document.getElementById('create-button');
+const createImage = document.getElementById('create-image');
+const createPlaceholder = document.getElementById('create-placeholder');
 
 let imageList = [];
 let currentImageIndex = 0;
@@ -141,11 +141,11 @@ window.addEventListener('popstate', function (event) {
     }
 });
 
-imagineForm.addEventListener('submit', function (e) {
+createForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    const prompt = imagineInput.value.trim();
+    const prompt = createInput.value.trim();
     if (prompt) {
-        generateImagineImage(prompt);
+        generateCreateImage(prompt);
     }
 });
 
@@ -745,8 +745,8 @@ function switchTab(tabName) {
     currentPane.classList.remove('active');
     newPane.classList.add('active');
     
-    if (tabName === 'imagine') {
-        imagineInput.value = searchInput.value.trim();
+    if (tabName === 'create') {
+        createInput.value = searchInput.value.trim();
     }
 
     currentTab = tabName;
@@ -831,12 +831,12 @@ function clearSuggestions() {
     suggestionsContainer.style.display = 'none';
 }
 
-function generateImagineImage(prompt) {
+function generateCreateImage(prompt) {
     prompt = btoa(prompt);
-    imaginePlaceholder.textContent = 'Generating image...';
-    imagineImage.style.display = 'none';
+    createPlaceholder.textContent = 'Generating image...';
+    createImage.style.display = 'none';
 
-    fetch(`${API_BASE_URL}/imagine`, {
+    fetch(`${API_BASE_URL}/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
@@ -844,17 +844,17 @@ function generateImagineImage(prompt) {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'completed' && data.imageUrl) {
-            imagineImage.src = data.imageUrl;
-            imagineImage.style.display = 'block';
-            imaginePlaceholder.style.display = 'none';
+            createImage.src = data.imageUrl;
+            createImage.style.display = 'block';
+            createPlaceholder.style.display = 'none';
         } else {
-            imaginePlaceholder.textContent = 'Failed to generate image';
-            imaginePlaceholder.style.display = 'block';
+            createPlaceholder.textContent = 'Failed to generate image';
+            createPlaceholder.style.display = 'block';
         }
     })
     .catch(error => {
         console.error('Error generating image:', error);
-        imaginePlaceholder.textContent = 'Error generating image';
-        imaginePlaceholder.style.display = 'block';
+        createPlaceholder.textContent = 'Error generating image';
+        createPlaceholder.style.display = 'block';
     });
 }

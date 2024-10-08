@@ -39,7 +39,7 @@
     <div class="tab-navigation">
         <button class="tab-button active" data-tab="all">All</button>
         <button class="tab-button" data-tab="images">Images</button>
-        <button class="tab-button" data-tab="imagine">Imagine</button>
+        <button class="tab-button" data-tab="create">Create</button>
         <div class="tab-indicator"></div>
     </div>
 
@@ -96,15 +96,15 @@
         <div class="tab-pane" id="images-tab">
             <div class="images-grid"></div>
         </div>
-        <div class="tab-pane" id="imagine-tab">
-            <div class="imagine-container">
-                <form id="imagine-form">
-                    <input type="text" id="imagine-input" placeholder="Describe what to imagine" required>
-                    <button type="submit" id="imagine-button">Generate</button>
+        <div class="tab-pane" id="create-tab">
+            <div class="create-container">
+                <form id="create-form">
+                    <input type="text" id="create-input" placeholder="Describe what to create" required>
+                    <button type="submit" id="create-button">Generate</button>
                 </form>
-                <div class="imagine-result">
-                    <img id="imagine-image" src="" alt="Your imagined image" style="display: none;">
-                    <div id="imagine-placeholder">Your image will appear here</div>
+                <div class="create-result">
+                    <img id="create-image" src="" alt="Your created image" style="display: none;">
+                    <div id="create-placeholder">Your image will appear here</div>
                 </div>
             </div>
         </div>

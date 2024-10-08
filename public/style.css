@@ -771,20 +771,20 @@ body {
     transform: scale(1.05);
 }
 
-.imagine-container {
+.create-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 2rem;
 }
 
-#imagine-form {
+#create-form {
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
 }
 
-#imagine-input {
+#create-input {
     width: 300px;
     padding: 0.5rem;
     font-size: 1rem;
@@ -793,7 +793,7 @@ body {
     border-radius: 4px;
 }
 
-#imagine-button {
+#create-button {
     padding: 0.5rem 1rem;
     font-size: 1rem;
     cursor: pointer;
@@ -803,13 +803,13 @@ body {
     border-radius: 4px;
 }
 
-.imagine-result {
+.create-result {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-#imagine-image {
+#create-image {
     max-width: 100%;
     max-height: 500px;
     border: 1px solid #ccc;
@@ -817,7 +817,7 @@ body {
     margin-top: 1rem;
 }
 
-#imagine-placeholder {
+#create-placeholder {
     font-size: 1rem;
     color: #666;
     margin-top: 1rem;
