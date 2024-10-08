@@ -19,6 +19,11 @@ const copyButton = document.getElementById('copy-button');
 const copyIcon = copyButton.querySelector('.copy-icon');
 const checkmarkIcon = copyButton.querySelector('.checkmark-icon');
 const suggestionsContainer = document.getElementById('suggestions-container');
+const imagineForm = document.getElementById('imagine-form');
+const imagineInput = document.getElementById('imagine-input');
+const imagineButton = document.getElementById('imagine-button');
+const imagineImage = document.getElementById('imagine-image');
+const imaginePlaceholder = document.getElementById('imagine-placeholder');
 
 let imageList = [];
 let currentImageIndex = 0;
@@ -136,6 +141,13 @@ window.addEventListener('popstate', function (event) {
     }
 });
 
+imagineForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const prompt = imagineInput.value.trim();
+    if (prompt) {
+        generateImagineImage(prompt);
+    }
+});
 
 const highlightExtension = {
     name: 'highlight',
@@ -731,8 +743,11 @@ function switchTab(tabName) {
     const newPane = document.querySelector(`#${tabName}-tab`);
 
     currentPane.classList.remove('active');
-
     newPane.classList.add('active');
+    
+    if (tabName === 'imagine') {
+        imagineInput.value = searchInput.value.trim();
+    }
 
     currentTab = tabName;
 }
@@ -814,4 +829,32 @@ function displaySuggestions(suggestions) {
 function clearSuggestions() {
     suggestionsContainer.innerHTML = '';
     suggestionsContainer.style.display = 'none';
+}
+
+function generateImagineImage(prompt) {
+    prompt = btoa(prompt);
+    imaginePlaceholder.textContent = 'Generating image...';
+    imagineImage.style.display = 'none';
+
+    fetch(`${API_BASE_URL}/imagine`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'completed' && data.imageUrl) {
+            imagineImage.src = data.imageUrl;
+            imagineImage.style.display = 'block';
+            imaginePlaceholder.style.display = 'none';
+        } else {
+            imaginePlaceholder.textContent = 'Failed to generate image';
+            imaginePlaceholder.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error generating image:', error);
+        imaginePlaceholder.textContent = 'Error generating image';
+        imaginePlaceholder.style.display = 'block';
+    });
 }
