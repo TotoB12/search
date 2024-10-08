@@ -6,6 +6,4 @@
 
 - in image tab, only load the images if they are trully seen by the user, not just opacity hidden
 
-- add autocomplete in search box "https://api.bing.com/osjson.aspx?query={query}"
-
 - add "Imagine" tab --> generate images based on prompt

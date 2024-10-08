@@ -26,7 +26,10 @@ public\index.html
                     <line x1="20" y1="20" x2="16.65" y2="16.65"></line>
                 </svg>
             </span>
-            <input type="text" id="search-input" placeholder="What are you looking for?" required>
+            <div class="search-input-wrapper">
+                <input type="text" id="search-input" placeholder="What are you looking for?" required>
+                <div id="suggestions-container"></div>
+            </div>
             <button type="button" id="search-button" aria-label="Search">
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd"
@@ -157,6 +160,7 @@ const ttsStop = ttsButton.querySelector('.tts-stop');
 const copyButton = document.getElementById('copy-button');
 const copyIcon = copyButton.querySelector('.copy-icon');
 const checkmarkIcon = copyButton.querySelector('.checkmark-icon');
+const suggestionsContainer = document.getElementById('suggestions-container');
 
 let imageList = [];
 let currentImageIndex = 0;
@@ -168,6 +172,7 @@ let storedImages = [];
 const MAX_ANSWER_HEIGHT = 400;
 const API_BASE_URL = 'https://api.totob12.com/search';
 // const API_BASE_URL = 'http://localhost:3000/search';
+let suggestionTimeout;
 
 function getQueryParam(param) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -210,6 +215,7 @@ searchButton.addEventListener('click', function (e) {
 
 searchInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
+        searchInput.blur();
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
@@ -223,6 +229,35 @@ searchForm.addEventListener('submit', function (e) {
     const query = searchInput.value.trim();
     if (query) {
         handleSearchSubmission(query);
+    }
+});
+
+searchInput.addEventListener('focus', function() {
+    const query = searchInput.value.trim();
+    fetchSuggestions(query);
+});
+
+searchInput.addEventListener('blur', function(event) {
+    setTimeout(() => {
+        if (!suggestionsContainer.contains(document.activeElement)) {
+            clearSuggestions();
+        }
+    }, 100);
+});
+
+searchInput.addEventListener('input', function() {
+    const query = searchInput.value.trim();
+    if (suggestionTimeout) {
+        clearTimeout(suggestionTimeout);
+    }
+    suggestionTimeout = setTimeout(() => {
+        fetchSuggestions(query);
+    }, 300);
+});
+
+document.addEventListener('click', function(event) {
+    if (!searchForm.contains(event.target) && !suggestionsContainer.contains(event.target)) {
+        clearSuggestions();
     }
 });
 
@@ -807,24 +842,24 @@ function removeExistingWebResults() {
 function initializeTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabIndicator = document.querySelector('.tab-indicator');
-    
+
     function updateTabIndicator(button) {
         tabIndicator.style.width = `${button.offsetWidth}px`;
         tabIndicator.style.left = `${button.offsetLeft}px`;
     }
-    
+
     tabButtons.forEach(button => {
         if (button.classList.contains('active')) {
             updateTabIndicator(button);
         }
-        
+
         button.addEventListener('click', () => {
             const tabName = button.dataset.tab;
             switchTab(tabName);
-            
+
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
-            
+
             updateTabIndicator(button);
         });
     });
@@ -847,25 +882,25 @@ function switchTab(tabName) {
 function displayImages(images) {
     const imagesGrid = document.querySelector('.images-grid');
     imagesGrid.innerHTML = '';
-    
+
     images.forEach((imageUrl, index) => {
         const imageItem = document.createElement('div');
         imageItem.className = 'image-item';
-        
+
         const img = document.createElement('img');
         img.setAttribute('data-src', imageUrl);
         img.setAttribute('data-fullSrc', imageUrl);
         img.setAttribute('data-index', index);
         img.alt = 'Search result image';
-        
+
         imageItem.appendChild(img);
         imagesGrid.appendChild(imageItem);
-        
+
         imageItem.addEventListener('click', () => {
             openLightbox(imageUrl, index);
         });
     });
-    
+
     initializeLazyLoading();
 }
 
@@ -880,10 +915,47 @@ function initializeLazyLoading() {
             }
         });
     });
-    
+
     document.querySelectorAll('.image-item img[data-src]').forEach(img => {
         imageObserver.observe(img);
     });
+}
+
+function fetchSuggestions(query) {
+    query = btoa(query);
+    fetch(`${API_BASE_URL}/suggestions?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            displaySuggestions(data.suggestions);
+        })
+        .catch(error => {
+            console.error('Error fetching suggestions:', error);
+        });
+}
+
+function displaySuggestions(suggestions) {
+    suggestionsContainer.innerHTML = '';
+    suggestions.forEach(suggestion => {
+        const suggestionItem = document.createElement('div');
+        suggestionItem.className = 'suggestion-item';
+        suggestionItem.textContent = suggestion;
+        suggestionItem.addEventListener('click', () => {
+            searchInput.value = suggestion;
+            clearSuggestions();
+            handleSearchSubmission(suggestion);
+        });
+        suggestionsContainer.appendChild(suggestionItem);
+    });
+    if (suggestions.length > 0) {
+        suggestionsContainer.style.display = 'block';
+    } else {
+        suggestionsContainer.style.display = 'none';
+    }
+}
+
+function clearSuggestions() {
+    suggestionsContainer.innerHTML = '';
+    suggestionsContainer.style.display = 'none';
 }
 
 ```
@@ -961,11 +1033,12 @@ body {
 #logo,
 #search-form {
     position: relative;
-    z-index: 11;
+    z-index: 100;
 }
 
 .search-container {
     display: flex;
+    position: relative;
     align-items: center;
     background-color: #efefef;
     border-radius: 50px;
@@ -978,14 +1051,52 @@ body {
     color: #8b8b8b;
 }
 
-#search-input {
+.search-input-wrapper {
+    position: relative;
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#search-input {
+    width: 100%;
     border: none;
     outline: none;
     font-family: "Poly Sans", Arial, sans-serif;
     font-size: 1.2rem;
     padding: 0.5rem;
     background: transparent;
+}
+
+#suggestions-container {
+    position: absolute;
+    top: calc(100% + 9px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 800px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    z-index: 10;
+    display: none;
+    border-radius: 0 0 30px 30px;
+}
+
+.suggestion-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #333;
+}
+
+.suggestion-item:last-child {
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+}
+
+.suggestion-item:hover {
+    background-color: #f0f0f0;
 }
 
 #search-icon {
@@ -1821,8 +1932,6 @@ const model = genAI.getGenerativeModel({
 
 async function processAiResult(query) {
     try {
-        console.log('AI result for:', query);
-
         const [searchResults, imageResults] = await Promise.all([
             performDuckDuckGoSearch(query, true, 4),
             get_images(query, 4)
@@ -1852,8 +1961,6 @@ async function processAiResult(query) {
 
 async function getGeneralWebResults(query) {
     try {
-        console.log('Web results for:', query);
-
         const { webResults } = await performDuckDuckGoSearch(query, false);
 
         return {
@@ -1868,7 +1975,6 @@ async function getGeneralWebResults(query) {
 
 async function getImages(query) {
     try {
-        console.log('Iimages for:', query);
         const imageResults = await get_images(query);
         return imageResults;
     } catch (error) {
@@ -2023,6 +2129,7 @@ async function aiResponse(prompt) {
 
 router.post('/aiResult', async (req, res) => {
     const query = Buffer.from(req.body.query, 'base64').toString('utf-8');
+    console.log('AI result for:', query);
     if (!query) {
         return res.status(400).json({ error: 'Query parameter is required' });
     }
@@ -2037,6 +2144,7 @@ router.post('/aiResult', async (req, res) => {
 
 router.get('/generalWebResults', async (req, res) => {
     const query = Buffer.from(req.query.q, 'base64').toString('utf-8');
+    console.log('Web results for:', query);
     if (!query) {
         return res.status(400).json({ error: 'Query parameter is required' });
     }
@@ -2051,6 +2159,7 @@ router.get('/generalWebResults', async (req, res) => {
 
 router.get('/images', async (req, res) => {
     const query = Buffer.from(req.query.q, 'base64').toString('utf-8');
+    console.log('Images for:', query);
     if (!query) {
         return res.status(400).json({ error: 'Query parameter is required' });
     }
@@ -2063,74 +2172,75 @@ router.get('/images', async (req, res) => {
     }
 });
 
+router.get('/suggestions', async (req, res) => {
+    const query = Buffer.from(req.query.q  || '', 'base64').toString('utf-8');
+    console.log('Suggestions for:', query);
+    try {
+        const bingResponse = await axios.get('https://api.bing.com/osjson.aspx', {
+            params: {
+                query: query
+            }
+        });
+        const suggestions = bingResponse.data[1].slice(0, 5);
+        res.json({ suggestions });
+    } catch (error) {
+        console.error('Error in /suggestions:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 module.exports = router;
 ```
 
-This all works well, but I now want to add a new feature. I want to add auto suggestions to the search input. When the text field is selected, I want 5 suggestions to appear underneath the search container, in rows, like on Google or Bing. These suggestions should update whenever the text content of the input changes. For this, I want a new endpoint on my API server. This endpoint can itself call the URL "https://api.bing.com/osjson.aspx?query={query}" to get the suggestions. Here is an example of what the result of that Bing API looks like:
+This all works well, but I want to introduce a new navigation tab. I want to create an "Imagine" tab. This tab should be extremely simple and elegant, offering an AI image creating. It should just show a text field, a image placeholder, and a generate button. The text field should display the current search, but should be editable. When the button is pressed, it should call a new endpoint on the API server. I have made the following demo script that the new endpoint should use:
 
-```
-[
-    "cheese",
-    [
-        "cheese",
-        "cheesecake recipes",
-        "cheesecake factory",
-        "cheesecake",
-        "cheeseburger",
-        "cheese curds",
-        "cheeseburger near me",
-        "cheesecloth",
-        "cheese pizza",
-        "cheese grater",
-        "cheese whiz",
-        "cheese balls",
-        "cheesecake near me",
-        "cheesecake factory near me",
-        "cheese recall",
-        "cheese game",
-        "cheese sticks",
-        "cheese sauce",
-        "cheeseburger sliders",
-        "cheeseburger soup",
-        "cheesesteak",
-        "cheese bread",
-        "cheesecake factory menu",
-        "cheeseburger in paradise",
-        "cheeseburger casserole"
-    ],
-    [],
-    [],
-    {
-        "google:suggestrelevance": [
-            1300,
-            1299,
-            1298,
-            1297,
-            1296,
-            1295,
-            1294,
-            1293,
-            1292,
-            1291,
-            1290,
-            1289,
-            1288,
-            1287,
-            1286,
-            1285,
-            1284,
-            1283,
-            1282,
-            1281,
-            1280,
-            1279,
-            1278,
-            1277,
-            1276
-        ]
+```javascript
+const axios = require("axios");
+
+async function generateImage() {
+  const baseUrl = "https://black-forest-labs-flux-1-schnell.hf.space";
+
+  try {
+    const postResponse = await axios.post(
+      `${baseUrl}/call/infer`,
+      {
+        data: ["a cute dog", 0, true, 1024, 1024, 4],
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    console.log("POST response:", postResponse.data);
+
+    if (!postResponse.data.event_id) {
+      throw new Error("No event_id received in the POST response");
     }
-]
+
+    const eventId = postResponse.data.event_id;
+
+    const getResponse = await axios.get(`${baseUrl}/call/infer/${eventId}`);
+
+    console.log("GET response:", getResponse.data);
+
+    const dataMatch = getResponse.data.match(/data: (.+)/);
+    if (dataMatch) {
+        const jsonData = JSON.parse(dataMatch[1]);
+
+        const url = jsonData[0].url;
+        console.log(url);
+    }
+  } catch (error) {
+    console.error(
+      "Error:",
+      error.response ? error.response.data : error.message,
+    );
+  }
+}
+
+generateImage();
 ```
 
-My web app should display the 5 first. These should be clickable, replacing the text of the input with it and submitting it.
 I want you to fully develop and implement this.
