@@ -97,7 +97,13 @@ public\index.html
                         </div>
                     </div>
                 </div>
-                <div class="quickResultsContainer"></div>
+
+                <div class="results-container">
+                    <div class="general-web-results">
+                    </div>
+                    <div class="quick-results">
+                    </div>
+                </div>
             </div>
         </div>
         <div class="tab-pane" id="images-tab">
@@ -867,8 +873,9 @@ function displayGeneralWebResults(webResults) {
         webResultsContainer.appendChild(resultItem);
     });
 
-    const answerContainer = document.querySelector('.answerContainer');
-    answerContainer.appendChild(webResultsContainer);
+    const generalWebResults = document.querySelector('.general-web-results');
+    generalWebResults.innerHTML = '';
+    generalWebResults.appendChild(webResultsContainer);
 }
 
 function removeExistingWebResults() {
@@ -1029,8 +1036,8 @@ function generateCreateImage(prompt) {
 }
 
 function displayQuickResults(data) {
-    const quickResultsContainer = document.querySelector('.quickResultsContainer');
-    quickResultsContainer.innerHTML = ''; // Clear previous results
+    const quickResults = document.querySelector('.quick-results');
+    quickResults.innerHTML = '';
 
     const queryResult = data.queryresult;
     if (!queryResult || !queryResult.pods || !queryResult.pods.length) {
@@ -1070,7 +1077,7 @@ function displayQuickResults(data) {
             });
         }
 
-        quickResultsContainer.appendChild(podDiv);
+        quickResults.appendChild(podDiv);
     });
 }
 
@@ -1327,8 +1334,7 @@ body {
 }
 
 .main-content {
-    display: flex;
-    max-width: 1200px;
+    max-width: 1300px;
     margin: 0 auto;
     padding: 0 1rem;
 }
@@ -1655,10 +1661,22 @@ body {
 }
 
 .answerContainer {
-    flex: 1;
     width: 100%;
+    margin-bottom: 2rem;
+}
+
+.results-container {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+}
+.general-web-results {
+    flex: 0 0 65%;
+    width: 60%;
+    margin-right: 1rem;
+}
+.quick-results {
+    flex: 0 0 35%;
+    width: 40%;
 }
 
 .quickResultsContainer {
@@ -1820,9 +1838,6 @@ body {
 
 .web-results {
     margin-top: 2rem;
-    border-top: 1px solid #e0e0e0;
-    padding-top: 2rem;
-    max-width: 800px;
 }
 
 .web-result-item {
@@ -2004,6 +2019,17 @@ body.search-active .answerContainer {
     min-height: 200px;
 }
 
+@media (max-width: 768px) {
+    .results-container {
+        flex-direction: column;
+    }
+    .general-web-results,
+    .quick-results {
+        flex: none;
+        margin-right: 0;
+    }
+}
+
 @media (max-width: 600px) {
     #logo {
         font-size: 3rem;
@@ -2062,13 +2088,9 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works great, but I want to change the look and feel of the "All" tab, the main content. I want my web app to more resemble Bing or Google. The page should be divided into three parts:
+This all works well, but I want to redesign the look of the `answerContent`. I want it to be divided into two parts:
 
-- the top piece that takes the entire width should be the ai overview, the answerContent (with the expand button)
-- the rest of the page should be divided into two collums:
-    - the left should be the general web results
-    - the right should be the quick results
+- on the left: the normal text answer, without the image grid, but formatted like before, along with the toolbar
+- on the right: first the image grid, and the sources grid underneath, with the sources in rows
 
-All three of these containers should be centerd horizontally. I want the quick results to be wide enough to see the detail in the presented images.
-
-I want you to fully develop and implement this. Give me the corrected code snippets, and the full new `style.css` file.
+The skeleton loader will also have to be redesigned. I want you to fully develop and implement this.
