@@ -709,8 +709,9 @@ function displayGeneralWebResults(webResults) {
         webResultsContainer.appendChild(resultItem);
     });
 
-    const answerContainer = document.querySelector('.answerContainer');
-    answerContainer.appendChild(webResultsContainer);
+    const generalWebResults = document.querySelector('.general-web-results');
+    generalWebResults.innerHTML = '';
+    generalWebResults.appendChild(webResultsContainer);
 }
 
 function removeExistingWebResults() {
@@ -871,8 +872,8 @@ function generateCreateImage(prompt) {
 }
 
 function displayQuickResults(data) {
-    const quickResultsContainer = document.querySelector('.quickResultsContainer');
-    quickResultsContainer.innerHTML = ''; // Clear previous results
+    const quickResults = document.querySelector('.quick-results');
+    quickResults.innerHTML = '';
 
     const queryResult = data.queryresult;
     if (!queryResult || !queryResult.pods || !queryResult.pods.length) {
@@ -912,6 +913,6 @@ function displayQuickResults(data) {
             });
         }
 
-        quickResultsContainer.appendChild(podDiv);
+        quickResults.appendChild(podDiv);
     });
 }
