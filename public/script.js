@@ -95,12 +95,12 @@ searchForm.addEventListener('submit', function (e) {
     }
 });
 
-searchInput.addEventListener('focus', function() {
+searchInput.addEventListener('focus', function () {
     const query = searchInput.value.trim();
     fetchSuggestions(query);
 });
 
-searchInput.addEventListener('blur', function(event) {
+searchInput.addEventListener('blur', function (event) {
     setTimeout(() => {
         if (!suggestionsContainer.contains(document.activeElement)) {
             clearSuggestions();
@@ -108,7 +108,7 @@ searchInput.addEventListener('blur', function(event) {
     }, 100);
 });
 
-searchInput.addEventListener('input', function() {
+searchInput.addEventListener('input', function () {
     const query = searchInput.value.trim();
     if (suggestionTimeout) {
         clearTimeout(suggestionTimeout);
@@ -118,7 +118,7 @@ searchInput.addEventListener('input', function() {
     }, 300);
 });
 
-document.addEventListener('click', function(event) {
+document.addEventListener('click', function (event) {
     if (!searchForm.contains(event.target) && !suggestionsContainer.contains(event.target)) {
         clearSuggestions();
     }
@@ -509,6 +509,16 @@ function submitSearch(query) {
             console.error('Error fetching general web results:', error);
         });
 
+    fetch(`${API_BASE_URL}/quick?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Received quick results:', data);
+            displayQuickResults(data);
+        })
+        .catch(error => {
+            console.error('Error fetching quick results:', error);
+        });
+
     fetch(`${API_BASE_URL}/images?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
@@ -744,7 +754,7 @@ function switchTab(tabName) {
 
     currentPane.classList.remove('active');
     newPane.classList.add('active');
-    
+
     if (tabName === 'create') {
         createInput.value = searchInput.value.trim();
     }
@@ -841,20 +851,66 @@ function generateCreateImage(prompt) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'completed' && data.imageUrl) {
-            createImage.src = data.imageUrl;
-            createImage.style.display = 'block';
-            createPlaceholder.style.display = 'none';
-        } else {
-            createPlaceholder.textContent = 'Failed to generate image';
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'completed' && data.imageUrl) {
+                createImage.src = data.imageUrl;
+                createImage.style.display = 'block';
+                createPlaceholder.style.display = 'none';
+            } else {
+                createPlaceholder.textContent = 'Failed to generate image';
+                createPlaceholder.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error generating image:', error);
+            createPlaceholder.textContent = 'Error generating image';
             createPlaceholder.style.display = 'block';
+        });
+}
+
+function displayQuickResults(data) {
+    const quickResultsContainer = document.querySelector('.quickResultsContainer');
+    quickResultsContainer.innerHTML = ''; // Clear previous results
+
+    const queryResult = data.queryresult;
+    if (!queryResult || !queryResult.pods || !queryResult.pods.length) {
+        return;
+    }
+
+    queryResult.pods.forEach(pod => {
+        const podTitle = pod.title;
+        const podDiv = document.createElement('div');
+        podDiv.className = 'quick-pod';
+
+        if (podTitle) {
+            const titleElement = document.createElement('h3');
+            titleElement.className = 'quick-pod-title';
+            titleElement.textContent = podTitle;
+            podDiv.appendChild(titleElement);
         }
-    })
-    .catch(error => {
-        console.error('Error generating image:', error);
-        createPlaceholder.textContent = 'Error generating image';
-        createPlaceholder.style.display = 'block';
+
+        if (pod.subpods && pod.subpods.length) {
+            pod.subpods.forEach(subpod => {
+                if (subpod.title) {
+                    const subpodTitleElement = document.createElement('h4');
+                    subpodTitleElement.className = 'quick-subpod-title';
+                    subpodTitleElement.textContent = subpod.title;
+                    podDiv.appendChild(subpodTitleElement);
+                }
+
+                const img = subpod.img;
+                if (img && img.src) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = img.src;
+                    imgElement.alt = img.alt || '';
+                    imgElement.title = img.title || '';
+                    imgElement.className = 'quick-pod-image';
+                    podDiv.appendChild(imgElement);
+                }
+            });
+        }
+
+        quickResultsContainer.appendChild(podDiv);
     });
 }

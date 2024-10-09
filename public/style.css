@@ -236,7 +236,7 @@ body {
     visibility: hidden;
     transition: opacity 0.5s ease, visibility 0.5s ease;
     background-color: #ffffff;
-    padding: 2rem;
+    padding: 3rem 1rem;
 }
 
 .tab-pane.active {
@@ -247,9 +247,16 @@ body {
     z-index: 2;
 }
 
+.main-content {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
 .answerContent {
     max-width: 800px;
-    align-self: center;
+    /* align-self: center; */
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.5s ease;
@@ -570,9 +577,50 @@ body {
 }
 
 .answerContainer {
+    flex: 1;
     width: 100%;
     display: flex;
     flex-direction: column;
+}
+
+.quickResultsContainer {
+    width: 300px;
+    margin-left: 20px;
+    flex-shrink: 0;
+}
+
+.quick-pod {
+    margin-bottom: 20px;
+}
+
+.quick-pod-title {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.quick-subpod-title {
+    font-size: 0.9rem;
+    font-weight: normal;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.quick-pod-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+    .quickResultsContainer {
+        width: 100%;
+        margin-left: 0;
+    }
 }
 
 .lightbox {
@@ -871,7 +919,6 @@ body.search-active .tab-content {
 }
 
 body.search-active .answerContainer {
-    padding: 0 2rem;
     min-height: 200px;
 }
 
