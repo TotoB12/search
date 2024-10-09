@@ -236,7 +236,6 @@ body {
     visibility: hidden;
     transition: opacity 0.5s ease, visibility 0.5s ease;
     background-color: #ffffff;
-    padding: 3rem 1rem;
 }
 
 .tab-pane.active {
@@ -256,7 +255,6 @@ body {
 
 .answerContent {
     max-width: 800px;
-    /* align-self: center; */
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.5s ease;
@@ -912,6 +910,10 @@ body.search-active .search-container {
 
 body.search-active .tab-navigation {
     display: flex;
+}
+
+body.search-active .tab-pane {
+    padding: 3rem 1rem;
 }
 
 body.search-active .tab-content {

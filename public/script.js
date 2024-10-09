@@ -609,7 +609,8 @@ function submitSearch(query) {
                         gridItem.appendChild(skeletonOverlay);
 
                         const img = document.createElement('img');
-                        img.src = imgUrl + '?p=300';
+                        // img.src = imgUrl + '?p=300';
+                        img.src = imgUrl + '&h=300&w=300';
                         img.dataset.fullSrc = imgUrl;
                         img.dataset.index = index;
                         img.alt = 'Related Image';
@@ -771,7 +772,7 @@ function displayImages(images) {
         imageItem.className = 'image-item';
 
         const img = document.createElement('img');
-        img.setAttribute('data-src', imageUrl);
+        img.setAttribute('data-src', imageUrl + '&h=300&w=300');
         img.setAttribute('data-fullSrc', imageUrl);
         img.setAttribute('data-index', index);
         img.alt = 'Search result image';

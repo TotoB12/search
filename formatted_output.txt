@@ -49,52 +49,55 @@ public\index.html
 
     <div class="tab-content">
         <div class="tab-pane active" id="all-tab">
-            <div class="answerContainer">
-                <div class="answerContent" style="display: none;">
-                    <div id="answer"></div>
-                    <div class="toolbar">
-                        <button id="tts-button" class="toolbar-button">
-                            <svg class="tts-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M11 4.9099C11 4.47485 10.4828 4.24734 10.1621 4.54132L6.67572 7.7372C6.49129 7.90626 6.25019 8.00005 6 8.00005H4C3.44772 8.00005 3 8.44776 3 9.00005V15C3 15.5523 3.44772 16 4 16H6C6.25019 16 6.49129 16.0938 6.67572 16.2629L10.1621 19.4588C10.4828 19.7527 11 19.5252 11 19.0902V4.9099ZM8.81069 3.06701C10.4142 1.59714 13 2.73463 13 4.9099V19.0902C13 21.2655 10.4142 22.403 8.81069 20.9331L5.61102 18H4C2.34315 18 1 16.6569 1 15V9.00005C1 7.34319 2.34315 6.00005 4 6.00005H5.61102L8.81069 3.06701ZM20.3166 6.35665C20.8019 6.09313 21.409 6.27296 21.6725 6.75833C22.5191 8.3176 22.9996 10.1042 22.9996 12.0001C22.9996 13.8507 22.5418 15.5974 21.7323 17.1302C21.4744 17.6185 20.8695 17.8054 20.3811 17.5475C19.8927 17.2896 19.7059 16.6846 19.9638 16.1962C20.6249 14.9444 20.9996 13.5175 20.9996 12.0001C20.9996 10.4458 20.6064 8.98627 19.9149 7.71262C19.6514 7.22726 19.8312 6.62017 20.3166 6.35665ZM15.7994 7.90049C16.241 7.5688 16.8679 7.65789 17.1995 8.09947C18.0156 9.18593 18.4996 10.5379 18.4996 12.0001C18.4996 13.3127 18.1094 14.5372 17.4385 15.5604C17.1357 16.0222 16.5158 16.1511 16.0539 15.8483C15.5921 15.5455 15.4632 14.9255 15.766 14.4637C16.2298 13.7564 16.4996 12.9113 16.4996 12.0001C16.4996 10.9859 16.1653 10.0526 15.6004 9.30063C15.2687 8.85905 15.3578 8.23218 15.7994 7.90049Z"
-                                    fill="currentColor"></path>
-                            </svg>
-                            <svg class="tts-spinner icon-md-heavy" width="24" height="24" stroke="currentColor"
-                                fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                                stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                                <line x1="12" y1="2" x2="12" y2="6"></line>
-                                <line x1="12" y1="18" x2="12" y2="22"></line>
-                                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-                                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-                                <line x1="2" y1="12" x2="6" y2="12"></line>
-                                <line x1="18" y1="12" x2="22" y2="12"></line>
-                                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-                                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-                            </svg>
-                            <svg class="tts-stop icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM9.5 8.5C8.94772 8.5 8.5 8.94772 8.5 9.5V14.5C8.5 15.0523 8.94772 15.5 9.5 15.5H14.5C15.0523 15.5 15.5 15.0523 15.5 14.5V9.5C15.5 8.94772 15.0523 8.5 14.5 8.5H9.5Z"
-                                    fill="currentColor"></path>
-                            </svg>
-                        </button>
-                        <button id="copy-button" class="toolbar-button">
-                            <svg class="copy-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
-                                    fill="currentColor"></path>
-                            </svg>
-                            <svg class="checkmark-icon icon-md-heavy" width="24" height="24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M18.0633 5.67387C18.5196 5.98499 18.6374 6.60712 18.3262 7.06343L10.8262 18.0634C10.6585 18.3095 10.3898 18.4679 10.0934 18.4957C9.79688 18.5235 9.50345 18.4178 9.29289 18.2072L4.79289 13.7072C4.40237 13.3167 4.40237 12.6835 4.79289 12.293C5.18342 11.9025 5.81658 11.9025 6.20711 12.293L9.85368 15.9396L16.6738 5.93676C16.9849 5.48045 17.607 5.36275 18.0633 5.67387Z"
-                                    fill="currentColor"></path>
-                            </svg>
-                        </button>
+            <div class="main-content">
+                <div class="answerContainer">
+                    <div class="answerContent" style="display: none;">
+                        <div id="answer"></div>
+                        <div class="toolbar">
+                            <button id="tts-button" class="toolbar-button">
+                                <svg class="tts-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M11 4.9099C11 4.47485 10.4828 4.24734 10.1621 4.54132L6.67572 7.7372C6.49129 7.90626 6.25019 8.00005 6 8.00005H4C3.44772 8.00005 3 8.44776 3 9.00005V15C3 15.5523 3.44772 16 4 16H6C6.25019 16 6.49129 16.0938 6.67572 16.2629L10.1621 19.4588C10.4828 19.7527 11 19.5252 11 19.0902V4.9099ZM8.81069 3.06701C10.4142 1.59714 13 2.73463 13 4.9099V19.0902C13 21.2655 10.4142 22.403 8.81069 20.9331L5.61102 18H4C2.34315 18 1 16.6569 1 15V9.00005C1 7.34319 2.34315 6.00005 4 6.00005H5.61102L8.81069 3.06701ZM20.3166 6.35665C20.8019 6.09313 21.409 6.27296 21.6725 6.75833C22.5191 8.3176 22.9996 10.1042 22.9996 12.0001C22.9996 13.8507 22.5418 15.5974 21.7323 17.1302C21.4744 17.6185 20.8695 17.8054 20.3811 17.5475C19.8927 17.2896 19.7059 16.6846 19.9638 16.1962C20.6249 14.9444 20.9996 13.5175 20.9996 12.0001C20.9996 10.4458 20.6064 8.98627 19.9149 7.71262C19.6514 7.22726 19.8312 6.62017 20.3166 6.35665ZM15.7994 7.90049C16.241 7.5688 16.8679 7.65789 17.1995 8.09947C18.0156 9.18593 18.4996 10.5379 18.4996 12.0001C18.4996 13.3127 18.1094 14.5372 17.4385 15.5604C17.1357 16.0222 16.5158 16.1511 16.0539 15.8483C15.5921 15.5455 15.4632 14.9255 15.766 14.4637C16.2298 13.7564 16.4996 12.9113 16.4996 12.0001C16.4996 10.9859 16.1653 10.0526 15.6004 9.30063C15.2687 8.85905 15.3578 8.23218 15.7994 7.90049Z"
+                                        fill="currentColor"></path>
+                                </svg>
+                                <svg class="tts-spinner icon-md-heavy" width="24" height="24" stroke="currentColor"
+                                    fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                                    stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                    <line x1="12" y1="2" x2="12" y2="6"></line>
+                                    <line x1="12" y1="18" x2="12" y2="22"></line>
+                                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                                    <line x1="2" y1="12" x2="6" y2="12"></line>
+                                    <line x1="18" y1="12" x2="22" y2="12"></line>
+                                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                                </svg>
+                                <svg class="tts-stop icon-md-heavy" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM9.5 8.5C8.94772 8.5 8.5 8.94772 8.5 9.5V14.5C8.5 15.0523 8.94772 15.5 9.5 15.5H14.5C15.0523 15.5 15.5 15.0523 15.5 14.5V9.5C15.5 8.94772 15.0523 8.5 14.5 8.5H9.5Z"
+                                        fill="currentColor"></path>
+                                </svg>
+                            </button>
+                            <button id="copy-button" class="toolbar-button">
+                                <svg class="copy-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
+                                        fill="currentColor"></path>
+                                </svg>
+                                <svg class="checkmark-icon icon-md-heavy" width="24" height="24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M18.0633 5.67387C18.5196 5.98499 18.6374 6.60712 18.3262 7.06343L10.8262 18.0634C10.6585 18.3095 10.3898 18.4679 10.0934 18.4957C9.79688 18.5235 9.50345 18.4178 9.29289 18.2072L4.79289 13.7072C4.40237 13.3167 4.40237 12.6835 4.79289 12.293C5.18342 11.9025 5.81658 11.9025 6.20711 12.293L9.85368 15.9396L16.6738 5.93676C16.9849 5.48045 17.607 5.36275 18.0633 5.67387Z"
+                                        fill="currentColor"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
+                <div class="quickResultsContainer"></div>
             </div>
         </div>
         <div class="tab-pane" id="images-tab">
@@ -250,12 +253,12 @@ searchForm.addEventListener('submit', function (e) {
     }
 });
 
-searchInput.addEventListener('focus', function() {
+searchInput.addEventListener('focus', function () {
     const query = searchInput.value.trim();
     fetchSuggestions(query);
 });
 
-searchInput.addEventListener('blur', function(event) {
+searchInput.addEventListener('blur', function (event) {
     setTimeout(() => {
         if (!suggestionsContainer.contains(document.activeElement)) {
             clearSuggestions();
@@ -263,7 +266,7 @@ searchInput.addEventListener('blur', function(event) {
     }, 100);
 });
 
-searchInput.addEventListener('input', function() {
+searchInput.addEventListener('input', function () {
     const query = searchInput.value.trim();
     if (suggestionTimeout) {
         clearTimeout(suggestionTimeout);
@@ -273,7 +276,7 @@ searchInput.addEventListener('input', function() {
     }, 300);
 });
 
-document.addEventListener('click', function(event) {
+document.addEventListener('click', function (event) {
     if (!searchForm.contains(event.target) && !suggestionsContainer.contains(event.target)) {
         clearSuggestions();
     }
@@ -664,6 +667,16 @@ function submitSearch(query) {
             console.error('Error fetching general web results:', error);
         });
 
+    fetch(`${API_BASE_URL}/quick?q=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Received quick results:', data);
+            displayQuickResults(data);
+        })
+        .catch(error => {
+            console.error('Error fetching quick results:', error);
+        });
+
     fetch(`${API_BASE_URL}/images?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
@@ -754,7 +767,8 @@ function submitSearch(query) {
                         gridItem.appendChild(skeletonOverlay);
 
                         const img = document.createElement('img');
-                        img.src = imgUrl + '?p=300';
+                        // img.src = imgUrl + '?p=300';
+                        img.src = imgUrl + '&h=300&w=300';
                         img.dataset.fullSrc = imgUrl;
                         img.dataset.index = index;
                         img.alt = 'Related Image';
@@ -899,7 +913,7 @@ function switchTab(tabName) {
 
     currentPane.classList.remove('active');
     newPane.classList.add('active');
-    
+
     if (tabName === 'create') {
         createInput.value = searchInput.value.trim();
     }
@@ -916,7 +930,7 @@ function displayImages(images) {
         imageItem.className = 'image-item';
 
         const img = document.createElement('img');
-        img.setAttribute('data-src', imageUrl);
+        img.setAttribute('data-src', imageUrl + '&h=300&w=300');
         img.setAttribute('data-fullSrc', imageUrl);
         img.setAttribute('data-index', index);
         img.alt = 'Search result image';
@@ -996,23 +1010,70 @@ function generateCreateImage(prompt) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'completed' && data.imageUrl) {
-            createImage.src = data.imageUrl;
-            createImage.style.display = 'block';
-            createPlaceholder.style.display = 'none';
-        } else {
-            createPlaceholder.textContent = 'Failed to generate image';
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'completed' && data.imageUrl) {
+                createImage.src = data.imageUrl;
+                createImage.style.display = 'block';
+                createPlaceholder.style.display = 'none';
+            } else {
+                createPlaceholder.textContent = 'Failed to generate image';
+                createPlaceholder.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error generating image:', error);
+            createPlaceholder.textContent = 'Error generating image';
             createPlaceholder.style.display = 'block';
+        });
+}
+
+function displayQuickResults(data) {
+    const quickResultsContainer = document.querySelector('.quickResultsContainer');
+    quickResultsContainer.innerHTML = ''; // Clear previous results
+
+    const queryResult = data.queryresult;
+    if (!queryResult || !queryResult.pods || !queryResult.pods.length) {
+        return;
+    }
+
+    queryResult.pods.forEach(pod => {
+        const podTitle = pod.title;
+        const podDiv = document.createElement('div');
+        podDiv.className = 'quick-pod';
+
+        if (podTitle) {
+            const titleElement = document.createElement('h3');
+            titleElement.className = 'quick-pod-title';
+            titleElement.textContent = podTitle;
+            podDiv.appendChild(titleElement);
         }
-    })
-    .catch(error => {
-        console.error('Error generating image:', error);
-        createPlaceholder.textContent = 'Error generating image';
-        createPlaceholder.style.display = 'block';
+
+        if (pod.subpods && pod.subpods.length) {
+            pod.subpods.forEach(subpod => {
+                if (subpod.title) {
+                    const subpodTitleElement = document.createElement('h4');
+                    subpodTitleElement.className = 'quick-subpod-title';
+                    subpodTitleElement.textContent = subpod.title;
+                    podDiv.appendChild(subpodTitleElement);
+                }
+
+                const img = subpod.img;
+                if (img && img.src) {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = img.src;
+                    imgElement.alt = img.alt || '';
+                    imgElement.title = img.title || '';
+                    imgElement.className = 'quick-pod-image';
+                    podDiv.appendChild(imgElement);
+                }
+            });
+        }
+
+        quickResultsContainer.appendChild(podDiv);
     });
 }
+
 ```
 
 public\style.css
@@ -1255,7 +1316,6 @@ body {
     visibility: hidden;
     transition: opacity 0.5s ease, visibility 0.5s ease;
     background-color: #ffffff;
-    padding: 2rem;
 }
 
 .tab-pane.active {
@@ -1266,9 +1326,15 @@ body {
     z-index: 2;
 }
 
+.main-content {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
 .answerContent {
     max-width: 800px;
-    align-self: center;
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.5s ease;
@@ -1589,9 +1655,50 @@ body {
 }
 
 .answerContainer {
+    flex: 1;
     width: 100%;
     display: flex;
     flex-direction: column;
+}
+
+.quickResultsContainer {
+    width: 300px;
+    margin-left: 20px;
+    flex-shrink: 0;
+}
+
+.quick-pod {
+    margin-bottom: 20px;
+}
+
+.quick-pod-title {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.quick-subpod-title {
+    font-size: 0.9rem;
+    font-weight: normal;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.quick-pod-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-bottom: 10px;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+    .quickResultsContainer {
+        width: 100%;
+        margin-left: 0;
+    }
 }
 
 .lightbox {
@@ -1885,12 +1992,15 @@ body.search-active .tab-navigation {
     display: flex;
 }
 
+body.search-active .tab-pane {
+    padding: 3rem 1rem;
+}
+
 body.search-active .tab-content {
     height: calc(100vh - 80px);
 }
 
 body.search-active .answerContainer {
-    padding: 0 2rem;
     min-height: 200px;
 }
 
@@ -1952,305 +2062,13 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to introduce a new feature. I want to add a new container on the right of the `answerContainer`: a quick results view. This slim element will display elements received and formated from a new `/quick` endpoint that I have already added to the API server at `/quick?q={query}`. The response looks like this:
+This all works great, but I want to change the look and feel of the "All" tab, the main content. I want my web app to more resemble Bing or Google. The page should be divided into three parts:
 
-```json
-{
-    "queryresult": {
-        "success": true,
-        "error": false,
-        "numpods": 5,
-        "datatypes": "USState",
-        "timedout": "",
-        "timedoutpods": "",
-        "timing": 1.443,
-        "parsetiming": 0.252,
-        "parsetimedout": false,
-        "recalculate": "",
-        "id": "MSP213511i734i4dcfh9c61400005he36963dg48d005",
-        "host": "https://www6b3.wolframalpha.com",
-        "server": "12",
-        "related": "https://www6b3.wolframalpha.com/api/v1/relatedQueries.jsp?id=MSPa213521i734i4dcfh9c614000016i51e3hi2a1icie822558548030476863",
-        "version": "2.6",
-        "inputstring": "california population",
-        "pods": [
-            {
-                "title": "Input interpretation",
-                "scanner": "Identity",
-                "id": "Input",
-                "position": 100,
-                "error": false,
-                "numsubpods": 1,
-                "subpods": [
-                    {
-                        "title": "",
-                        "img": {
-                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213531i734i4dcfh9c61400001d19a3b1f789b15d?MSPStoreType=image/gif&s=12",
-                            "alt": "California | population",
-                            "title": "California | population",
-                            "width": 194,
-                            "height": 33,
-                            "type": "Grid",
-                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
-                            "colorinvertable": true,
-                            "contenttype": "image/gif"
-                        }
-                    }
-                ],
-                "expressiontypes": {
-                    "name": "Grid"
-                }
-            },
-            {
-                "title": "Result",
-                "scanner": "Data",
-                "id": "Result",
-                "position": 200,
-                "error": false,
-                "numsubpods": 1,
-                "primary": true,
-                "subpods": [
-                    {
-                        "title": "",
-                        "microsources": {
-                            "microsource": "USStateData"
-                        },
-                        "datasources": {
-                            "datasource": "USCensusQuickfacts"
-                        },
-                        "img": {
-                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213541i734i4dcfh9c61400004ia0d2i11f6i7f79?MSPStoreType=image/gif&s=12",
-                            "alt": "38.97 million people (2023)",
-                            "title": "38.97 million people (2023)",
-                            "width": 163,
-                            "height": 19,
-                            "type": "Default",
-                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
-                            "colorinvertable": true,
-                            "contenttype": "image/gif"
-                        }
-                    }
-                ],
-                "expressiontypes": {
-                    "name": "Default"
-                }
-            },
-            {
-                "title": "Population history",
-                "scanner": "Data",
-                "id": "History:Population:USStateData",
-                "position": 300,
-                "error": false,
-                "numsubpods": 1,
-                "subpods": [
-                    {
-                        "title": "",
-                        "microsources": {
-                            "microsource": "USStateData"
-                        },
-                        "datasources": {
-                            "datasource": "USCensusQuickfacts"
-                        },
-                        "img": {
-                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213551i734i4dcfh9c6140000368hhea6b7a67acb?MSPStoreType=image/gif&s=12",
-                            "alt": "Population history",
-                            "title": "",
-                            "width": 369,
-                            "height": 166,
-                            "type": "TimeSeriesPlot_1",
-                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
-                            "colorinvertable": true,
-                            "contenttype": "image/gif"
-                        }
-                    }
-                ],
-                "expressiontypes": {
-                    "name": "Default"
-                },
-                "states": [
-                    {
-                        "name": "Log scale",
-                        "input": "History:Population:USStateData__Log scale"
-                    }
-                ]
-            },
-            {
-                "title": "Population",
-                "scanner": "Data",
-                "id": "Population:USStateData",
-                "position": 400,
-                "error": false,
-                "numsubpods": 1,
-                "subpods": [
-                    {
-                        "title": "",
-                        "microsources": {
-                            "microsource": "USStateData"
-                        },
-                        "datasources": {
-                            "datasource": "USCensusQuickfacts"
-                        },
-                        "img": {
-                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213561i734i4dcfh9c61400001g54h800hb30i1e3?MSPStoreType=image/gif&s=12",
-                            "alt": "population | 38.97 million people\npopulation growth | +1.05% per year (2010-12)\npopulation density | 238 people/mi^2\nannual deaths | 302704 people/yr\nannual births | 414120 people/yr\n(2023)",
-                            "title": "population | 38.97 million people\npopulation growth | +1.05% per year (2010-12)\npopulation density | 238 people/mi^2\nannual deaths | 302704 people/yr\nannual births | 414120 people/yr\n(2023)",
-                            "width": 333,
-                            "height": 195,
-                            "type": "Grid",
-                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
-                            "colorinvertable": true,
-                            "contenttype": "image/gif"
-                        }
-                    }
-                ],
-                "expressiontypes": {
-                    "name": "Grid"
-                },
-                "infos": {
-                    "units": [
-                        [
-                            {
-                                "short": "people/yr",
-                                "long": "people per year"
-                            },
-                            {
-                                "short": "person/mi^2",
-                                "long": "people per square mile"
-                            }
-                        ],
-                        {
-                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213571i734i4dcfh9c6140000401d43e3126h5a6a?MSPStoreType=image/gif&s=12",
-                            "width": "211",
-                            "height": "50"
-                        }
-                    ]
-                }
-            },
-            {
-                "title": "Comparisons",
-                "scanner": "Unit",
-                "id": "ComparisonAsPersonCount",
-                "position": 500,
-                "error": false,
-                "numsubpods": 3,
-                "subpods": [
-                    {
-                        "title": "",
-                        "img": {
-                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213581i734i4dcfh9c61400005ia2cgfeiha0134h?MSPStoreType=image/gif&s=12",
-                            "alt": " ≈ 0.6 × current population of France ( 64.98 million people )",
-                            "title": " ≈ 0.6 × current population of France ( 64.98 million people )",
-                            "width": 344,
-                            "height": 19,
-                            "type": "Default",
-                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
-                            "colorinvertable": true,
-                            "contenttype": "image/gif"
-                        }
-                    },
-                    {
-                        "title": "",
-                        "img": {
-                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213591i734i4dcfh9c61400004b0032g9g1d75fd1?MSPStoreType=image/gif&s=12",
-                            "alt": " ≈ 1.1 × current population of Canada ( 36.62 million people )",
-                            "title": " ≈ 1.1 × current population of Canada ( 36.62 million people )",
-                            "width": 350,
-                            "height": 19,
-                            "type": "Default",
-                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
-                            "colorinvertable": true,
-                            "contenttype": "image/gif"
-                        }
-                    },
-                    {
-                        "title": "",
-                        "img": {
-                            "src": "https://www6b3.wolframalpha.com/Calculate/MSP/MSP213601i734i4dcfh9c6140000610cd81e9c0a1d52?MSPStoreType=image/gif&s=12",
-                            "alt": " ≈ 1.4 × current population of Texas ( 28.3 million people )",
-                            "title": " ≈ 1.4 × current population of Texas ( 28.3 million people )",
-                            "width": 333,
-                            "height": 19,
-                            "type": "Default",
-                            "themes": "1,2,3,4,5,6,7,8,9,10,11,12",
-                            "colorinvertable": true,
-                            "contenttype": "image/gif"
-                        }
-                    }
-                ],
-                "expressiontypes": [
-                    {
-                        "name": "Default"
-                    },
-                    {
-                        "name": "Default"
-                    },
-                    {
-                        "name": "Default"
-                    }
-                ]
-            }
-        ],
-        "assumptions": {
-            "type": "Clash",
-            "word": "california",
-            "template": "Assuming \"${word}\" is ${desc1}. Use as ${desc2} instead",
-            "count": 3,
-            "values": [
-                {
-                    "name": "USState",
-                    "desc": "a US state",
-                    "input": "*C.california-_*USState-"
-                },
-                {
-                    "name": "AdministrativeDivision",
-                    "desc": "an administrative division",
-                    "input": "*C.california-_*AdministrativeDivision-"
-                },
-                {
-                    "name": "City",
-                    "desc": "a city",
-                    "input": "*C.california-_*City-"
-                }
-            ]
-        },
-        "sources": {
-            "url": "https://www6b3.wolframalpha.com/sources/USStateDataSourceInformationNotes.html",
-            "text": "US state data"
-        }
-    }
-}
-```
+- the top piece that takes the entire width should be the ai overview, the answerContent (with the expand button)
+- the rest of the page should be divided into two collums:
+    - the left should be the general web results
+    - the right should be the quick results
 
-This should be called at the same time as the main web searches and the AI results. Once received, it should be displayed in that new container on the right of the `answerContainer`. For this, the script will have to parse re JSON into sections:
+All three of these containers should be centerd horizontally. I want the quick results to be wide enough to see the detail in the presented images.
 
-- get all of the `pods`
-- get the `title` of each `pod` and display it
-- underneath each `title`, display the `img`s of all the `subpods` in that `pod`
-
-For example, following the JSON above, it would be something like:
-
-```
-Input interpretation
-
-img
-
-Result
-
-img
-
-Population history
-
-img
-
-Population
-
-img
-
-Comparisons
-
-img
-img
-img
-```
-
-I want you to fully develop and implement this.
+I want you to fully develop and implement this. Give me the corrected code snippets, and the full new `style.css` file.
