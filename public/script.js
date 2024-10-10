@@ -27,7 +27,9 @@ const createButton = document.getElementById('create-button');
 const createImage = document.getElementById('create-image');
 const createPlaceholder = document.getElementById('create-placeholder');
 
-let imageList = [];
+let answerImageList = [];
+let imagesTabImageList = [];
+let currentImageList = [];
 let currentImageIndex = 0;
 let audioContext;
 let audioSource;
@@ -415,7 +417,8 @@ function handleCopy() {
     });
 }
 
-function openLightbox(imgSrc, index) {
+function openLightbox(imgSrc, index, imageList) {
+    currentImageList = imageList;
     currentImageIndex = index;
     loadImageInLightbox(imgSrc);
     lightbox.classList.add('active');
@@ -449,7 +452,7 @@ function updateLightboxButtons() {
         lightboxPrev.style.display = 'flex';
     }
 
-    if (currentImageIndex >= imageList.length - 1) {
+    if (currentImageIndex >= currentImageList.length - 1) {
         lightboxNext.style.display = 'none';
     } else {
         lightboxNext.style.display = 'flex';
@@ -459,16 +462,16 @@ function updateLightboxButtons() {
 function showPreviousImage() {
     if (currentImageIndex > 0) {
         currentImageIndex--;
-        const imgSrc = imageList[currentImageIndex];
+        const imgSrc = currentImageList[currentImageIndex];
         loadImageInLightbox(imgSrc);
         updateLightboxButtons();
     }
 }
 
 function showNextImage() {
-    if (currentImageIndex < imageList.length - 1) {
+    if (currentImageIndex < currentImageList.length - 1) {
         currentImageIndex++;
-        const imgSrc = imageList[currentImageIndex];
+        const imgSrc = currentImageList[currentImageIndex];
         loadImageInLightbox(imgSrc);
         updateLightboxButtons();
     }
@@ -555,7 +558,7 @@ function submitSearch(query) {
                         expandButton.addEventListener('click', function () {
                             if (answerContent.classList.contains('collapsed')) {
                                 answerContent.classList.remove('collapsed');
-                                answerContent.style.maxHeight = answerContent.scrollHeight + 'px';
+                                answerContent.style.maxHeight = answerContent.scrollHeight + 10 + 'px';
                                 expandButton.textContent = 'Show less';
                                 answerContent.addEventListener('transitionend', function handler() {
                                     answerContent.style.maxHeight = 'none';
@@ -591,8 +594,7 @@ function submitSearch(query) {
 
                 if (data.images && data.images.length > 0) {
                     const imagesToShow = data.images.slice(0, 4);
-
-                    imageList = imagesToShow;
+                    answerImageList = imagesToShow;
 
                     const imageGrid = document.createElement('div');
                     imageGrid.className = 'image-grid';
@@ -622,7 +624,7 @@ function submitSearch(query) {
 
                     images.forEach(img => {
                         img.addEventListener('load', () => {
-                            img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
+                            img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index), answerImageList));
                             const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
                             if (skeletonOverlay) {
                                 skeletonOverlay.remove();
@@ -752,8 +754,6 @@ function displayImages(images) {
     const imagesGrid = document.querySelector('.images-grid');
     imagesGrid.innerHTML = '';
 
-    const gap = 8;
-
     const imagePromises = images.map((imageUrl, index) => {
         return new Promise((resolve) => {
             const img = new Image();
@@ -775,7 +775,8 @@ function displayImages(images) {
     Promise.all(imagePromises).then(imageDataArray => {
         const validImages = imageDataArray.filter(data => data !== null);
         layoutImages(validImages);
-    });
+        imagesTabImageList = validImages.map(data => data.url);
+    });    
 }
 
 function layoutImages(imagesData) {
@@ -838,8 +839,8 @@ function layoutImages(imagesData) {
             rowDiv.appendChild(imageItem);
 
             imageItem.addEventListener('click', () => {
-                openLightbox(imageData.url, imageData.index);
-            });
+                openLightbox(imageData.url, imageData.index, imagesTabImageList);
+            });            
         });
 
         imagesGrid.appendChild(rowDiv);

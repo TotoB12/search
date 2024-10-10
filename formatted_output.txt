@@ -2222,4 +2222,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but there is an issue on the `Images` tab. When one of the images is openeing in full screen in the lightbox, I want the user to be able to move to the images left and right; just like the images in the `answerContent` of the `All` tab. The way it is currently set up doesnt work properly, not always showing the right and left buttons. I want you to fully develop and implement this.
+This all works well, but there is an issue on the `Images` tab. When one of the images is openeing in full screen in the lightbox, I want the user to be able to move to the images left and right; just like the images in the `answerContent` of the `All` tab. The way it is currently set up doesnt work properly, not always showing the right and left buttons. I want you to fully develop and implement this. To do this, you will need to make a clear differenciation betweent the image grid in the answer on the `All` tab, and the grid in the `Images` tab, as they should both work seperately.
