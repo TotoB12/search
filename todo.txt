@@ -1,5 +1,7 @@
-- redesign image grid in ai overview --> good border radius
-
 - image grid in image tab use original aspect ratio in row flex
+
+- add proper skeleton for quick answer
+
+- add proper security limits to all endpoints / inputs
 
 - add active tab to url --> auto navigate to certain tab
