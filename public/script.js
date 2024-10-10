@@ -2,6 +2,8 @@ const searchForm = document.getElementById('search-form');
 const searchInput = document.getElementById('search-input');
 const answerContainer = document.querySelector('.answerContainer');
 const answerContent = document.querySelector('.answerContent');
+const answerLeft = document.querySelector('.answer-left');
+const answerRight = document.querySelector('.answer-right');
 const answerDiv = document.getElementById('answer');
 const searchButton = document.getElementById('search-button');
 const lightbox = document.querySelector('.lightbox');
@@ -32,7 +34,7 @@ let audioSource;
 let isPlaying = false;
 let currentTab = 'all';
 let storedImages = [];
-const MAX_ANSWER_HEIGHT = 400;
+const MAX_ANSWER_HEIGHT = 200;
 const API_BASE_URL = 'https://api.totob12.com/search';
 // const API_BASE_URL = 'http://localhost:3000/search';
 let suggestionTimeout;
@@ -217,10 +219,22 @@ function insertSkeletonLoader() {
     skeletonLoader.id = 'skeleton-loader';
     skeletonLoader.className = 'skeleton-loader';
 
+    const skeletonLeft = document.createElement('div');
+    skeletonLeft.className = 'skeleton-left';
+
     const skeletonTitle = document.createElement('div');
     skeletonTitle.className = 'skeleton-title skeleton-element';
-    skeletonTitle.style.width = `${Math.floor(Math.random() * 20) + 30}%`;
-    skeletonLoader.appendChild(skeletonTitle);
+    skeletonLeft.appendChild(skeletonTitle);
+
+    for (let i = 0; i < 3; i++) {
+        const skeletonText = document.createElement('div');
+        skeletonText.className = 'skeleton-text skeleton-element';
+        skeletonText.style.width = `${Math.floor(Math.random() * 60) + 40}%`;
+        skeletonLeft.appendChild(skeletonText);
+    }
+
+    const skeletonRight = document.createElement('div');
+    skeletonRight.className = 'skeleton-right';
 
     const skeletonImageGrid = document.createElement('div');
     skeletonImageGrid.className = 'skeleton-image-grid';
@@ -231,14 +245,10 @@ function insertSkeletonLoader() {
         skeletonImageGrid.appendChild(skeletonImage);
     }
 
-    skeletonLoader.appendChild(skeletonImageGrid);
+    skeletonRight.appendChild(skeletonImageGrid);
 
-    for (let i = 0; i < 3; i++) {
-        const skeletonText = document.createElement('div');
-        skeletonText.className = 'skeleton-text skeleton-element';
-        skeletonText.style.width = `${Math.floor(Math.random() * 60) + 40}%`;
-        skeletonLoader.appendChild(skeletonText);
-    }
+    skeletonLoader.appendChild(skeletonLeft);
+    skeletonLoader.appendChild(skeletonRight);
 
     answerContainer.appendChild(skeletonLoader);
 }
@@ -250,7 +260,7 @@ function hideSkeletonLoader(callback) {
         skeletonLoader.style.transform = 'translateY(20px)';
         setTimeout(() => {
             skeletonLoader.remove();
-            answerContent.style.display = 'block';
+            answerContent.style.display = 'flex';
             answerContent.style.opacity = '0';
             answerContent.style.transform = 'translateY(20px)';
             void answerContent.offsetWidth;
@@ -259,14 +269,14 @@ function hideSkeletonLoader(callback) {
             if (callback) callback();
         }, 300);
     } else {
-        answerContent.style.display = 'block';
+        answerContent.style.display = 'flex';
         if (callback) callback();
     }
 }
 
-function createSourcesGrid(urls) {
-    const gridContainer = document.createElement('div');
-    gridContainer.className = 'sources-grid';
+function createSourcesList(urls) {
+    const listContainer = document.createElement('div');
+    listContainer.className = 'sources-grid';
 
     urls.forEach(urlObj => {
         const sourceItem = document.createElement('div');
@@ -306,10 +316,10 @@ function createSourcesGrid(urls) {
         sourceItem.appendChild(sourceHeader);
         sourceItem.appendChild(titleLink);
 
-        gridContainer.appendChild(sourceItem);
+        listContainer.appendChild(sourceItem);
     });
 
-    return gridContainer;
+    return listContainer;
 }
 
 async function handleTTS() {
@@ -325,7 +335,6 @@ async function handleTTS() {
     const h2Elements = clonedAnswerElement.querySelectorAll('h2');
     h2Elements.forEach(h2 => h2.remove());
     const answerText = clonedAnswerElement.innerText;
-    // console.log('TTS text:', answerText);
 
     ttsIcon.style.display = 'none';
     ttsSpinner.style.display = 'block';
@@ -483,13 +492,6 @@ lightbox.addEventListener('click', (e) => {
     }
 });
 
-lightboxClose.addEventListener('click', closeLightbox);
-lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) {
-        closeLightbox();
-    }
-});
-
 function submitSearch(query) {
     query = btoa(query);
     console.log('Submitting search:', query);
@@ -570,10 +572,8 @@ function submitSearch(query) {
                     }
                 });
 
-                const existingSourcesGrid = document.querySelector('.sources-grid');
-                if (existingSourcesGrid) {
-                    existingSourcesGrid.remove();
-                }
+                answerDiv.innerHTML = '';
+                answerRight.innerHTML = '';
 
                 const processedAnswer = processCitations(data.answer, data.urls);
                 const parsedHtml = marked.parse(processedAnswer);
@@ -581,16 +581,13 @@ function submitSearch(query) {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = parsedHtml;
 
-                const firstElement = tempDiv.firstElementChild;
-                let insertPosition = 'start';
+                const config = {
+                    ADD_ATTR: ['target', 'rel']
+                };
+                const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
+                answerDiv.innerHTML = finalHtml;
 
-                if (firstElement && firstElement.tagName === 'H2') {
-                    insertPosition = 'afterH2';
-                }
-
-                const sourcesGrid = createSourcesGrid(data.urls);
-                const toolbar = document.querySelector('.toolbar');
-                answerContent.insertBefore(sourcesGrid, toolbar);
+                answerLeft.appendChild(toolbar);
 
                 if (data.images && data.images.length > 0) {
                     const imagesToShow = data.images.slice(0, 4);
@@ -605,11 +602,10 @@ function submitSearch(query) {
                         gridItem.className = 'image-grid-item';
 
                         const skeletonOverlay = document.createElement('div');
-                        skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
+                        skeletonOverlay.className = 'image-skeleton-overlay';
                         gridItem.appendChild(skeletonOverlay);
 
                         const img = document.createElement('img');
-                        // img.src = imgUrl + '?p=300';
                         img.src = imgUrl + '&h=300&w=300';
                         img.dataset.fullSrc = imgUrl;
                         img.dataset.index = index;
@@ -620,38 +616,27 @@ function submitSearch(query) {
                         imageGrid.appendChild(gridItem);
                     });
 
-                    if (insertPosition === 'afterH2') {
-                        if (firstElement.nextSibling) {
-                            tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
-                        } else {
-                            tempDiv.appendChild(imageGrid);
-                        }
-                    } else {
-                        tempDiv.insertBefore(imageGrid, tempDiv.firstChild);
-                    }
+                    answerRight.appendChild(imageGrid);
+
+                    const images = imageGrid.querySelectorAll('.image-grid-item img');
+
+                    images.forEach(img => {
+                        img.addEventListener('load', () => {
+                            img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
+                            const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
+                            if (skeletonOverlay) {
+                                skeletonOverlay.remove();
+                            }
+                            img.style.opacity = '1';
+                        });
+                        img.addEventListener('error', () => {
+                            img.alt = 'Failed to load image';
+                        });
+                    });
                 }
 
-                const config = {
-                    ADD_ATTR: ['target', 'rel']
-                };
-                const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
-                answerDiv.innerHTML = finalHtml;
-
-                const images = answerDiv.querySelectorAll('.image-grid-item img');
-
-                images.forEach(img => {
-                    img.addEventListener('load', () => {
-                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
-                        const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
-                        if (skeletonOverlay) {
-                            skeletonOverlay.remove();
-                        }
-                        img.style.opacity = '1';
-                    });
-                    img.addEventListener('error', () => {
-                        img.alt = 'Failed to load image';
-                    });
-                });
+                const sourcesList = createSourcesList(data.urls);
+                answerRight.appendChild(sourcesList);
 
             } else if (data.status === 'error' || data.error) {
                 hideSkeletonLoader();
@@ -746,7 +731,6 @@ function initializeTabs() {
         });
     });
 }
-
 
 function switchTab(tabName) {
     if (currentTab === tabName) return;

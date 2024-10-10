@@ -2094,3 +2094,4 @@ This all works well, but I want to redesign the look of the `answerContent`. I w
 - on the right: first the image grid, and the sources grid underneath, with the sources in rows
 
 The skeleton loader will also have to be redesigned. I want you to fully develop and implement this.
+When you give me the CSS, give me the entire full new `style.css` file, reorganized and corrected.
