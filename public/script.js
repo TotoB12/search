@@ -752,26 +752,109 @@ function displayImages(images) {
     const imagesGrid = document.querySelector('.images-grid');
     imagesGrid.innerHTML = '';
 
-    images.forEach((imageUrl, index) => {
-        const imageItem = document.createElement('div');
-        imageItem.className = 'image-item';
+    const gap = 8;
 
-        const img = document.createElement('img');
-        img.setAttribute('data-src', imageUrl + '&h=300&w=300');
-        img.setAttribute('data-fullSrc', imageUrl);
-        img.setAttribute('data-index', index);
-        img.alt = 'Search result image';
-
-        imageItem.appendChild(img);
-        imagesGrid.appendChild(imageItem);
-
-        imageItem.addEventListener('click', () => {
-            openLightbox(imageUrl, index);
+    const imagePromises = images.map((imageUrl, index) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = imageUrl;
+            img.onload = function() {
+                const aspectRatio = img.width / img.height;
+                resolve({
+                    url: imageUrl,
+                    aspectRatio: aspectRatio,
+                    index: index
+                });
+            };
+            img.onerror = function() {
+                resolve(null);
+            };
         });
     });
 
-    initializeLazyLoading();
+    Promise.all(imagePromises).then(imageDataArray => {
+        const validImages = imageDataArray.filter(data => data !== null);
+        layoutImages(validImages);
+    });
 }
+
+function layoutImages(imagesData) {
+    const imagesGrid = document.querySelector('.images-grid');
+    imagesGrid.innerHTML = '';
+
+    const containerWidth = imagesGrid.clientWidth - 30;
+    const gap = 8;
+    const rowHeight = 150;
+
+    let rows = [];
+    let currentRow = [];
+    let currentRowWidth = 0;
+
+    imagesData.forEach(imageData => {
+        const scaledWidth = imageData.aspectRatio * rowHeight;
+        currentRow.push(imageData);
+        currentRowWidth += scaledWidth + gap;
+
+        if (currentRowWidth - gap >= containerWidth) {
+            rows.push(currentRow);
+            currentRow = [];
+            currentRowWidth = 0;
+        }
+    });
+
+    if (currentRow.length > 0) {
+        rows.push(currentRow);
+    }
+
+    rows.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'image-row';
+
+        const totalAspectRatio = row.reduce((sum, img) => sum + img.aspectRatio, 0);
+        const rowWidth = containerWidth - gap * (row.length - 1);
+        const scale = rowWidth / (totalAspectRatio * rowHeight);
+
+        row.forEach((imageData, index) => {
+            const imgWidth = imageData.aspectRatio * rowHeight * scale;
+            const imgHeight = rowHeight * scale;
+
+            const imageItem = document.createElement('div');
+            imageItem.className = 'image-item';
+            imageItem.style.flex = `0 0 ${imgWidth}px`;
+            imageItem.style.height = `${imgHeight}px`;
+            imageItem.style.marginRight = index < row.length - 1 ? `${gap}px` : '0';
+
+            const img = document.createElement('img');
+            img.src = imageData.url + '&h=300&w=300';
+            img.alt = 'Search result image';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+
+            img.setAttribute('data-fullSrc', imageData.url);
+            img.setAttribute('data-index', imageData.index);
+
+            imageItem.appendChild(img);
+            rowDiv.appendChild(imageItem);
+
+            imageItem.addEventListener('click', () => {
+                openLightbox(imageData.url, imageData.index);
+            });
+        });
+
+        imagesGrid.appendChild(rowDiv);
+    });
+}
+
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        if (storedImages.length > 0) {
+            displayImages(storedImages);
+        }
+    }, 200);
+});
 
 function initializeLazyLoading() {
     const imageObserver = new IntersectionObserver((entries, observer) => {
