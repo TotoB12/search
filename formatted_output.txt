@@ -27,7 +27,8 @@ public\index.html
                 </svg>
             </span>
             <div class="search-input-wrapper">
-                <input type="text" id="search-input" placeholder="What are you looking for?" required>
+                <input type="text" id="search-input" placeholder="What are you looking for?" required
+                    autocomplete="off">
                 <div id="suggestions-container"></div>
             </div>
             <button type="button" id="search-button" aria-label="Search">
@@ -52,52 +53,57 @@ public\index.html
             <div class="main-content">
                 <div class="answerContainer">
                     <div class="answerContent" style="display: none;">
-                        <div id="answer"></div>
-                        <div class="toolbar">
-                            <button id="tts-button" class="toolbar-button">
-                                <svg class="tts-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                        d="M11 4.9099C11 4.47485 10.4828 4.24734 10.1621 4.54132L6.67572 7.7372C6.49129 7.90626 6.25019 8.00005 6 8.00005H4C3.44772 8.00005 3 8.44776 3 9.00005V15C3 15.5523 3.44772 16 4 16H6C6.25019 16 6.49129 16.0938 6.67572 16.2629L10.1621 19.4588C10.4828 19.7527 11 19.5252 11 19.0902V4.9099ZM8.81069 3.06701C10.4142 1.59714 13 2.73463 13 4.9099V19.0902C13 21.2655 10.4142 22.403 8.81069 20.9331L5.61102 18H4C2.34315 18 1 16.6569 1 15V9.00005C1 7.34319 2.34315 6.00005 4 6.00005H5.61102L8.81069 3.06701ZM20.3166 6.35665C20.8019 6.09313 21.409 6.27296 21.6725 6.75833C22.5191 8.3176 22.9996 10.1042 22.9996 12.0001C22.9996 13.8507 22.5418 15.5974 21.7323 17.1302C21.4744 17.6185 20.8695 17.8054 20.3811 17.5475C19.8927 17.2896 19.7059 16.6846 19.9638 16.1962C20.6249 14.9444 20.9996 13.5175 20.9996 12.0001C20.9996 10.4458 20.6064 8.98627 19.9149 7.71262C19.6514 7.22726 19.8312 6.62017 20.3166 6.35665ZM15.7994 7.90049C16.241 7.5688 16.8679 7.65789 17.1995 8.09947C18.0156 9.18593 18.4996 10.5379 18.4996 12.0001C18.4996 13.3127 18.1094 14.5372 17.4385 15.5604C17.1357 16.0222 16.5158 16.1511 16.0539 15.8483C15.5921 15.5455 15.4632 14.9255 15.766 14.4637C16.2298 13.7564 16.4996 12.9113 16.4996 12.0001C16.4996 10.9859 16.1653 10.0526 15.6004 9.30063C15.2687 8.85905 15.3578 8.23218 15.7994 7.90049Z"
-                                        fill="currentColor"></path>
-                                </svg>
-                                <svg class="tts-spinner icon-md-heavy" width="24" height="24" stroke="currentColor"
-                                    fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                                    stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                                    <line x1="12" y1="2" x2="12" y2="6"></line>
-                                    <line x1="12" y1="18" x2="12" y2="22"></line>
-                                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-                                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-                                    <line x1="2" y1="12" x2="6" y2="12"></line>
-                                    <line x1="18" y1="12" x2="22" y2="12"></line>
-                                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-                                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-                                </svg>
-                                <svg class="tts-stop icon-md-heavy" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                        d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM9.5 8.5C8.94772 8.5 8.5 8.94772 8.5 9.5V14.5C8.5 15.0523 8.94772 15.5 9.5 15.5H14.5C15.0523 15.5 15.5 15.0523 15.5 14.5V9.5C15.5 8.94772 15.0523 8.5 14.5 8.5H9.5Z"
-                                        fill="currentColor"></path>
-                                </svg>
-                            </button>
-                            <button id="copy-button" class="toolbar-button">
-                                <svg class="copy-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24"
-                                    fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                        d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
-                                        fill="currentColor"></path>
-                                </svg>
-                                <svg class="checkmark-icon icon-md-heavy" width="24" height="24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                        d="M18.0633 5.67387C18.5196 5.98499 18.6374 6.60712 18.3262 7.06343L10.8262 18.0634C10.6585 18.3095 10.3898 18.4679 10.0934 18.4957C9.79688 18.5235 9.50345 18.4178 9.29289 18.2072L4.79289 13.7072C4.40237 13.3167 4.40237 12.6835 4.79289 12.293C5.18342 11.9025 5.81658 11.9025 6.20711 12.293L9.85368 15.9396L16.6738 5.93676C16.9849 5.48045 17.607 5.36275 18.0633 5.67387Z"
-                                        fill="currentColor"></path>
-                                </svg>
-                            </button>
+                        <div class="answer-left">
+                            <div id="answer"></div>
+                            <div class="toolbar">
+                                <button id="tts-button" class="toolbar-button">
+                                    <svg class="tts-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                            d="M11 4.9099C11 4.47485 10.4828 4.24734 10.1621 4.54132L6.67572 7.7372C6.49129 7.90626 6.25019 8.00005 6 8.00005H4C3.44772 8.00005 3 8.44776 3 9.00005V15C3 15.5523 3.44772 16 4 16H6C6.25019 16 6.49129 16.0938 6.67572 16.2629L10.1621 19.4588C10.4828 19.7527 11 19.5252 11 19.0902V4.9099ZM8.81069 3.06701C10.4142 1.59714 13 2.73463 13 4.9099V19.0902C13 21.2655 10.4142 22.403 8.81069 20.9331L5.61102 18H4C2.34315 18 1 16.6569 1 15V9.00005C1 7.34319 2.34315 6.00005 4 6.00005H5.61102L8.81069 3.06701ZM20.3166 6.35665C20.8019 6.09313 21.409 6.27296 21.6725 6.75833C22.5191 8.3176 22.9996 10.1042 22.9996 12.0001C22.9996 13.8507 22.5418 15.5974 21.7323 17.1302C21.4744 17.6185 20.8695 17.8054 20.3811 17.5475C19.8927 17.2896 19.7059 16.6846 19.9638 16.1962C20.6249 14.9444 20.9996 13.5175 20.9996 12.0001C20.9996 10.4458 20.6064 8.98627 19.9149 7.71262C19.6514 7.22726 19.8312 6.62017 20.3166 6.35665ZM15.7994 7.90049C16.241 7.5688 16.8679 7.65789 17.1995 8.09947C18.0156 9.18593 18.4996 10.5379 18.4996 12.0001C18.4996 13.3127 18.1094 14.5372 17.4385 15.5604C17.1357 16.0222 16.5158 16.1511 16.0539 15.8483C15.5921 15.5455 15.4632 14.9255 15.766 14.4637C16.2298 13.7564 16.4996 12.9113 16.4996 12.0001C16.4996 10.9859 16.1653 10.0526 15.6004 9.30063C15.2687 8.85905 15.3578 8.23218 15.7994 7.90049Z"
+                                            fill="currentColor"></path>
+                                    </svg>
+                                    <svg class="tts-spinner icon-md-heavy" width="24" height="24" stroke="currentColor"
+                                        fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                                        stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"
+                                        style="display: none;">
+                                        <line x1="12" y1="2" x2="12" y2="6"></line>
+                                        <line x1="12" y1="18" x2="12" y2="22"></line>
+                                        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                                        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                                        <line x1="2" y1="12" x2="6" y2="12"></line>
+                                        <line x1="18" y1="12" x2="22" y2="12"></line>
+                                        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                                        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                                    </svg>
+                                    <svg class="tts-stop icon-md-heavy" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                            d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM9.5 8.5C8.94772 8.5 8.5 8.94772 8.5 9.5V14.5C8.5 15.0523 8.94772 15.5 9.5 15.5H14.5C15.0523 15.5 15.5 15.0523 15.5 14.5V9.5C15.5 8.94772 15.0523 8.5 14.5 8.5H9.5Z"
+                                            fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                                <button id="copy-button" class="toolbar-button">
+                                    <svg class="copy-icon icon-md-heavy" width="24" height="24" viewBox="0 0 24 24"
+                                        fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                            d="M7 5C7 3.34315 8.34315 2 10 2H19C20.6569 2 22 3.34315 22 5V14C22 15.6569 20.6569 17 19 17H17V19C17 20.6569 15.6569 22 14 22H5C3.34315 22 2 20.6569 2 19V10C2 8.34315 3.34315 7 5 7H7V5ZM9 7H14C15.6569 7 17 8.34315 17 10V15H19C19.5523 15 20 14.5523 20 14V5C20 4.44772 19.5523 4 19 4H10C9.44772 4 9 4.44772 9 5V7ZM5 9C4.44772 9 4 9.44772 4 10V19C4 19.5523 4.44772 20 5 20H14C14.5523 20 15 19.5523 15 19V10C15 9.44772 14.5523 9 14 9H5Z"
+                                            fill="currentColor"></path>
+                                    </svg>
+                                    <svg class="checkmark-icon icon-md-heavy" width="24" height="24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                            d="M18.0633 5.67387C18.5196 5.98499 18.6374 6.60712 18.3262 7.06343L10.8262 18.0634C10.6585 18.3095 10.3898 18.4679 10.0934 18.4957C9.79688 18.5235 9.50345 18.4178 9.29289 18.2072L4.79289 13.7072C4.40237 13.3167 4.40237 12.6835 4.79289 12.293C5.18342 11.9025 5.81658 11.9025 6.20711 12.293L9.85368 15.9396L16.6738 5.93676C16.9849 5.48045 17.607 5.36275 18.0633 5.67387Z"
+                                            fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="answer-right">
                         </div>
                     </div>
                 </div>
-
+                <hr class="content-seperator">
                 <div class="results-container">
                     <div class="general-web-results">
                     </div>
@@ -166,6 +172,8 @@ const searchForm = document.getElementById('search-form');
 const searchInput = document.getElementById('search-input');
 const answerContainer = document.querySelector('.answerContainer');
 const answerContent = document.querySelector('.answerContent');
+const answerLeft = document.querySelector('.answer-left');
+const answerRight = document.querySelector('.answer-right');
 const answerDiv = document.getElementById('answer');
 const searchButton = document.getElementById('search-button');
 const lightbox = document.querySelector('.lightbox');
@@ -196,7 +204,7 @@ let audioSource;
 let isPlaying = false;
 let currentTab = 'all';
 let storedImages = [];
-const MAX_ANSWER_HEIGHT = 400;
+const MAX_ANSWER_HEIGHT = 200;
 const API_BASE_URL = 'https://api.totob12.com/search';
 // const API_BASE_URL = 'http://localhost:3000/search';
 let suggestionTimeout;
@@ -381,10 +389,22 @@ function insertSkeletonLoader() {
     skeletonLoader.id = 'skeleton-loader';
     skeletonLoader.className = 'skeleton-loader';
 
+    const skeletonLeft = document.createElement('div');
+    skeletonLeft.className = 'skeleton-left';
+
     const skeletonTitle = document.createElement('div');
     skeletonTitle.className = 'skeleton-title skeleton-element';
-    skeletonTitle.style.width = `${Math.floor(Math.random() * 20) + 30}%`;
-    skeletonLoader.appendChild(skeletonTitle);
+    skeletonLeft.appendChild(skeletonTitle);
+
+    for (let i = 0; i < 3; i++) {
+        const skeletonText = document.createElement('div');
+        skeletonText.className = 'skeleton-text skeleton-element';
+        skeletonText.style.width = `${Math.floor(Math.random() * 60) + 40}%`;
+        skeletonLeft.appendChild(skeletonText);
+    }
+
+    const skeletonRight = document.createElement('div');
+    skeletonRight.className = 'skeleton-right';
 
     const skeletonImageGrid = document.createElement('div');
     skeletonImageGrid.className = 'skeleton-image-grid';
@@ -395,14 +415,10 @@ function insertSkeletonLoader() {
         skeletonImageGrid.appendChild(skeletonImage);
     }
 
-    skeletonLoader.appendChild(skeletonImageGrid);
+    skeletonRight.appendChild(skeletonImageGrid);
 
-    for (let i = 0; i < 3; i++) {
-        const skeletonText = document.createElement('div');
-        skeletonText.className = 'skeleton-text skeleton-element';
-        skeletonText.style.width = `${Math.floor(Math.random() * 60) + 40}%`;
-        skeletonLoader.appendChild(skeletonText);
-    }
+    skeletonLoader.appendChild(skeletonLeft);
+    skeletonLoader.appendChild(skeletonRight);
 
     answerContainer.appendChild(skeletonLoader);
 }
@@ -414,7 +430,7 @@ function hideSkeletonLoader(callback) {
         skeletonLoader.style.transform = 'translateY(20px)';
         setTimeout(() => {
             skeletonLoader.remove();
-            answerContent.style.display = 'block';
+            answerContent.style.display = 'flex';
             answerContent.style.opacity = '0';
             answerContent.style.transform = 'translateY(20px)';
             void answerContent.offsetWidth;
@@ -423,14 +439,14 @@ function hideSkeletonLoader(callback) {
             if (callback) callback();
         }, 300);
     } else {
-        answerContent.style.display = 'block';
+        answerContent.style.display = 'flex';
         if (callback) callback();
     }
 }
 
-function createSourcesGrid(urls) {
-    const gridContainer = document.createElement('div');
-    gridContainer.className = 'sources-grid';
+function createSourcesList(urls) {
+    const listContainer = document.createElement('div');
+    listContainer.className = 'sources-grid';
 
     urls.forEach(urlObj => {
         const sourceItem = document.createElement('div');
@@ -470,10 +486,10 @@ function createSourcesGrid(urls) {
         sourceItem.appendChild(sourceHeader);
         sourceItem.appendChild(titleLink);
 
-        gridContainer.appendChild(sourceItem);
+        listContainer.appendChild(sourceItem);
     });
 
-    return gridContainer;
+    return listContainer;
 }
 
 async function handleTTS() {
@@ -489,7 +505,6 @@ async function handleTTS() {
     const h2Elements = clonedAnswerElement.querySelectorAll('h2');
     h2Elements.forEach(h2 => h2.remove());
     const answerText = clonedAnswerElement.innerText;
-    // console.log('TTS text:', answerText);
 
     ttsIcon.style.display = 'none';
     ttsSpinner.style.display = 'block';
@@ -647,13 +662,6 @@ lightbox.addEventListener('click', (e) => {
     }
 });
 
-lightboxClose.addEventListener('click', closeLightbox);
-lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) {
-        closeLightbox();
-    }
-});
-
 function submitSearch(query) {
     query = btoa(query);
     console.log('Submitting search:', query);
@@ -734,10 +742,8 @@ function submitSearch(query) {
                     }
                 });
 
-                const existingSourcesGrid = document.querySelector('.sources-grid');
-                if (existingSourcesGrid) {
-                    existingSourcesGrid.remove();
-                }
+                answerDiv.innerHTML = '';
+                answerRight.innerHTML = '';
 
                 const processedAnswer = processCitations(data.answer, data.urls);
                 const parsedHtml = marked.parse(processedAnswer);
@@ -745,16 +751,13 @@ function submitSearch(query) {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = parsedHtml;
 
-                const firstElement = tempDiv.firstElementChild;
-                let insertPosition = 'start';
+                const config = {
+                    ADD_ATTR: ['target', 'rel']
+                };
+                const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
+                answerDiv.innerHTML = finalHtml;
 
-                if (firstElement && firstElement.tagName === 'H2') {
-                    insertPosition = 'afterH2';
-                }
-
-                const sourcesGrid = createSourcesGrid(data.urls);
-                const toolbar = document.querySelector('.toolbar');
-                answerContent.insertBefore(sourcesGrid, toolbar);
+                answerLeft.appendChild(toolbar);
 
                 if (data.images && data.images.length > 0) {
                     const imagesToShow = data.images.slice(0, 4);
@@ -769,11 +772,10 @@ function submitSearch(query) {
                         gridItem.className = 'image-grid-item';
 
                         const skeletonOverlay = document.createElement('div');
-                        skeletonOverlay.className = 'skeleton-element image-skeleton-overlay';
+                        skeletonOverlay.className = 'image-skeleton-overlay';
                         gridItem.appendChild(skeletonOverlay);
 
                         const img = document.createElement('img');
-                        // img.src = imgUrl + '?p=300';
                         img.src = imgUrl + '&h=300&w=300';
                         img.dataset.fullSrc = imgUrl;
                         img.dataset.index = index;
@@ -784,38 +786,27 @@ function submitSearch(query) {
                         imageGrid.appendChild(gridItem);
                     });
 
-                    if (insertPosition === 'afterH2') {
-                        if (firstElement.nextSibling) {
-                            tempDiv.insertBefore(imageGrid, firstElement.nextSibling);
-                        } else {
-                            tempDiv.appendChild(imageGrid);
-                        }
-                    } else {
-                        tempDiv.insertBefore(imageGrid, tempDiv.firstChild);
-                    }
+                    answerRight.appendChild(imageGrid);
+
+                    const images = imageGrid.querySelectorAll('.image-grid-item img');
+
+                    images.forEach(img => {
+                        img.addEventListener('load', () => {
+                            img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
+                            const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
+                            if (skeletonOverlay) {
+                                skeletonOverlay.remove();
+                            }
+                            img.style.opacity = '1';
+                        });
+                        img.addEventListener('error', () => {
+                            img.alt = 'Failed to load image';
+                        });
+                    });
                 }
 
-                const config = {
-                    ADD_ATTR: ['target', 'rel']
-                };
-                const finalHtml = DOMPurify.sanitize(tempDiv.innerHTML, config);
-                answerDiv.innerHTML = finalHtml;
-
-                const images = answerDiv.querySelectorAll('.image-grid-item img');
-
-                images.forEach(img => {
-                    img.addEventListener('load', () => {
-                        img.addEventListener('click', () => openLightbox(img.dataset.fullSrc, parseInt(img.dataset.index)));
-                        const skeletonOverlay = img.parentElement.querySelector('.image-skeleton-overlay');
-                        if (skeletonOverlay) {
-                            skeletonOverlay.remove();
-                        }
-                        img.style.opacity = '1';
-                    });
-                    img.addEventListener('error', () => {
-                        img.alt = 'Failed to load image';
-                    });
-                });
+                const sourcesList = createSourcesList(data.urls);
+                answerRight.appendChild(sourcesList);
 
             } else if (data.status === 'error' || data.error) {
                 hideSkeletonLoader();
@@ -910,7 +901,6 @@ function initializeTabs() {
         });
     });
 }
-
 
 function switchTab(tabName) {
     if (currentTab === tabName) return;
@@ -1340,11 +1330,28 @@ body {
 }
 
 .answerContent {
-    max-width: 800px;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    max-width: 1300px;
+    margin: 0 auto;
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.5s ease;
     overflow: hidden;
+}
+
+.answer-left {
+    flex: 1;
+    max-width: 65%;
+}
+
+.answer-right {
+    flex: 0 0 35%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 1.5rem;
 }
 
 .collapsed {
@@ -1358,12 +1365,13 @@ body {
     left: 0;
     width: 100%;
     height: 50px;
-    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
 }
 
 .expand-button {
     display: block;
-    margin: 20px auto 0px auto;
+    position: relative;
+    margin: -20px auto 0px auto;
     background-color: #000;
     color: #fff;
     border: none;
@@ -1377,13 +1385,6 @@ body {
 
 .expand-button:hover {
     background-color: #333;
-}
-
-#answer,
-#skeleton-loader {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.2s ease forwards;
 }
 
 #answer {
@@ -1468,9 +1469,9 @@ body {
 .image-grid,
 .skeleton-image-grid {
     display: grid;
+    max-width: 100%;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
-    margin: 1.5rem 0;
 }
 
 .image-grid-item,
@@ -1532,17 +1533,49 @@ body {
 }
 
 .skeleton-loader {
-    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    max-width: 1300px;
+    margin: 0 auto;
     padding: 1rem;
-    max-width: 800px;
-    align-self: center;
+}
+
+.skeleton-left {
+    flex: 1;
+    max-width: 65%;
+}
+
+.skeleton-right {
+    flex: 0 0 35%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .skeleton-title {
-    width: 45%;
+    width: 80%;
     height: 32px;
     margin-top: 1.5rem;
     margin-bottom: 1.0rem;
+}
+
+.skeleton-text {
+    width: 100%;
+    height: 20px;
+    margin-bottom: 8px;
+}
+
+.skeleton-text.short {
+    width: 60%;
+}
+
+.skeleton-image {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    overflow: hidden;
+    border-radius: 8px;
 }
 
 .skeleton-image::after {
@@ -1556,15 +1589,9 @@ body {
     height: 100%;
 }
 
-.skeleton-text {
-    width: 100%;
-    height: 20px;
-    margin-bottom: 8px;
-}
-
 .sources-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin: 1rem 0;
 }
@@ -1660,6 +1687,10 @@ body {
     height: 24px;
 }
 
+.content-seperator {
+    display: none;
+}
+
 .answerContainer {
     width: 100%;
     margin-bottom: 2rem;
@@ -1667,13 +1698,16 @@ body {
 
 .results-container {
     display: flex;
+    margin-top: 2rem;
     justify-content: space-between;
 }
+
 .general-web-results {
     flex: 0 0 65%;
     width: 60%;
     margin-right: 1rem;
 }
+
 .quick-results {
     flex: 0 0 35%;
     width: 40%;
@@ -1713,9 +1747,22 @@ body {
     .main-content {
         flex-direction: column;
     }
+
     .quickResultsContainer {
         width: 100%;
         margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .results-container {
+        flex-direction: column;
+    }
+
+    .general-web-results,
+    .quick-results {
+        flex: none;
+        margin-right: 0;
     }
 }
 
@@ -1834,10 +1881,6 @@ body {
     100% {
         transform: translate(-50%, -50%) rotate(360deg);
     }
-}
-
-.web-results {
-    margin-top: 2rem;
 }
 
 .web-result-item {
@@ -2003,6 +2046,10 @@ body.search-active .search-container {
     margin: 0 auto;
 }
 
+body.search-active .content-seperator {
+    display: block;
+}
+
 body.search-active .tab-navigation {
     display: flex;
 }
@@ -2020,13 +2067,22 @@ body.search-active .answerContainer {
 }
 
 @media (max-width: 768px) {
-    .results-container {
+    .answerContent {
         flex-direction: column;
     }
-    .general-web-results,
-    .quick-results {
-        flex: none;
-        margin-right: 0;
+
+    .answer-left,
+    .answer-right {
+        max-width: 100%;
+    }
+
+    .image-grid,
+    .skeleton-image-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sources-grid {
+        flex-direction: column;
     }
 }
 
@@ -2049,19 +2105,13 @@ body.search-active .answerContainer {
 
     .image-grid,
     .skeleton-image-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .sources-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(1, 1fr);
     }
 }
 
 @media (max-width: 480px) {
     .sources-grid {
-        grid-template-columns: 1fr;
+        flex-direction: column;
     }
 }
 ```
@@ -2088,10 +2138,9 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I want to redesign the look of the `answerContent`. I want it to be divided into two parts:
+This all works well, but I want to make a small change. In the image grid of the `answerContent`, the images currently all have a border radius of 8px, and are in a row of 4. I only want two images to have any border radius:
 
-- on the left: the normal text answer, without the image grid, but formatted like before, along with the toolbar
-- on the right: first the image grid, and the sources grid underneath, with the sources in rows
+- the left most one, only in the top left and bottom left
+- the right most one, only in the top right and bottom right
 
-The skeleton loader will also have to be redesigned. I want you to fully develop and implement this.
-When you give me the CSS, give me the entire full new `style.css` file, reorganized and corrected.
+I want you to fully develop and implement this.

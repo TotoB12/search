@@ -3,5 +3,3 @@
 - image grid in image tab use original aspect ratio in row flex
 
 - add active tab to url --> auto navigate to certain tab
-
-- in image tab, only load the images if they are trully seen by the user, not just opacity hidden
