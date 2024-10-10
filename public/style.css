@@ -610,6 +610,10 @@ body {
     height: 24px;
 }
 
+.content-seperator {
+    display: none;
+}
+
 .answerContainer {
     width: 100%;
     margin-bottom: 2rem;
@@ -963,6 +967,10 @@ body.search-active .search-container {
     max-width: 600px;
     width: 100%;
     margin: 0 auto;
+}
+
+body.search-active .content-seperator {
+    display: block;
 }
 
 body.search-active .tab-navigation {
