@@ -765,7 +765,7 @@ function displayImages(images) {
     const imagePromises = images.map((imageUrl, index) => {
         return new Promise((resolve) => {
             const img = new Image();
-            img.src = imageUrl;
+            img.src = imageUrl + '&h=100&w=100';
             img.onload = function() {
                 const aspectRatio = img.width / img.height;
                 resolve({
