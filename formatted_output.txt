@@ -935,7 +935,7 @@ function displayImages(images) {
     const imagePromises = images.map((imageUrl, index) => {
         return new Promise((resolve) => {
             const img = new Image();
-            img.src = imageUrl;
+            img.src = imageUrl + '&h=100&w=100';
             img.onload = function() {
                 const aspectRatio = img.width / img.height;
                 resolve({
@@ -1172,6 +1172,7 @@ function insertWebResultsSkeletonLoader() {
 
         const titleSkeleton = document.createElement('div');
         titleSkeleton.className = 'skeleton-element skeleton-title';
+        titleSkeleton.style.width = `${Math.floor(Math.random() * 31) + 55}%`;
         skeletonItem.appendChild(titleSkeleton);
 
         const headerSkeleton = document.createElement('div');
@@ -1183,6 +1184,7 @@ function insertWebResultsSkeletonLoader() {
 
         const urlSkeleton = document.createElement('div');
         urlSkeleton.className = 'skeleton-element skeleton-url';
+        urlSkeleton.style.width = `${Math.floor(Math.random() * 21) + 30}%`;
         headerSkeleton.appendChild(urlSkeleton);
 
         skeletonItem.appendChild(headerSkeleton);
@@ -1190,6 +1192,9 @@ function insertWebResultsSkeletonLoader() {
         for (let j = 0; j < 2; j++) {
             const descriptionSkeleton = document.createElement('div');
             descriptionSkeleton.className = 'skeleton-element skeleton-description';
+            if (j === 1) {
+                descriptionSkeleton.style.width = `${Math.floor(Math.random() * 51) + 25}%`;
+            }
             skeletonItem.appendChild(descriptionSkeleton);
         }
 
@@ -1212,10 +1217,13 @@ function insertQuickResultsSkeletonLoader() {
 
         const titleSkeleton = document.createElement('div');
         titleSkeleton.className = 'skeleton-element skeleton-quick-title';
+        titleSkeleton.style.width = `${Math.floor(Math.random() * 51) + 30}%`;
         skeletonPod.appendChild(titleSkeleton);
 
         const imageSkeleton = document.createElement('div');
         imageSkeleton.className = 'skeleton-element skeleton-quick-image';
+        imageSkeleton.style.width = `${Math.floor(Math.random() * 51) + 50}%`;
+        imageSkeleton.style.height = `${Math.floor(Math.random() * 81) + 70}px`;
         skeletonPod.appendChild(imageSkeleton);
 
         quickResults.appendChild(skeletonPod);
@@ -1701,7 +1709,7 @@ body {
     background: #eee;
     background: linear-gradient(270deg, #f1f1f1, #e1e1e1, #f1f1f1);
     background-size: 200% 100%;
-    border-radius: 8px;
+    border-radius: 4px;
     animation: gradientMoves 800ms linear infinite;
 }
 
@@ -2309,7 +2317,7 @@ body.search-active .answerContainer {
 .web-result-item.skeleton-web-result-item .skeleton-favicon {
     width: 16px;
     height: 16px;
-    border-radius: 50%;
+    border-radius: 25%;
     margin-right: 0.5rem;
 }
 
@@ -2319,7 +2327,7 @@ body.search-active .answerContainer {
 }
 
 .web-result-item.skeleton-web-result-item .skeleton-description {
-    width: 100%;
+    width: 98%;
     height: 14px;
     margin-bottom: 0.5rem;
 }
@@ -2381,4 +2389,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but the `style.css` and `script.js` files are a mess. I want you to reorganize them and return them fully to me.
+This all works well, but I want to fully redesign the `Create` tab. I want it to get a complete remodeling, including loading animations. I want you to fully develop and implement this.
