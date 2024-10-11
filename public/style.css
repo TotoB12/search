@@ -412,12 +412,23 @@ body {
 .skeleton-image:nth-child(1) {
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.image-grid-item:nth-child(2),
+.image-grid-item:nth-child(3),
+.skeleton-image:nth-child(2),
+.skeleton-image:nth-child(3) {
+    border-radius: 0;
 }
 
 .image-grid-item:nth-child(4),
 .skeleton-image:nth-child(4) {
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .image-skeleton-overlay {

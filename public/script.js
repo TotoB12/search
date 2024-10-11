@@ -228,7 +228,7 @@ function insertSkeletonLoader() {
     skeletonTitle.className = 'skeleton-title skeleton-element';
     skeletonLeft.appendChild(skeletonTitle);
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
         const skeletonText = document.createElement('div');
         skeletonText.className = 'skeleton-text skeleton-element';
         skeletonText.style.width = `${Math.floor(Math.random() * 60) + 40}%`;
