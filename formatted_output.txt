@@ -671,27 +671,35 @@ function submitSearch(query) {
     removeExpandButton();
     showSkeletonLoader();
     removeExistingWebResults();
+    removeExistingQuickResults();
+
+    insertWebResultsSkeletonLoader();
+    insertQuickResultsSkeletonLoader();
 
     fetch(`${API_BASE_URL}/generalWebResults?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
             console.log('Received general web results:', data);
+            removeWebResultsSkeletonLoader();
             if (data.status === 'completed') {
                 displayGeneralWebResults(data.webResults);
             }
         })
         .catch(error => {
             console.error('Error fetching general web results:', error);
+            removeWebResultsSkeletonLoader();
         });
 
     fetch(`${API_BASE_URL}/quick?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
             console.log('Received quick results:', data);
+            removeQuickResultsSkeletonLoader();
             displayQuickResults(data);
         })
         .catch(error => {
             console.error('Error fetching quick results:', error);
+            removeQuickResultsSkeletonLoader();
         });
 
     fetch(`${API_BASE_URL}/images?q=${encodeURIComponent(query)}`)
@@ -1154,6 +1162,77 @@ function displayQuickResults(data) {
         quickResults.appendChild(podDiv);
     });
 }
+
+function insertWebResultsSkeletonLoader() {
+    const generalWebResults = document.querySelector('.general-web-results');
+    generalWebResults.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+        const skeletonItem = document.createElement('div');
+        skeletonItem.className = 'web-result-item skeleton-web-result-item';
+
+        const titleSkeleton = document.createElement('div');
+        titleSkeleton.className = 'skeleton-element skeleton-title';
+        skeletonItem.appendChild(titleSkeleton);
+
+        const headerSkeleton = document.createElement('div');
+        headerSkeleton.className = 'web-result-header';
+
+        const faviconSkeleton = document.createElement('div');
+        faviconSkeleton.className = 'skeleton-element skeleton-favicon';
+        headerSkeleton.appendChild(faviconSkeleton);
+
+        const urlSkeleton = document.createElement('div');
+        urlSkeleton.className = 'skeleton-element skeleton-url';
+        headerSkeleton.appendChild(urlSkeleton);
+
+        skeletonItem.appendChild(headerSkeleton);
+
+        for (let j = 0; j < 2; j++) {
+            const descriptionSkeleton = document.createElement('div');
+            descriptionSkeleton.className = 'skeleton-element skeleton-description';
+            skeletonItem.appendChild(descriptionSkeleton);
+        }
+
+        generalWebResults.appendChild(skeletonItem);
+    }
+}
+
+function removeWebResultsSkeletonLoader() {
+    const generalWebResults = document.querySelector('.general-web-results');
+    const skeletonItems = generalWebResults.querySelectorAll('.skeleton-web-result-item');
+    skeletonItems.forEach(item => item.remove());
+}
+
+function insertQuickResultsSkeletonLoader() {
+    const quickResults = document.querySelector('.quick-results');
+    quickResults.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+        const skeletonPod = document.createElement('div');
+        skeletonPod.className = 'quick-pod skeleton-quick-pod';
+
+        const titleSkeleton = document.createElement('div');
+        titleSkeleton.className = 'skeleton-element skeleton-quick-title';
+        skeletonPod.appendChild(titleSkeleton);
+
+        const imageSkeleton = document.createElement('div');
+        imageSkeleton.className = 'skeleton-element skeleton-quick-image';
+        skeletonPod.appendChild(imageSkeleton);
+
+        quickResults.appendChild(skeletonPod);
+    }
+}
+
+function removeQuickResultsSkeletonLoader() {
+    const quickResults = document.querySelector('.quick-results');
+    const skeletonPods = quickResults.querySelectorAll('.skeleton-quick-pod');
+    skeletonPods.forEach(pod => pod.remove());
+}
+
+function removeExistingQuickResults() {
+    const quickResults = document.querySelector('.quick-results');
+    quickResults.innerHTML = '';
+}
+
 
 ```
 
@@ -2210,6 +2289,74 @@ body.search-active .answerContainer {
         flex-direction: column;
     }
 }
+
+.web-result-item.skeleton-web-result-item {
+    margin-bottom: 1.5rem;
+}
+
+.web-result-item.skeleton-web-result-item .skeleton-title {
+    width: 60%;
+    height: 20px;
+    margin-bottom: 0.5rem;
+}
+
+.web-result-item.skeleton-web-result-item .web-result-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.web-result-item.skeleton-web-result-item .skeleton-favicon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.web-result-item.skeleton-web-result-item .skeleton-url {
+    width: 30%;
+    height: 14px;
+}
+
+.web-result-item.skeleton-web-result-item .skeleton-description {
+    width: 100%;
+    height: 14px;
+    margin-bottom: 0.5rem;
+}
+
+.quick-pod.skeleton-quick-pod {
+    margin-bottom: 20px;
+}
+
+.quick-pod.skeleton-quick-pod .skeleton-quick-title {
+    width: 70%;
+    height: 18px;
+    margin-bottom: 10px;
+}
+
+.quick-pod.skeleton-quick-pod .skeleton-quick-image {
+    width: 100%;
+    height: 150px;
+    border-radius: 4px;
+}
+
+@keyframes gradientMoves {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
+.web-result-item.skeleton-web-result-item .web-result-title:hover,
+.quick-pod.skeleton-quick-pod:hover {
+    text-decoration: none;
+    background-color: transparent;
+}
 ```
 
 server.js
@@ -2234,8 +2381,4 @@ app.listen(PORT, '0.0.0.0', () => {
 
 ```
 
-This all works well, but I need to improve the loading of the `All` tab: both the `web-results` and the `quick-results` should have skeleton loaders, just like the `answerContent`.
-For the web resutls, it should show 7 skeleton items, and each should look exactly like a `web-result-item`: a title, then a square icon and a url, followed by a couple lines of text.
-For the quick answer, it should show 4 skeleton "pods": each should have a title, followed by a larger rectangle to look like like an image.
-
-I want you to fully develop and implement this.
+This all works well, but the `style.css` and `script.js` files are a mess. I want you to reorganize them and return them fully to me.

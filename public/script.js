@@ -501,27 +501,35 @@ function submitSearch(query) {
     removeExpandButton();
     showSkeletonLoader();
     removeExistingWebResults();
+    removeExistingQuickResults();
+
+    insertWebResultsSkeletonLoader();
+    insertQuickResultsSkeletonLoader();
 
     fetch(`${API_BASE_URL}/generalWebResults?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
             console.log('Received general web results:', data);
+            removeWebResultsSkeletonLoader();
             if (data.status === 'completed') {
                 displayGeneralWebResults(data.webResults);
             }
         })
         .catch(error => {
             console.error('Error fetching general web results:', error);
+            removeWebResultsSkeletonLoader();
         });
 
     fetch(`${API_BASE_URL}/quick?q=${encodeURIComponent(query)}`)
         .then(response => response.json())
         .then(data => {
             console.log('Received quick results:', data);
+            removeQuickResultsSkeletonLoader();
             displayQuickResults(data);
         })
         .catch(error => {
             console.error('Error fetching quick results:', error);
+            removeQuickResultsSkeletonLoader();
         });
 
     fetch(`${API_BASE_URL}/images?q=${encodeURIComponent(query)}`)
@@ -984,3 +992,82 @@ function displayQuickResults(data) {
         quickResults.appendChild(podDiv);
     });
 }
+
+function insertWebResultsSkeletonLoader() {
+    const generalWebResults = document.querySelector('.general-web-results');
+    generalWebResults.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+        const skeletonItem = document.createElement('div');
+        skeletonItem.className = 'web-result-item skeleton-web-result-item';
+
+        const titleSkeleton = document.createElement('div');
+        titleSkeleton.className = 'skeleton-element skeleton-title';
+        titleSkeleton.style.width = `${Math.floor(Math.random() * 31) + 55}%`;
+        skeletonItem.appendChild(titleSkeleton);
+
+        const headerSkeleton = document.createElement('div');
+        headerSkeleton.className = 'web-result-header';
+
+        const faviconSkeleton = document.createElement('div');
+        faviconSkeleton.className = 'skeleton-element skeleton-favicon';
+        headerSkeleton.appendChild(faviconSkeleton);
+
+        const urlSkeleton = document.createElement('div');
+        urlSkeleton.className = 'skeleton-element skeleton-url';
+        urlSkeleton.style.width = `${Math.floor(Math.random() * 21) + 30}%`;
+        headerSkeleton.appendChild(urlSkeleton);
+
+        skeletonItem.appendChild(headerSkeleton);
+
+        for (let j = 0; j < 2; j++) {
+            const descriptionSkeleton = document.createElement('div');
+            descriptionSkeleton.className = 'skeleton-element skeleton-description';
+            if (j === 1) {
+                descriptionSkeleton.style.width = `${Math.floor(Math.random() * 51) + 25}%`;
+            }
+            skeletonItem.appendChild(descriptionSkeleton);
+        }
+
+        generalWebResults.appendChild(skeletonItem);
+    }
+}
+
+function removeWebResultsSkeletonLoader() {
+    const generalWebResults = document.querySelector('.general-web-results');
+    const skeletonItems = generalWebResults.querySelectorAll('.skeleton-web-result-item');
+    skeletonItems.forEach(item => item.remove());
+}
+
+function insertQuickResultsSkeletonLoader() {
+    const quickResults = document.querySelector('.quick-results');
+    quickResults.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+        const skeletonPod = document.createElement('div');
+        skeletonPod.className = 'quick-pod skeleton-quick-pod';
+
+        const titleSkeleton = document.createElement('div');
+        titleSkeleton.className = 'skeleton-element skeleton-quick-title';
+        titleSkeleton.style.width = `${Math.floor(Math.random() * 51) + 30}%`;
+        skeletonPod.appendChild(titleSkeleton);
+
+        const imageSkeleton = document.createElement('div');
+        imageSkeleton.className = 'skeleton-element skeleton-quick-image';
+        imageSkeleton.style.width = `${Math.floor(Math.random() * 51) + 50}%`;
+        imageSkeleton.style.height = `${Math.floor(Math.random() * 81) + 70}px`;
+        skeletonPod.appendChild(imageSkeleton);
+
+        quickResults.appendChild(skeletonPod);
+    }
+}
+
+function removeQuickResultsSkeletonLoader() {
+    const quickResults = document.querySelector('.quick-results');
+    const skeletonPods = quickResults.querySelectorAll('.skeleton-quick-pod');
+    skeletonPods.forEach(pod => pod.remove());
+}
+
+function removeExistingQuickResults() {
+    const quickResults = document.querySelector('.quick-results');
+    quickResults.innerHTML = '';
+}
+
