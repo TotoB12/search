@@ -25,7 +25,10 @@ const createForm = document.getElementById('create-form');
 const createInput = document.getElementById('create-input');
 const createButton = document.getElementById('create-button');
 const createImage = document.getElementById('create-image');
+const createLoading = document.getElementById('create-loading');
+const createFeedback = document.getElementById('create-feedback');
 const createPlaceholder = document.getElementById('create-placeholder');
+const createImageDisplay = document.querySelector('.image-display');
 
 let answerImageList = [];
 let imagesTabImageList = [];
@@ -150,6 +153,9 @@ createForm.addEventListener('submit', function (e) {
     const prompt = createInput.value.trim();
     if (prompt) {
         generateCreateImage(prompt);
+    }
+    if (createFeedback.style.display === 'block') {
+        createFeedback.style.display = 'none';
     }
 });
 
@@ -766,7 +772,7 @@ function displayImages(images) {
         return new Promise((resolve) => {
             const img = new Image();
             img.src = imageUrl + '&h=100&w=100';
-            img.onload = function() {
+            img.onload = function () {
                 const aspectRatio = img.width / img.height;
                 resolve({
                     url: imageUrl,
@@ -774,7 +780,7 @@ function displayImages(images) {
                     index: index
                 });
             };
-            img.onerror = function() {
+            img.onerror = function () {
                 resolve(null);
             };
         });
@@ -784,7 +790,7 @@ function displayImages(images) {
         const validImages = imageDataArray.filter(data => data !== null);
         layoutImages(validImages);
         imagesTabImageList = validImages.map(data => data.url);
-    });    
+    });
 }
 
 function layoutImages(imagesData) {
@@ -848,7 +854,7 @@ function layoutImages(imagesData) {
 
             imageItem.addEventListener('click', () => {
                 openLightbox(imageData.url, imageData.index, imagesTabImageList);
-            });            
+            });
         });
 
         imagesGrid.appendChild(rowDiv);
@@ -920,30 +926,44 @@ function clearSuggestions() {
 }
 
 function generateCreateImage(prompt) {
-    prompt = btoa(prompt);
-    createPlaceholder.textContent = 'Generating image...';
+    createLoading.style.display = 'flex';
+    createFeedback.style.display = 'none';
     createImage.style.display = 'none';
+    createPlaceholder.style.display = 'none';
+
+    const encodedPrompt = btoa(prompt);
 
     fetch(`${API_BASE_URL}/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt: encodedPrompt })
     })
         .then(response => response.json())
         .then(data => {
+            createLoading.style.display = 'none';
+
             if (data.status === 'completed' && data.imageUrl) {
                 createImage.src = data.imageUrl;
                 createImage.style.display = 'block';
                 createPlaceholder.style.display = 'none';
+
+                createFeedback.textContent = 'Image generated successfully!';
+                createFeedback.className = 'feedback-message success';
+                createFeedback.style.display = 'block';
             } else {
-                createPlaceholder.textContent = 'Failed to generate image';
+                createFeedback.textContent = data.error || 'Failed to generate image.';
+                createFeedback.className = 'feedback-message error';
+                createFeedback.style.display = 'block';
                 createPlaceholder.style.display = 'block';
             }
         })
         .catch(error => {
-            console.error('Error generating image:', error);
-            createPlaceholder.textContent = 'Error generating image';
+            createLoading.style.display = 'none';
+            createFeedback.textContent = 'An error occurred while generating the image.';
+            createFeedback.className = 'feedback-message error';
+            createFeedback.style.display = 'block';
             createPlaceholder.style.display = 'block';
+            console.error('Error generating image:', error);
         });
 }
 

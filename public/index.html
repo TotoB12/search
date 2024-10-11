@@ -113,13 +113,25 @@
         </div>
         <div class="tab-pane" id="create-tab">
             <div class="create-container">
+                <h2>Create an Image</h2>
                 <form id="create-form">
-                    <input type="text" id="create-input" placeholder="Describe what to create" required>
-                    <button type="submit" id="create-button">Generate</button>
+                    <div class="create-input-group">
+                        <input type="text" id="create-input" placeholder="Describe what to create" required>
+                        <button type="submit" id="create-button">Generate</button>
+                    </div>
                 </form>
                 <div class="create-result">
-                    <img id="create-image" src="" alt="Your created image" style="display: none;">
-                    <div id="create-placeholder">Your image will appear here</div>
+                    <div id="create-feedback" class="feedback-message" style="display: none;"></div>
+                    <div class="image-display">
+                        <img id="create-image" src="" alt="Your created image" style="display: none;">
+                        <div id="create-placeholder">Your image will appear here</div>
+                        <div id="create-loading" class="loading-spinner" style="display: none;">
+                            <svg class="spinner-svg" viewBox="0 0 50 50">
+                                <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
+                            </svg>
+                            <p>Generating your image...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

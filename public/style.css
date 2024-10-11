@@ -907,49 +907,191 @@ body {
     padding: 2rem;
 }
 
+.create-container h2 {
+    font-family: "Poly Sans Bulky", Arial, sans-serif;
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
 #create-form {
-    display: flex;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-#create-input {
-    width: 300px;
-    padding: 0.5rem;
-    font-size: 1rem;
-    margin-right: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-#create-button {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    cursor: pointer;
-    background-color: #000;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-}
-
-.create-result {
+    width: 100%;
+    max-width: 600px;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-#create-image {
-    max-width: 100%;
-    max-height: 500px;
-    border: 1px solid #ccc;
+.create-input-group {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+}
+
+#create-input {
+    flex-grow: 1;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 2px solid #ccc;
     border-radius: 8px;
-    margin-top: 1rem;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#create-input:focus {
+    border-color: #007bff;
+}
+
+#create-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#create-button:hover {
+    background-color: #0056b3;
+}
+
+.create-result {
+    width: 100%;
+    max-width: 600px;
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loading-spinner .spinner {
+    border: 6px solid rgba(0, 123, 255, 0.3);
+    border-top: 6px solid #007bff;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.feedback-message {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    width: 100%;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.feedback-message.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.feedback-message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.image-display {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    min-height: 300px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#image-display img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
 }
 
 #create-placeholder {
     font-size: 1rem;
     color: #666;
-    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .create-input-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    #create-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .create-container h2 {
+        font-size: 1.5rem;
+    }
+
+    .create-input-group {
+        gap: 5px;
+    }
+}
+
+.spinner-svg {
+    animation: rotate 2s linear infinite;
+    width: 60px;
+    height: 60px;
+}
+
+.path {
+    stroke: #007bff;
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
 }
 
 body.search-active {
@@ -1104,9 +1246,11 @@ body.search-active .answerContainer {
     0% {
         background-position: 0% 50%;
     }
+
     50% {
         background-position: 100% 50%;
     }
+
     100% {
         background-position: 200% 50%;
     }
